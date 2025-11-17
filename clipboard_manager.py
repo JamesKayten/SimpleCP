@@ -13,6 +13,11 @@ from typing import Optional, List, Dict, Any
 from stores.clipboard_item import ClipboardItem
 from stores.history_store import HistoryStore
 from stores.snippet_store import SnippetStore
+from stores.settings_store import SettingsStore
+from stores.analytics_store import AnalyticsStore
+from utils.advanced_search import AdvancedSearch
+from utils.privacy_filter import PrivacyFilter
+from utils.import_export import ImportExportManager
 
 
 class ClipboardManager:
@@ -36,14 +41,33 @@ class ClipboardManager:
         display_count: int = 10
     ):
         """Initialize ClipboardManager with multi-store pattern."""
-        self.history_store = HistoryStore(max_items=max_history, display_count=display_count)
-        self.snippet_store = SnippetStore()
-        self._current_clipboard = ""
         self.data_dir = data_dir or os.path.join(os.path.dirname(__file__), "data")
         os.makedirs(self.data_dir, exist_ok=True)
+
+        # Initialize settings store first (used by other components)
+        self.settings = SettingsStore(self.data_dir)
+
+        # Override max_history from settings if available
+        max_history = self.settings.get("history.max_items", max_history)
+        display_count = self.settings.get("history.display_count", display_count)
+
+        # Initialize stores
+        self.history_store = HistoryStore(max_items=max_history, display_count=display_count)
+        self.snippet_store = SnippetStore()
+        self.analytics = AnalyticsStore(self.data_dir)
+
+        # Initialize utilities
+        self.search = AdvancedSearch()
+        self.privacy = PrivacyFilter(self.settings)
+        self.import_export = ImportExportManager(self)
+
+        # Internal state
+        self._current_clipboard = ""
         self.history_file = os.path.join(self.data_dir, "history.json")
         self.snippets_file = os.path.join(self.data_dir, "snippets.json")
-        self.auto_save_enabled = True
+        self.auto_save_enabled = self.settings.get("backend.auto_save", True)
+
+        # Load existing data
         self.load_stores()
 
     def check_clipboard(self) -> Optional[ClipboardItem]:
@@ -57,26 +81,69 @@ class ClipboardManager:
             print(f"Error checking clipboard: {e}")
         return None
 
-    def add_clip(self, content: str, source_app: Optional[str] = None) -> ClipboardItem:
-        """Add clipboard item to history with automatic deduplication."""
+    def add_clip(self, content: str, source_app: Optional[str] = None) -> Optional[ClipboardItem]:
+        """Add clipboard item to history with automatic deduplication and privacy filtering."""
+        # Check privacy mode
+        if self.privacy.should_exclude_app(source_app):
+            print(f"Excluded app: {source_app}")
+            return None
+
+        # Check for sensitive content
+        if self.privacy.should_filter_content(content, source_app):
+            print(f"Filtered sensitive content from {source_app}")
+            return None
+
+        # Create and add clip
         clip = ClipboardItem(content=content, source_app=source_app)
         self.history_store.insert(clip)
+
+        # Track analytics
+        if self.settings.get("analytics.enabled", True):
+            self.analytics.track_copy_event(
+                clip.clip_id,
+                clip.content_type,
+                source_app,
+                action="copy"
+            )
+
         if self.auto_save_enabled:
             self.save_stores()
+
         return clip
 
     def copy_to_clipboard(self, clip_id: str) -> bool:
         """Copy item to system clipboard by ID."""
-        for item in self.history_store.items:
-            if item.clip_id == clip_id:
-                pyperclip.copy(item.content)
-                self._current_clipboard = item.content
-                return True
-        item = self.snippet_store.get_snippet_by_id(clip_id)
+        item = None
+        item_type = None
+
+        # Check history
+        for hist_item in self.history_store.items:
+            if hist_item.clip_id == clip_id:
+                item = hist_item
+                item_type = "history"
+                break
+
+        # Check snippets
+        if not item:
+            item = self.snippet_store.get_snippet_by_id(clip_id)
+            if item:
+                item_type = "snippet"
+
         if item:
             pyperclip.copy(item.content)
             self._current_clipboard = item.content
+
+            # Track analytics
+            if self.settings.get("analytics.enabled", True):
+                self.analytics.track_copy_event(
+                    clip_id,
+                    item.content_type,
+                    item.source_app,
+                    action="paste"
+                )
+
             return True
+
         return False
 
     def save_as_snippet(
@@ -197,10 +264,98 @@ class ClipboardManager:
     # Search operations
     def search_all(self, query: str) -> Dict[str, List[ClipboardItem]]:
         """Search across history and snippets."""
+        # Track search
+        if self.settings.get("analytics.enabled", True):
+            self.analytics.track_search(query)
+
         return {
             "history": self.history_store.search(query),
             "snippets": self.snippet_store.search(query)
         }
+
+    def advanced_search(
+        self,
+        query: Optional[str] = None,
+        search_type: str = "fuzzy",
+        content_types: Optional[List[str]] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        source_apps: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+        include_history: bool = True,
+        include_snippets: bool = True,
+        sort_by: Optional[str] = None,
+        reverse: bool = False
+    ) -> Dict[str, List[ClipboardItem]]:
+        """
+        Perform advanced search with multiple filters
+
+        Args:
+            query: Search query
+            search_type: "fuzzy", "regex", or "exact"
+            content_types: Filter by content types
+            start_date: Filter by start date
+            end_date: Filter by end date
+            source_apps: Filter by source apps
+            tags: Filter by tags
+            include_history: Include history items
+            include_snippets: Include snippet items
+            sort_by: Field to sort by
+            reverse: Reverse sort order
+
+        Returns:
+            Dictionary with history and snippets results
+        """
+        results = {"history": [], "snippets": []}
+
+        # Get fuzzy threshold from settings
+        fuzzy_threshold = self.settings.get("search.fuzzy_threshold", 0.6)
+        case_sensitive = self.settings.get("search.case_sensitive", False)
+
+        # Search history
+        if include_history:
+            items = self.history_store.get_all_items()
+            results["history"] = self.search.advanced_search(
+                items,
+                query=query,
+                search_type=search_type,
+                fuzzy_threshold=fuzzy_threshold,
+                case_sensitive=case_sensitive,
+                content_types=content_types,
+                start_date=start_date,
+                end_date=end_date,
+                source_apps=source_apps,
+                tags=tags,
+                sort_by=sort_by,
+                reverse=reverse
+            )
+
+        # Search snippets
+        if include_snippets:
+            items = []
+            for folder_items in self.snippet_store.folders.values():
+                items.extend(folder_items)
+
+            results["snippets"] = self.search.advanced_search(
+                items,
+                query=query,
+                search_type=search_type,
+                fuzzy_threshold=fuzzy_threshold,
+                case_sensitive=case_sensitive,
+                content_types=content_types,
+                start_date=start_date,
+                end_date=end_date,
+                source_apps=source_apps,
+                tags=tags,
+                sort_by=sort_by,
+                reverse=reverse
+            )
+
+        # Track search
+        if query and self.settings.get("analytics.enabled", True):
+            self.analytics.track_search(query)
+
+        return results
 
     # Persistence operations
     def save_stores(self):
@@ -241,9 +396,63 @@ class ClipboardManager:
 
     def get_stats(self) -> Dict[str, Any]:
         """Get manager statistics."""
-        return {
+        stats = {
             "history_count": len(self.history_store),
             "snippet_count": len(self.snippet_store),
             "folder_count": len(self.snippet_store.folders),
             "max_history": self.history_store.max_items
         }
+
+        # Add analytics insights if enabled
+        if self.settings.get("analytics.enabled", True):
+            insights = self.analytics.get_insights()
+            stats["analytics"] = insights
+
+        return stats
+
+    # Analytics operations
+    def get_analytics_summary(self, period: str = "week") -> Dict[str, Any]:
+        """Get analytics summary for a period"""
+        return self.analytics.get_usage_summary(period)
+
+    def get_most_copied(self, limit: int = 10) -> List[Any]:
+        """Get most copied items with full item data"""
+        most_copied_ids = self.analytics.get_most_copied(limit)
+        results = []
+
+        for clip_id, count in most_copied_ids:
+            # Find item in history or snippets
+            item = None
+            for hist_item in self.history_store.items:
+                if hist_item.clip_id == clip_id:
+                    item = hist_item
+                    break
+
+            if not item:
+                item = self.snippet_store.get_snippet_by_id(clip_id)
+
+            if item:
+                results.append({
+                    "item": item,
+                    "copy_count": count
+                })
+
+        return results
+
+    def cleanup_old_data(self):
+        """Cleanup old data based on settings"""
+        if not self.settings.should_auto_cleanup():
+            return
+
+        cleanup_settings = self.settings.get_cleanup_settings()
+        retention_days = cleanup_settings.get("delete_after_days", 30)
+
+        # Cleanup analytics
+        analytics_retention = self.settings.get("analytics.retention_days", 90)
+        self.analytics.cleanup_old_data(analytics_retention)
+
+        # TODO: Cleanup old history items based on date
+        # This would require adding timestamp-based cleanup to HistoryStore
+
+        if self.auto_save_enabled:
+            self.save_stores()
