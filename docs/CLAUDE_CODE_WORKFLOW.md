@@ -30,13 +30,16 @@ git checkout <branch_name>
 wc -l <file_path>  # Check line count for each critical file
 ```
 
-### 3. Alert on Violations
+### 3. Alert on Violations & Generate OCC Prompt
 If any file exceeds its limit:
-- **STOP** the merge process
+- **STOP** the merge process immediately
 - Alert the user with specific details:
   - Which files are over limit
   - Current line count vs. limit
-  - Suggest refactoring or splitting files
+  - Exact violations per branch
+- **AUTOMATICALLY GENERATE** a prompt for Online Claude Code (OCC) to fix violations
+- Include specific refactoring instructions and line count requirements
+- Provide the generated prompt to the user for sending to OCC
 
 ### 4. Merge Process (if no violations)
 If all files are within limits:
@@ -55,6 +58,40 @@ Provide a summary:
 - Any violations found
 - Merge status
 - Next steps if needed
+
+## OCC Violation Prompt Template
+
+When violations are detected, generate this prompt for Online Claude Code:
+
+```
+URGENT: File Size Limit Violations Detected in SimpleCP Branches
+
+The following branches have files that exceed SimpleCP's strict file size limits and cannot be merged into main:
+
+[LIST SPECIFIC VIOLATIONS WITH:]
+- Branch name
+- File path
+- Current line count vs. limit
+- Lines over limit
+
+REQUIRED ACTIONS:
+1. Refactor oversized files by:
+   - Extracting helper functions/classes into separate modules
+   - Splitting large files into focused components
+   - Moving utility functions to dedicated files
+   - Breaking API endpoints into logical groups
+
+2. Ensure ALL files meet these limits:
+   - stores/*.py: 200 lines max
+   - clipboard_manager.py: 300 lines max
+   - api/*.py: 200 lines max
+   - daemon.py: 200 lines max
+
+3. Re-test functionality after refactoring
+4. Push updated branches for re-validation
+
+The main branch is protected - no merges will occur until all violations are resolved.
+```
 
 ## Quick Reference Commands
 
