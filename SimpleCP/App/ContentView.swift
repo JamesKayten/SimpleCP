@@ -1,37 +1,46 @@
 import SwiftUI
 
-// Main window container with two-column layout
+// Main window container for menu bar app
 struct ContentView: View {
     @EnvironmentObject var apiClient: APIClient
     @EnvironmentObject var appState: AppState
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header with search and settings
+            // Single consolidated header
             HeaderView()
 
-            Divider()
+            // Compact tab-based layout for menu bar app
+            TabView {
+                HistoryColumnView()
+                    .tabItem {
+                        Image(systemName: "clock")
+                        Text("History")
+                    }
+                    .tag(0)
 
-            // Control bar with actions
-            ControlBar()
-
-            Divider()
-
-            // Two-column layout
-            GeometryReader { geometry in
-                HStack(spacing: 0) {
-                    // Left column: History
-                    HistoryColumnView()
-                        .frame(width: geometry.size.width / 2)
-
-                    Divider()
-
-                    // Right column: Snippets
-                    SnippetsColumnView()
-                        .frame(width: geometry.size.width / 2)
-                }
+                SnippetsColumnView()
+                    .tabItem {
+                        Image(systemName: "doc.text")
+                        Text("Snippets")
+                    }
+                    .tag(1)
             }
+            .frame(maxHeight: .infinity)
         }
+        .background(
+            // Sophisticated dark gradient background
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.12, green: 0.12, blue: 0.13),      // Rich dark gray
+                    Color(red: 0.08, green: 0.08, blue: 0.09),      // Deeper charcoal
+                    Color(red: 0.05, green: 0.05, blue: 0.06)       // Deep dark base
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $appState.showingSaveSnippetDialog) {
             if let item = appState.itemToSave {
                 SaveSnippetDialog(item: item)

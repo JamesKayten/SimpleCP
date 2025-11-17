@@ -6,11 +6,11 @@ struct Constants {
     static let apiBaseURL = "http://127.0.0.1:8000"
     static let apiTimeout: TimeInterval = 30
 
-    // UI Constants
-    static let windowMinWidth: CGFloat = 800
-    static let windowMinHeight: CGFloat = 600
-    static let defaultWindowWidth: CGFloat = 1000
-    static let defaultWindowHeight: CGFloat = 700
+    // UI Constants - Menu Bar App Dimensions
+    static let windowMinWidth: CGFloat = 320
+    static let windowMinHeight: CGFloat = 400
+    static let defaultWindowWidth: CGFloat = 350
+    static let defaultWindowHeight: CGFloat = 500
 
     // History Settings
     static let maxHistoryDisplay = 10

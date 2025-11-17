@@ -8,17 +8,16 @@ struct SimpleCPApp: App {
     @StateObject private var appState = AppState()
 
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra("SimpleCP", systemImage: "clipboard") {
             ContentView()
                 .environmentObject(apiClient)
                 .environmentObject(appState)
                 .frame(
-                    minWidth: Constants.windowMinWidth,
-                    minHeight: Constants.windowMinHeight
+                    width: Constants.defaultWindowWidth,
+                    height: Constants.defaultWindowHeight
                 )
         }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsWindow()
