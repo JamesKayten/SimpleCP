@@ -3,29 +3,40 @@ ClipboardManager - Main application class.
 
 This is the core rumps.App that manages the menu bar interface,
 clipboard monitoring, and coordination between stores.
+
+Adapted from Flycut's FlycutOperator architecture with multi-store pattern.
 """
 
 import rumps
 import pyperclip
-import json
 import os
-from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional
 
-# Import our custom modules (to be implemented)
-# from stores.history_store import HistoryStore
-# from stores.snippet_store import SnippetStore
-# from ui.menu_builder import MenuBuilder
-# from settings import Settings
+# Import our custom modules
+from stores import (
+    ClipboardItem,
+    HistoryStore,
+    SnippetStore,
+    TempStore,
+    PersistenceManager
+)
+# from ui.menu_builder import MenuBuilder  # To be implemented
+# from settings import Settings  # To be implemented
 
 class ClipboardManager(rumps.App):
     """
     Main application class managing the menu bar clipboard manager.
 
+    Adapted from Flycut's FlycutOperator with multi-store pattern:
+    - HistoryStore: Recent clipboard items (clippingStore)
+    - SnippetStore: Organized snippets (favoritesStore)
+    - TempStore: Temporary storage for undo (stashedStore)
+
     Features:
     - Automatic clipboard monitoring
-    - History management
-    - Snippet folders
+    - Multi-store architecture
+    - Delegate pattern for UI updates
+    - Auto-save functionality
     - Menu bar interface
     """
 
@@ -38,22 +49,38 @@ class ClipboardManager(rumps.App):
 
         # Core state
         self.current_clipboard = ""
-        self.clipboard_history = []
-        self.snippet_folders = {}
-
-        # Configuration
-        self.max_history_items = 50
-        self.clipboard_check_interval = 1  # seconds
 
         # Initialize data directory
         self.data_dir = os.path.join(os.path.dirname(__file__), "data")
         os.makedirs(self.data_dir, exist_ok=True)
 
-        # Setup initial menu
-        self.setup_menu()
+        # Multi-store architecture (Flycut pattern)
+        self.persistence = PersistenceManager(self.data_dir)
+        self.history_store: Optional[HistoryStore] = None
+        self.snippet_store: Optional[SnippetStore] = None
+        self.temp_store = TempStore()
+
+        # Navigation state (Flycut's stackPosition)
+        self.current_position = 0
+
+        # Display settings (Flycut pattern)
+        self.display_num = 10          # How many to show directly
+        self.display_length = 50       # Character limit
+        self.clipboard_check_interval = 1  # seconds
+
+        # Auto-save settings (Flycut pattern)
+        self.auto_save_enabled = True
+        self.save_counter = 0
+        self.save_interval = 10  # Save every 10 clipboard changes
 
         # Load existing data
         self.load_data()
+
+        # Setup delegates for UI updates
+        self.setup_delegates()
+
+        # Setup initial menu
+        self.setup_menu()
 
     def setup_menu(self):
         """Setup the initial menu structure."""
