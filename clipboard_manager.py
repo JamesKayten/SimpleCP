@@ -8,11 +8,13 @@ No UI code - designed to be consumed by REST API and future Swift frontend.
 import pyperclip
 import json
 import os
+import threading
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from stores.clipboard_item import ClipboardItem
 from stores.history_store import HistoryStore
 from stores.snippet_store import SnippetStore
+from stores.indexing import rebuild_history_indexes, rebuild_snippet_indexes
 
 
 class ClipboardManager:
@@ -33,9 +35,18 @@ class ClipboardManager:
         self,
         data_dir: Optional[str] = None,
         max_history: int = 50,
-        display_count: int = 10
+        display_count: int = 10,
+        auto_save_interval: int = 30
     ):
-        """Initialize ClipboardManager with multi-store pattern."""
+        """
+        Initialize ClipboardManager with multi-store pattern.
+
+        Args:
+            data_dir: Directory for data storage
+            max_history: Maximum history items
+            display_count: Items to show directly
+            auto_save_interval: Seconds between auto-saves (0 to disable)
+        """
         self.history_store = HistoryStore(max_items=max_history, display_count=display_count)
         self.snippet_store = SnippetStore()
         self._current_clipboard = ""
@@ -43,8 +54,18 @@ class ClipboardManager:
         os.makedirs(self.data_dir, exist_ok=True)
         self.history_file = os.path.join(self.data_dir, "history.json")
         self.snippets_file = os.path.join(self.data_dir, "snippets.json")
-        self.auto_save_enabled = True
+
+        # Lazy persistence for menu bar performance
+        self.auto_save_enabled = False  # Disabled for performance
+        self.auto_save_interval = auto_save_interval
+        self._save_timer: Optional[threading.Timer] = None
+        self._save_lock = threading.Lock()
+
         self.load_stores()
+
+        # Start periodic save timer if interval > 0
+        if self.auto_save_interval > 0:
+            self._start_periodic_save()
 
     def check_clipboard(self) -> Optional[ClipboardItem]:
         """Check clipboard for changes and add to history if changed."""
@@ -66,12 +87,14 @@ class ClipboardManager:
         return clip
 
     def copy_to_clipboard(self, clip_id: str) -> bool:
-        """Copy item to system clipboard by ID."""
-        for item in self.history_store.items:
-            if item.clip_id == clip_id:
-                pyperclip.copy(item.content)
-                self._current_clipboard = item.content
-                return True
+        """Copy item to system clipboard by ID using O(1) index lookup."""
+        # Try history store first (O(1) lookup)
+        item = self.history_store.get_by_id(clip_id)
+        if item:
+            pyperclip.copy(item.content)
+            self._current_clipboard = item.content
+            return True
+        # Try snippet store (O(1) lookup)
         item = self.snippet_store.get_snippet_by_id(clip_id)
         if item:
             pyperclip.copy(item.content)
@@ -82,14 +105,14 @@ class ClipboardManager:
     def save_as_snippet(
         self, clip_id: str, name: str, folder: str, tags: Optional[List[str]] = None
     ) -> Optional[ClipboardItem]:
-        """Convert history item to snippet."""
-        for item in self.history_store.items:
-            if item.clip_id == clip_id:
-                snippet = item.make_snippet(name, folder, tags)
-                self.snippet_store.add_snippet(folder, snippet)
-                if self.auto_save_enabled:
-                    self.save_stores()
-                return snippet
+        """Convert history item to snippet using O(1) lookup."""
+        item = self.history_store.get_by_id(clip_id)
+        if item:
+            snippet = item.make_snippet(name, folder, tags)
+            self.snippet_store.add_snippet(folder, snippet)
+            if self.auto_save_enabled:
+                self.save_stores()
+            return snippet
         return None
 
     # History operations
@@ -112,13 +135,17 @@ class ClipboardManager:
             self.save_stores()
 
     def delete_history_item(self, clip_id: str) -> bool:
-        """Delete specific history item by ID."""
-        for i, item in enumerate(self.history_store.items):
-            if item.clip_id == clip_id:
-                self.history_store.delete_item(i)
-                if self.auto_save_enabled:
-                    self.save_stores()
-                return True
+        """Delete specific history item by ID using indexed lookup."""
+        # Find item using index
+        item = self.history_store.get_by_id(clip_id)
+        if item:
+            # Find its index in the list
+            for i, list_item in enumerate(self.history_store.items):
+                if list_item.clip_id == clip_id:
+                    self.history_store.delete_item(i)
+                    if self.auto_save_enabled:
+                        self.save_stores()
+                    return True
         return False
 
     # Snippet operations
@@ -221,7 +248,7 @@ class ClipboardManager:
             print(f"Error saving stores: {e}")
 
     def load_stores(self):
-        """Load all stores from disk."""
+        """Load all stores from disk and rebuild indexes."""
         try:
             if os.path.exists(self.history_file):
                 with open(self.history_file, 'r') as f:
@@ -229,6 +256,9 @@ class ClipboardManager:
                 self.history_store.items = [
                     ClipboardItem.from_dict(item_data) for item_data in data
                 ]
+                # Rebuild indexes for performance
+                rebuild_history_indexes(self.history_store)
+
             if os.path.exists(self.snippets_file):
                 with open(self.snippets_file, 'r') as f:
                     data = json.load(f)
@@ -236,6 +266,9 @@ class ClipboardManager:
                     self.snippet_store.folders[folder_name] = [
                         ClipboardItem.from_dict(item_data) for item_data in items_data
                     ]
+                # Rebuild indexes for performance
+                rebuild_snippet_indexes(self.snippet_store)
+
         except Exception as e:
             print(f"Error loading stores: {e}")
 
@@ -245,5 +278,41 @@ class ClipboardManager:
             "history_count": len(self.history_store),
             "snippet_count": len(self.snippet_store),
             "folder_count": len(self.snippet_store.folders),
-            "max_history": self.history_store.max_items
+            "max_history": self.history_store.max_items,
+            "modified": self.history_store.modified or self.snippet_store.modified
         }
+
+    # Lazy persistence methods for menu bar performance
+    def _start_periodic_save(self):
+        """Start periodic auto-save timer."""
+        def save_if_modified():
+            if self.history_store.modified or self.snippet_store.modified:
+                self.save_stores()
+            # Schedule next save
+            if self.auto_save_interval > 0:
+                self._save_timer = threading.Timer(
+                    self.auto_save_interval,
+                    save_if_modified
+                )
+                self._save_timer.daemon = True
+                self._save_timer.start()
+
+        # Start first timer
+        save_if_modified()
+
+    def shutdown(self):
+        """
+        Shutdown manager gracefully.
+        Cancels timer and forces final save.
+        Call this before app exit.
+        """
+        # Cancel periodic save timer
+        if self._save_timer:
+            self._save_timer.cancel()
+            self._save_timer = None
+
+        # Force final save
+        with self._save_lock:
+            if self.history_store.modified or self.snippet_store.modified:
+                self.save_stores()
+                print("💾 Final save completed")

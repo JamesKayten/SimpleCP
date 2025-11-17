@@ -102,7 +102,7 @@ class SimpleCP_Daemon:
             self.clipboard_thread.join(timeout=2)
 
         print("💾 Saving data...")
-        self.clipboard_manager.save_stores()
+        self.clipboard_manager.shutdown()  # Use shutdown() for proper cleanup
 
         print("👋 SimpleCP daemon stopped")
         sys.exit(0)
