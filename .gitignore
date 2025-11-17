@@ -44,6 +44,11 @@ Thumbs.db
 data/*.json
 !data/example_*.json
 *.log
+logs/
+
+# Environment and secrets
+.env
+!.env.example
 
 # Build artifacts
 *.app
@@ -56,3 +61,12 @@ data/*.json
 
 # Reference repositories
 Flycut/
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+*.cover
+.hypothesis/
