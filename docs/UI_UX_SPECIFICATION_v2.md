@@ -106,11 +106,93 @@ This document defines the **two-column interface** for SimpleCP - a modern, Find
 ➕ Create New Folder...
 ```
 
-### Folder Operations:
-- **Create**: Click "➕ Create New Folder..."
-- **Rename**: Right-click folder → "Rename..."
-- **Delete**: Right-click folder → "Delete Folder"
-- **Add snippet**: Drag from left or right-click → "Add to [Folder]..."
+### Folder Creation & Management
+
+#### Creating New Folders
+```
+➕ Create New Folder...
+│
+└── Opens dialog:
+    ┌─────────────────────────────┐
+    │ New Snippet Folder          │
+    │                             │
+    │ Folder Name:                │
+    │ [_____________________]     │
+    │                             │
+    │ [ Create ]      [ Cancel ]  │
+    └─────────────────────────────┘
+```
+
+#### Folder Right-Click Context Menu
+```
+Right-click any folder:
+├── 📝 Rename Folder...
+├── 📁 Add Current Clipboard to Folder
+├── ➕ Add New Snippet...
+├── ───────────────────────
+├── 📤 Export Folder...
+├── 📥 Import Snippets...
+├── ───────────────────────
+├── 🗑️ Delete Folder
+└── 📊 Folder Properties...
+```
+
+#### Adding Snippets to Folders
+**Method 1: Drag & Drop**
+- Drag any clip from left column to folder in right column
+- Visual feedback: folder highlights when valid drop target
+
+**Method 2: Right-click clip → Save to Folder**
+```
+Right-click any clip:
+├── 📋 Copy Again
+├── ───────────────
+├── 💾 Save to Folder ▶
+│   ├── 📁 Email Templates
+│   ├── 📁 Code Snippets
+│   ├── 📁 Common Text
+│   ├── ───────────────
+│   └── ➕ Create New Folder...
+└── 🗑️ Remove from History
+```
+
+**Method 3: Folder right-click → Add**
+- Right-click folder → "Add Current Clipboard to Folder"
+- Right-click folder → "Add New Snippet..." (opens text editor)
+
+#### Snippet Management Within Folders
+```
+Right-click any snippet within a folder:
+├── 📋 Copy to Clipboard
+├── 📝 Edit Snippet...
+├── 🏷️ Rename Snippet...
+├── ───────────────────────
+├── 📁 Move to Folder ▶
+│   └── (list of other folders)
+├── 📋 Duplicate Snippet
+├── ───────────────────────
+└── 🗑️ Delete Snippet
+```
+
+#### Folder Properties Dialog
+```
+📊 Folder Properties: "Email Templates"
+
+┌─────────────────────────────────────┐
+│ Folder Properties                   │
+├─────────────────────────────────────┤
+│ Name: [Email Templates        ]     │
+│ Created: November 17, 2024          │
+│ Snippets: 5 items                   │
+│ Size: 2.1 KB                        │
+│                                     │
+│ ☑ Show in quick access              │
+│ ☑ Auto-sort snippets alphabetically │
+│ ☐ Password protect folder           │
+│                                     │
+│ [ Save ]  [ Cancel ]  [ Delete... ] │
+└─────────────────────────────────────┘
+```
 
 ## User Interactions
 
@@ -203,14 +285,54 @@ class HistoryManager:
 #### SnippetManager
 ```python
 class SnippetManager:
-    def create_folder(self, name):
-        # Create new user folder
+    def create_folder(self, name, properties=None):
+        # Create new user folder with optional properties
 
-    def add_to_folder(self, folder_name, clip):
-        # Save clip to specific folder
+    def rename_folder(self, old_name, new_name):
+        # Rename existing folder
+
+    def delete_folder(self, folder_name):
+        # Delete folder and optionally its contents
+
+    def add_to_folder(self, folder_name, clip, snippet_name=None):
+        # Save clip to specific folder with optional custom name
+
+    def edit_snippet(self, folder_name, snippet_name, new_content):
+        # Edit existing snippet content
+
+    def move_snippet(self, from_folder, to_folder, snippet_name):
+        # Move snippet between folders
+
+    def duplicate_snippet(self, folder_name, snippet_name, new_name):
+        # Create copy of snippet
 
     def get_folders(self):
         # Return all user folders with contents
+
+    def export_folder(self, folder_name, file_path):
+        # Export folder contents to file
+
+    def import_snippets(self, folder_name, file_path):
+        # Import snippets from file into folder
+```
+
+#### DialogManager
+```python
+class DialogManager:
+    def show_create_folder_dialog(self):
+        # Show "New Snippet Folder" dialog, return folder name
+
+    def show_rename_dialog(self, current_name):
+        # Show rename dialog, return new name
+
+    def show_edit_snippet_dialog(self, current_content):
+        # Show snippet editor, return edited content
+
+    def show_folder_properties_dialog(self, folder_data):
+        # Show folder properties dialog
+
+    def show_confirmation_dialog(self, message):
+        # Show yes/no confirmation dialog
 ```
 
 #### WindowManager
