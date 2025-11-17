@@ -28,6 +28,9 @@ class SnippetStore:
         # Folder structure: folder_name -> list of ClipboardItem
         self.folders: Dict[str, List[ClipboardItem]] = {}
 
+        # Performance index for O(1) lookups by ID
+        self._id_index: Dict[str, ClipboardItem] = {}  # clip_id -> item
+
         # Dirty flag for persistence
         self.modified = False
 
@@ -58,6 +61,9 @@ class SnippetStore:
         """Delete folder and all its snippets."""
         if folder_name not in self.folders:
             return False
+        # Remove all snippets from index
+        for item in self.folders[folder_name]:
+            del self._id_index[item.clip_id]
         del self.folders[folder_name]
         self.modified = True
         self._notify_delegates('folder_deleted', folder_name)
@@ -74,6 +80,8 @@ class SnippetStore:
             )
         item.folder_path = folder_name
         self.folders[folder_name].append(item)
+        # Add to index for O(1) lookup
+        self._id_index[item.clip_id] = item
         self.modified = True
         self._notify_delegates('snippet_added', folder_name, item)
         return True
@@ -85,6 +93,8 @@ class SnippetStore:
         for i, item in enumerate(self.folders[folder_name]):
             if item.clip_id == clip_id:
                 deleted_item = self.folders[folder_name].pop(i)
+                # Remove from index
+                del self._id_index[clip_id]
                 self.modified = True
                 self._notify_delegates('snippet_deleted', folder_name, deleted_item)
                 return True
@@ -154,12 +164,8 @@ class SnippetStore:
         return results
 
     def get_snippet_by_id(self, clip_id: str) -> Optional[ClipboardItem]:
-        """Find snippet by ID across all folders."""
-        for items in self.folders.values():
-            for item in items:
-                if item.clip_id == clip_id:
-                    return item
-        return None
+        """Find snippet by ID in O(1) time using index."""
+        return self._id_index.get(clip_id)
 
     def add_delegate(self, callback: Callable):
         """Add delegate callback for store updates."""

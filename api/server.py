@@ -6,9 +6,11 @@ Main server configuration and startup.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 import uvicorn
 from clipboard_manager import ClipboardManager
 from api.endpoints import create_router
+from api.middleware import performance_middleware
 
 
 def create_app(clipboard_manager: ClipboardManager = None) -> FastAPI:
@@ -26,6 +28,9 @@ def create_app(clipboard_manager: ClipboardManager = None) -> FastAPI:
         description="REST API for SimpleCP clipboard manager",
         version="1.0.0"
     )
+
+    # Performance monitoring middleware (first - measures total time)
+    app.middleware("http")(performance_middleware)
 
     # CORS middleware for Swift frontend
     app.add_middleware(

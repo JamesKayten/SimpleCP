@@ -13,24 +13,36 @@ from api.models import (
     SnippetFolderResponse, ErrorResponse, SuccessResponse,
     clipboard_item_to_response
 )
+from api.cache import ResponseCache, create_cache_middleware
 
 
 def create_router(clipboard_manager):
-    """Create API router with clipboard manager dependency."""
+    """Create API router with clipboard manager dependency and response caching."""
     router = APIRouter()
+
+    # Create response cache for menu bar performance
+    cache = ResponseCache()
+
+    # Wire up cache invalidation to store delegates
+    history_invalidator, snippet_invalidator = create_cache_middleware(cache)
+    clipboard_manager.history_store.add_delegate(history_invalidator)
+    clipboard_manager.snippet_store.add_delegate(snippet_invalidator)
 
     # History endpoints
     @router.get("/api/history", response_model=List[ClipboardItemResponse])
     async def get_history(limit: Optional[int] = None):
-        """Get clipboard history."""
-        items = clipboard_manager.get_all_history(limit)
-        return [clipboard_item_to_response(item) for item in items]
+        """Get clipboard history with caching."""
+        return cache.get_all_history(
+            lambda l: clipboard_manager.get_all_history(l),
+            limit
+        )
 
     @router.get("/api/history/recent", response_model=List[ClipboardItemResponse])
     async def get_recent_history():
-        """Get recent clipboard items for direct display."""
-        items = clipboard_manager.get_recent_history()
-        return [clipboard_item_to_response(item) for item in items]
+        """Get recent clipboard items for direct display (cached for menu bar speed)."""
+        return cache.get_recent_history(
+            lambda: clipboard_manager.get_recent_history()
+        )
 
     @router.get("/api/history/folders", response_model=List[HistoryFolderResponse])
     async def get_history_folders():
@@ -64,15 +76,16 @@ def create_router(clipboard_manager):
     # Snippet endpoints
     @router.get("/api/snippets", response_model=List[SnippetFolderResponse])
     async def get_all_snippets():
-        """Get all snippets organized by folder."""
-        snippets_by_folder = clipboard_manager.get_all_snippets()
-        result = []
-        for folder_name, items in snippets_by_folder.items():
-            result.append(SnippetFolderResponse(
+        """Get all snippets organized by folder (cached for menu bar speed)."""
+        def serialize_folder(folder_name, items):
+            return SnippetFolderResponse(
                 folder_name=folder_name,
                 snippets=[clipboard_item_to_response(item) for item in items]
-            ))
-        return result
+            )
+        return cache.get_all_snippets(
+            lambda: clipboard_manager.get_all_snippets(),
+            serialize_folder
+        )
 
     @router.get("/api/snippets/folders", response_model=List[str])
     async def get_snippet_folders():
@@ -175,10 +188,14 @@ def create_router(clipboard_manager):
         )
 
     # Stats endpoint
-    @router.get("/api/stats", response_model=StatsResponse)
+    @router.get("/api/stats")
     async def get_stats():
-        """Get manager statistics."""
-        stats = clipboard_manager.get_stats()
-        return StatsResponse(**stats)
+        """Get manager statistics including cache performance."""
+        manager_stats = clipboard_manager.get_stats()
+        cache_stats = cache.get_stats()
+        return {
+            **manager_stats,
+            "cache": cache_stats
+        }
 
     return router

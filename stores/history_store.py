@@ -7,6 +7,7 @@ Based on Flycut's FlycutStore pattern.
 """
 
 from typing import List, Optional, Callable, Dict, Any
+import hashlib
 from stores.clipboard_item import ClipboardItem
 
 
@@ -45,6 +46,10 @@ class HistoryStore:
         # Storage
         self.items: List[ClipboardItem] = []
 
+        # Performance indexes for O(1) lookups
+        self._id_index: Dict[str, ClipboardItem] = {}  # clip_id -> item
+        self._content_hash: Dict[str, int] = {}  # content hash -> index
+
         # Dirty flag for persistence (Flycut's modifiedSinceLastSaveStore)
         self.modified = False
 
@@ -53,19 +58,33 @@ class HistoryStore:
 
     def insert(self, item: ClipboardItem, index: int = 0) -> bool:
         """Insert item with duplicate handling. Returns True if inserted."""
-        # Check for duplicates (Flycut's removeDuplicates)
-        duplicate_index = self.find_duplicate(item)
-        if duplicate_index >= 0:
-            self.move_to_top(duplicate_index)
+        # Fast duplicate check using content hash (O(1) instead of O(n))
+        content_hash = hashlib.md5(item.content.encode()).hexdigest()
+        if content_hash in self._content_hash:
+            duplicate_idx = self._content_hash[content_hash]
+            self.move_to_top(duplicate_idx)
             return False
 
         self._notify_delegates('will_insert', index, item)
         self.items.insert(index, item)
+
+        # Update indexes
+        self._id_index[item.clip_id] = item
+        self._content_hash[content_hash] = index
+        # Reindex all items after insertion point
+        for i in range(index + 1, len(self.items)):
+            h = hashlib.md5(self.items[i].content.encode()).hexdigest()
+            self._content_hash[h] = i
+
         self.modified = True
 
         # Enforce size limit
         if len(self.items) > self.max_items:
             removed = self.items.pop()
+            # Remove from indexes
+            del self._id_index[removed.clip_id]
+            removed_hash = hashlib.md5(removed.content.encode()).hexdigest()
+            del self._content_hash[removed_hash]
             self._notify_delegates('did_delete', len(self.items), removed)
 
         self._notify_delegates('did_insert', index, item)
@@ -83,6 +102,10 @@ class HistoryStore:
         if 0 <= index < len(self.items):
             item = self.items.pop(index)
             self.items.insert(0, item)
+            # Rebuild content hash index for affected positions
+            for i in range(len(self.items)):
+                h = hashlib.md5(self.items[i].content.encode()).hexdigest()
+                self._content_hash[h] = i
             self.modified = True
             self._notify_delegates('item_moved', index, 0, item)
 
@@ -93,6 +116,10 @@ class HistoryStore:
     def get_recent_items(self) -> List[ClipboardItem]:
         """Get items for direct display."""
         return self.items[:self.display_count]
+
+    def get_by_id(self, clip_id: str) -> Optional[ClipboardItem]:
+        """Get item by ID in O(1) time using index."""
+        return self._id_index.get(clip_id)
 
     def get_auto_folders(self) -> List[Dict[str, Any]]:
         """
@@ -129,6 +156,14 @@ class HistoryStore:
         """Delete item at index."""
         if 0 <= index < len(self.items):
             item = self.items.pop(index)
+            # Remove from indexes
+            del self._id_index[item.clip_id]
+            content_hash = hashlib.md5(item.content.encode()).hexdigest()
+            del self._content_hash[content_hash]
+            # Rebuild position index for items after deleted position
+            for i in range(index, len(self.items)):
+                h = hashlib.md5(self.items[i].content.encode()).hexdigest()
+                self._content_hash[h] = i
             self.modified = True
             self._notify_delegates('did_delete', index, item)
             return item
@@ -137,6 +172,8 @@ class HistoryStore:
     def clear(self):
         """Clear all history items."""
         self.items.clear()
+        self._id_index.clear()
+        self._content_hash.clear()
         self.modified = True
         self._notify_delegates('store_cleared')
 
