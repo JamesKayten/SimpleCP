@@ -1,0 +1,15 @@
+{
+  "host": "127.0.0.1",
+  "port": 8000,
+  "check_interval": 1,
+  "max_history": 50,
+  "display_count": 10,
+  "cors_origins": ["*"],
+  "cors_allow_credentials": true,
+  "log_level": "INFO",
+  "log_file": "logs/simplecp.log",
+  "log_max_bytes": 10485760,
+  "log_backup_count": 5,
+  "data_dir": "data",
+  "pyperclip_check_enabled": true
+}

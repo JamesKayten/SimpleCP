@@ -4,13 +4,15 @@ API models for SimpleCP REST API.
 Pydantic models for request/response validation.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
 class ClipboardItemResponse(BaseModel):
     """Response model for clipboard items."""
+    model_config = ConfigDict(from_attributes=True)
+
     clip_id: str
     content: str
     timestamp: str
@@ -22,9 +24,6 @@ class ClipboardItemResponse(BaseModel):
     snippet_name: Optional[str] = None
     folder_path: Optional[str] = None
     tags: List[str] = []
-
-    class Config:
-        from_attributes = True
 
 
 class HistoryFolderResponse(BaseModel):
