@@ -30,16 +30,16 @@ git checkout <branch_name>
 wc -l <file_path>  # Check line count for each critical file
 ```
 
-### 3. Alert on Violations & Generate OCC Prompt
+### 3. Alert on Violations & Generate OCC Communication
 If any file exceeds its limit:
 - **STOP** the merge process immediately
 - Alert the user with specific details:
   - Which files are over limit
   - Current line count vs. limit
   - Exact violations per branch
-- **AUTOMATICALLY GENERATE** a prompt for Online Claude Code (OCC) to fix violations
+- **AUTOMATICALLY CREATE** violation report in `docs/occ_communication/VIOLATION_REPORT_YYYY-MM-DD.md`
 - Include specific refactoring instructions and line count requirements
-- Provide the generated prompt to the user for sending to OCC
+- Provide user with simple OCC activation command
 
 ### 4. Merge Process (if no violations)
 If all files are within limits:
@@ -92,6 +92,34 @@ REQUIRED ACTIONS:
 
 The main branch is protected - no merges will occur until all violations are resolved.
 ```
+
+## OCC Communication System
+
+When violations are detected, Local Claude Code automatically creates a detailed report file that OCC can read directly from the repository.
+
+### Automated Report Generation
+- **File Location:** `docs/occ_communication/VIOLATION_REPORT_YYYY-MM-DD.md`
+- **Content:** Detailed violation analysis, refactoring instructions, priorities
+- **Timestamp:** Date/time of detection for audit trail
+
+### User Activation Command
+After violation report is created, user activates OCC with:
+```
+"Check docs/occ_communication/ for latest violation report and fix the issues"
+```
+
+### OCC Response Process
+1. OCC reads the violation report
+2. Implements required refactoring
+3. Creates `VIOLATION_RESPONSE_YYYY-MM-DD.md` confirming completion
+4. Pushes updated branches for re-validation
+
+### Benefits
+- ✅ No copy/paste required
+- ✅ Direct repository communication
+- ✅ Timestamped audit trail
+- ✅ Automated workflow integration
+- ✅ Clear action items and responses
 
 ## Quick Reference Commands
 
