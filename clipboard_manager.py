@@ -18,6 +18,9 @@ from typing import Optional, List, Dict, Any
 # from ui.menu_builder import MenuBuilder
 # from settings import Settings
 
+# Import UI components
+from ui.main_window import MainWindow
+
 class ClipboardManager(rumps.App):
     """
     Main application class managing the menu bar clipboard manager.
@@ -41,6 +44,9 @@ class ClipboardManager(rumps.App):
         self.clipboard_history = []
         self.snippet_folders = {}
 
+        # UI state
+        self.main_window = None
+
         # Configuration
         self.max_history_items = 50
         self.clipboard_check_interval = 1  # seconds
@@ -59,6 +65,8 @@ class ClipboardManager(rumps.App):
         """Setup the initial menu structure."""
         # Separator and basic options
         self.menu = [
+            rumps.MenuItem("🪟 Open SimpleCP", callback=self.show_main_window),
+            rumps.MenuItem("💾 Save as Snippet", callback=self.quick_save_snippet),
             rumps.separator,
             rumps.MenuItem("📋 Recent Clips", callback=None),
             rumps.separator,
@@ -163,6 +171,40 @@ class ClipboardManager(rumps.App):
         self.save_data()
         self.update_menu()
         print("🗑️ Clipboard history cleared")
+
+    def show_main_window(self, _):
+        """Show the main SimpleCP window."""
+        if self.main_window is None:
+            self.main_window = MainWindow(self)
+
+        self.main_window.show_window()
+        print("🪟 Opened SimpleCP main window")
+
+    def quick_save_snippet(self, _):
+        """Quick save current clipboard as snippet (opens dialog)."""
+        # Get current clipboard content
+        current_content = pyperclip.paste()
+
+        if not current_content.strip():
+            rumps.alert("No Clipboard Content", "Your clipboard is empty. Copy some text first.")
+            return
+
+        # Import here to avoid circular import issues
+        from ui.snippet_workflow import SnippetSaveDialog
+
+        # Create a temporary root if main window doesn't exist
+        if self.main_window is None:
+            import tkinter as tk
+            root = tk.Tk()
+            root.withdraw()
+            dialog = SnippetSaveDialog(root, current_content, self)
+            root.wait_window(dialog)
+            root.destroy()
+        else:
+            dialog = SnippetSaveDialog(self.main_window, current_content, self)
+            self.main_window.wait_window(dialog)
+
+        print("💾 Quick save snippet dialog opened")
 
     def show_preferences(self, _):
         """Show preferences window (placeholder)."""
