@@ -12,11 +12,11 @@ import os
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-# Import our custom modules (to be implemented)
-# from stores.history_store import HistoryStore
-# from stores.snippet_store import SnippetStore
-# from ui.menu_builder import MenuBuilder
-# from settings import Settings
+# Import our custom modules
+from stores.history_store import HistoryStore
+# from stores.snippet_store import SnippetStore  # TODO: Implement
+# from ui.menu_builder import MenuBuilder  # TODO: Implement
+# from settings import Settings  # TODO: Implement
 
 class ClipboardManager(rumps.App):
     """
@@ -38,7 +38,6 @@ class ClipboardManager(rumps.App):
 
         # Core state
         self.current_clipboard = ""
-        self.clipboard_history = []
         self.snippet_folders = {}
 
         # Configuration
@@ -48,6 +47,12 @@ class ClipboardManager(rumps.App):
         # Initialize data directory
         self.data_dir = os.path.join(os.path.dirname(__file__), "data")
         os.makedirs(self.data_dir, exist_ok=True)
+
+        # Initialize HistoryStore
+        self.history_store = HistoryStore(
+            max_items=self.max_history_items,
+            data_dir=self.data_dir
+        )
 
         # Setup initial menu
         self.setup_menu()
@@ -87,26 +92,11 @@ class ClipboardManager(rumps.App):
 
     def add_to_history(self, text: str):
         """Add new text to clipboard history."""
-        # Create history item with metadata
-        item = {
-            "content": text,
-            "timestamp": datetime.now().isoformat(),
-            "preview": self.create_preview(text)
-        }
-
-        # Remove duplicates and add to front
-        self.clipboard_history = [
-            item for item in self.clipboard_history
-            if item["content"] != text
-        ]
-        self.clipboard_history.insert(0, item)
-
-        # Limit history size
-        if len(self.clipboard_history) > self.max_history_items:
-            self.clipboard_history = self.clipboard_history[:self.max_history_items]
+        # Use HistoryStore to add with automatic deduplication
+        self.history_store.add(content=text, source_app=None)
 
         # Auto-save
-        self.save_data()
+        self.history_store.save()
 
     def create_preview(self, text: str, max_length: int = 50) -> str:
         """Create a preview string for menu display."""
@@ -124,14 +114,16 @@ class ClipboardManager(rumps.App):
         self.menu.clear()
 
         # Add recent clips section
-        if self.clipboard_history:
+        if not self.history_store.is_empty():
             self.menu.add(rumps.MenuItem("📋 Recent Clips", callback=None))
             self.menu.add(rumps.separator)
 
-            for i, item in enumerate(self.clipboard_history[:10]):  # Show last 10
+            # Get recent items from HistoryStore
+            recent_items = self.history_store.get_recent(count=10)
+            for i, item in enumerate(recent_items):
                 menu_item = rumps.MenuItem(
-                    f"{i+1}. {item['preview']}",
-                    callback=lambda sender, content=item['content']: self.paste_item(content)
+                    f"{i+1}. {item.preview}",
+                    callback=lambda sender, content=item.content: self.paste_item(content)
                 )
                 self.menu.add(menu_item)
 
@@ -159,8 +151,8 @@ class ClipboardManager(rumps.App):
 
     def clear_history(self, _):
         """Clear all clipboard history."""
-        self.clipboard_history = []
-        self.save_data()
+        self.history_store.clear()
+        self.history_store.save()
         self.update_menu()
         print("🗑️ Clipboard history cleared")
 
@@ -176,18 +168,13 @@ class ClipboardManager(rumps.App):
 
     def load_data(self):
         """Load clipboard history and snippets from storage."""
-        history_file = os.path.join(self.data_dir, "history.json")
         snippets_file = os.path.join(self.data_dir, "snippets.json")
 
-        # Load history
-        try:
-            if os.path.exists(history_file):
-                with open(history_file, 'r') as f:
-                    self.clipboard_history = json.load(f)
-                print(f"📂 Loaded {len(self.clipboard_history)} history items")
-        except Exception as e:
-            print(f"Error loading history: {e}")
-            self.clipboard_history = []
+        # Load history using HistoryStore
+        if self.history_store.load():
+            print(f"📂 Loaded {self.history_store.size()} history items")
+        else:
+            print("⚠️ Failed to load history")
 
         # Load snippets
         try:
@@ -204,13 +191,11 @@ class ClipboardManager(rumps.App):
 
     def save_data(self):
         """Save clipboard history and snippets to storage."""
-        history_file = os.path.join(self.data_dir, "history.json")
         snippets_file = os.path.join(self.data_dir, "snippets.json")
 
         try:
-            # Save history
-            with open(history_file, 'w') as f:
-                json.dump(self.clipboard_history, f, indent=2)
+            # Save history using HistoryStore
+            self.history_store.save()
 
             # Save snippets
             with open(snippets_file, 'w') as f:
