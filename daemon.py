@@ -8,82 +8,104 @@ import threading
 import time
 import signal
 import sys
+
 from clipboard_manager import ClipboardManager
 from api.server import run_server
+from settings import settings
+from logger import logger
+from monitoring import capture_exception, track_clipboard_event
 
 
 class SimpleCP_Daemon:
     """Background daemon managing clipboard monitoring and API server."""
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 8000, check_interval: int = 1):
+    def __init__(
+        self,
+        host: str = None,
+        port: int = None,
+        check_interval: int = None,
+    ):
         """
         Initialize daemon.
 
         Args:
-            host: API server host
-            port: API server port
-            check_interval: Clipboard check interval in seconds
+            host: API server host (defaults to settings.api_host)
+            port: API server port (defaults to settings.api_port)
+            check_interval: Clipboard check interval in seconds (defaults to settings)
         """
         self.clipboard_manager = ClipboardManager()
-        self.host = host
-        self.port = port
-        self.check_interval = check_interval
+        self.host = host or settings.api_host
+        self.port = port or settings.api_port
+        self.check_interval = check_interval or settings.clipboard_check_interval
         self.running = False
         self.clipboard_thread = None
         self.api_thread = None
 
     def clipboard_monitor_loop(self):
         """Background clipboard monitoring loop."""
-        print(f"📋 Clipboard monitoring started (checking every {self.check_interval}s)")
+        logger.info(
+            f"Clipboard monitoring started (checking every {self.check_interval}s)"
+        )
         while self.running:
             try:
                 new_item = self.clipboard_manager.check_clipboard()
                 if new_item:
-                    print(f"📎 New clipboard item: {new_item.display_string}")
+                    logger.info(f"New clipboard item: {new_item.display_string}")
+                    track_clipboard_event(
+                        "new_item",
+                        item_id=new_item.clip_id,
+                        content_type=new_item.content_type,
+                    )
             except Exception as e:
-                print(f"Error in clipboard monitor: {e}")
+                logger.error(f"Error in clipboard monitor: {e}", exc_info=True)
+                capture_exception(e, context={"component": "clipboard_monitor"})
 
             time.sleep(self.check_interval)
 
     def start_api_server(self):
         """Start API server in thread."""
-        print(f"🚀 Starting API server on {self.host}:{self.port}")
+        logger.info(f"Starting API server on {self.host}:{self.port}")
         try:
             run_server(self.host, self.port, self.clipboard_manager)
         except Exception as e:
-            print(f"Error in API server: {e}")
+            logger.error(f"Error in API server: {e}", exc_info=True)
+            capture_exception(e, context={"component": "api_server"})
 
     def start(self):
         """Start daemon - both clipboard monitor and API server."""
         if self.running:
-            print("⚠️  Daemon already running")
+            logger.warning("Daemon already running")
             return
 
         self.running = True
 
+        logger.info(f"Starting SimpleCP daemon (version: {settings.app_version})")
+
         # Start clipboard monitoring thread
         self.clipboard_thread = threading.Thread(
-            target=self.clipboard_monitor_loop,
-            daemon=True
+            target=self.clipboard_monitor_loop, daemon=True
         )
         self.clipboard_thread.start()
 
         # Start API server thread
-        self.api_thread = threading.Thread(
-            target=self.start_api_server,
-            daemon=True
-        )
+        self.api_thread = threading.Thread(target=self.start_api_server, daemon=True)
         self.api_thread.start()
 
-        print(f"""
+        # Display startup message
+        startup_msg = f"""
 ╔══════════════════════════════════════════╗
 ║     SimpleCP Daemon Started              ║
 ╟──────────────────────────────────────────╢
+║  Version: {settings.app_version}                        ║
+║  Environment: {settings.environment}               ║
 ║  📋 Clipboard Monitor: Running           ║
 ║  🌐 API Server: http://{self.host}:{self.port}  ║
-║  📊 Stats: {len(self.clipboard_manager.history_store)} history items          ║
+║  📊 History: {len(self.clipboard_manager.history_store)} items                   ║
+║  📁 Snippets: {len(self.clipboard_manager.snippet_store)} snippets              ║
 ╚══════════════════════════════════════════╝
-""")
+"""
+        print(startup_msg)
+        logger.info("SimpleCP daemon started successfully")
 
         # Keep main thread alive
         try:
@@ -94,23 +116,28 @@ class SimpleCP_Daemon:
 
     def stop(self):
         """Stop daemon gracefully."""
-        print("\n🛑 Stopping SimpleCP daemon...")
+        logger.info("Stopping SimpleCP daemon...")
         self.running = False
 
         # Wait for threads to finish
         if self.clipboard_thread and self.clipboard_thread.is_alive():
             self.clipboard_thread.join(timeout=2)
 
-        print("💾 Saving data...")
-        self.clipboard_manager.save_stores()
+        logger.info("Saving data...")
+        try:
+            self.clipboard_manager.save_stores()
+            logger.info("Data saved successfully")
+        except Exception as e:
+            logger.error(f"Error saving data: {e}", exc_info=True)
+            capture_exception(e, context={"component": "shutdown"})
 
-        print("👋 SimpleCP daemon stopped")
+        logger.info("SimpleCP daemon stopped")
         sys.exit(0)
 
 
 def signal_handler(sig, frame):
     """Handle termination signals."""
-    print("\n🛑 Received signal, shutting down...")
+    logger.info("Received termination signal, shutting down...")
     sys.exit(0)
 
 
@@ -119,9 +146,21 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="SimpleCP Background Daemon")
-    parser.add_argument("--host", default="127.0.0.1", help="API server host")
-    parser.add_argument("--port", type=int, default=8000, help="API server port")
-    parser.add_argument("--interval", type=int, default=1, help="Clipboard check interval (seconds)")
+    parser.add_argument(
+        "--host", default=None, help=f"API server host (default: {settings.api_host})"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help=f"API server port (default: {settings.api_port})",
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=None,
+        help=f"Clipboard check interval in seconds (default: {settings.clipboard_check_interval})",
+    )
 
     args = parser.parse_args()
 
@@ -131,9 +170,7 @@ def main():
 
     # Create and start daemon
     daemon = SimpleCP_Daemon(
-        host=args.host,
-        port=args.port,
-        check_interval=args.interval
+        host=args.host, port=args.port, check_interval=args.interval
     )
 
     daemon.start()

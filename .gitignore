@@ -44,6 +44,11 @@ Thumbs.db
 data/*.json
 !data/example_*.json
 *.log
+logs/
+
+# Environment and secrets
+.env
+!.env.example
 
 # Build artifacts
 *.app
