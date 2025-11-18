@@ -24,10 +24,7 @@ class HistoryStore:
     """
 
     def __init__(
-        self,
-        max_items: int = 50,
-        display_count: int = 10,
-        display_length: int = 50
+        self, max_items: int = 50, display_count: int = 10, display_length: int = 50
     ):
         """
         Initialize HistoryStore.
@@ -59,16 +56,16 @@ class HistoryStore:
             self.move_to_top(duplicate_index)
             return False
 
-        self._notify_delegates('will_insert', index, item)
+        self._notify_delegates("will_insert", index, item)
         self.items.insert(index, item)
         self.modified = True
 
         # Enforce size limit
         if len(self.items) > self.max_items:
             removed = self.items.pop()
-            self._notify_delegates('did_delete', len(self.items), removed)
+            self._notify_delegates("did_delete", len(self.items), removed)
 
-        self._notify_delegates('did_insert', index, item)
+        self._notify_delegates("did_insert", index, item)
         return True
 
     def find_duplicate(self, item: ClipboardItem) -> int:
@@ -84,7 +81,7 @@ class HistoryStore:
             item = self.items.pop(index)
             self.items.insert(0, item)
             self.modified = True
-            self._notify_delegates('item_moved', index, 0, item)
+            self._notify_delegates("item_moved", index, 0, item)
 
     def get_items(self, limit: Optional[int] = None) -> List[ClipboardItem]:
         """Get history items with optional limit."""
@@ -92,7 +89,7 @@ class HistoryStore:
 
     def get_recent_items(self) -> List[ClipboardItem]:
         """Get items for direct display."""
-        return self.items[:self.display_count]
+        return self.items[: self.display_count]
 
     def get_auto_folders(self) -> List[Dict[str, Any]]:
         """
@@ -111,15 +108,17 @@ class HistoryStore:
         while start_index < total_items:
             end_index = min(start_index + self.display_count - 1, total_items - 1)
             folder_name = f"{start_index + 1}-{end_index + 1}"
-            folder_items = self.items[start_index:end_index + 1]
+            folder_items = self.items[start_index : end_index + 1]
 
-            folders.append({
-                "name": folder_name,
-                "start_index": start_index,
-                "end_index": end_index,
-                "items": folder_items,
-                "count": len(folder_items)
-            })
+            folders.append(
+                {
+                    "name": folder_name,
+                    "start_index": start_index,
+                    "end_index": end_index,
+                    "items": folder_items,
+                    "count": len(folder_items),
+                }
+            )
 
             start_index = end_index + 1
 
@@ -130,7 +129,7 @@ class HistoryStore:
         if 0 <= index < len(self.items):
             item = self.items.pop(index)
             self.modified = True
-            self._notify_delegates('did_delete', index, item)
+            self._notify_delegates("did_delete", index, item)
             return item
         return None
 
@@ -138,7 +137,7 @@ class HistoryStore:
         """Clear all history items."""
         self.items.clear()
         self.modified = True
-        self._notify_delegates('store_cleared')
+        self._notify_delegates("store_cleared")
 
     def search(self, query: str) -> List[ClipboardItem]:
         """Search items matching query."""

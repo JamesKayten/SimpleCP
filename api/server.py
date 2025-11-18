@@ -24,7 +24,7 @@ def create_app(clipboard_manager: ClipboardManager = None) -> FastAPI:
     app = FastAPI(
         title="SimpleCP API",
         description="REST API for SimpleCP clipboard manager",
-        version="1.0.0"
+        version="1.0.0",
     )
 
     # CORS middleware for Swift frontend
@@ -50,20 +50,13 @@ def create_app(clipboard_manager: ClipboardManager = None) -> FastAPI:
     @app.get("/")
     async def root():
         """Root endpoint."""
-        return {
-            "name": "SimpleCP API",
-            "version": "1.0.0",
-            "status": "running"
-        }
+        return {"name": "SimpleCP API", "version": "1.0.0", "status": "running"}
 
     @app.get("/health")
     async def health():
         """Health check endpoint."""
         stats = clipboard_manager.get_stats()
-        return {
-            "status": "healthy",
-            "stats": stats
-        }
+        return {"status": "healthy", "stats": stats}
 
     return app
 
@@ -71,7 +64,7 @@ def create_app(clipboard_manager: ClipboardManager = None) -> FastAPI:
 def run_server(
     host: str = "127.0.0.1",
     port: int = 8000,
-    clipboard_manager: ClipboardManager = None
+    clipboard_manager: ClipboardManager = None,
 ):
     """
     Run the FastAPI server.
@@ -83,12 +76,7 @@ def run_server(
     """
     app = create_app(clipboard_manager)
 
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        log_level="info"
-    )
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":

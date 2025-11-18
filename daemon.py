@@ -15,7 +15,9 @@ from api.server import run_server
 class SimpleCP_Daemon:
     """Background daemon managing clipboard monitoring and API server."""
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 8000, check_interval: int = 1):
+    def __init__(
+        self, host: str = "127.0.0.1", port: int = 8000, check_interval: int = 1
+    ):
         """
         Initialize daemon.
 
@@ -34,7 +36,9 @@ class SimpleCP_Daemon:
 
     def clipboard_monitor_loop(self):
         """Background clipboard monitoring loop."""
-        print(f"📋 Clipboard monitoring started (checking every {self.check_interval}s)")
+        print(
+            f"📋 Clipboard monitoring started (checking every {self.check_interval}s)"
+        )
         while self.running:
             try:
                 new_item = self.clipboard_manager.check_clipboard()
@@ -63,19 +67,16 @@ class SimpleCP_Daemon:
 
         # Start clipboard monitoring thread
         self.clipboard_thread = threading.Thread(
-            target=self.clipboard_monitor_loop,
-            daemon=True
+            target=self.clipboard_monitor_loop, daemon=True
         )
         self.clipboard_thread.start()
 
         # Start API server thread
-        self.api_thread = threading.Thread(
-            target=self.start_api_server,
-            daemon=True
-        )
+        self.api_thread = threading.Thread(target=self.start_api_server, daemon=True)
         self.api_thread.start()
 
-        print(f"""
+        print(
+            f"""
 ╔══════════════════════════════════════════╗
 ║     SimpleCP Daemon Started              ║
 ╟──────────────────────────────────────────╢
@@ -83,7 +84,8 @@ class SimpleCP_Daemon:
 ║  🌐 API Server: http://{self.host}:{self.port}  ║
 ║  📊 Stats: {len(self.clipboard_manager.history_store)} history items          ║
 ╚══════════════════════════════════════════╝
-""")
+"""
+        )
 
         # Keep main thread alive
         try:
@@ -121,7 +123,9 @@ def main():
     parser = argparse.ArgumentParser(description="SimpleCP Background Daemon")
     parser.add_argument("--host", default="127.0.0.1", help="API server host")
     parser.add_argument("--port", type=int, default=8000, help="API server port")
-    parser.add_argument("--interval", type=int, default=1, help="Clipboard check interval (seconds)")
+    parser.add_argument(
+        "--interval", type=int, default=1, help="Clipboard check interval (seconds)"
+    )
 
     args = parser.parse_args()
 
@@ -131,9 +135,7 @@ def main():
 
     # Create and start daemon
     daemon = SimpleCP_Daemon(
-        host=args.host,
-        port=args.port,
-        check_interval=args.interval
+        host=args.host, port=args.port, check_interval=args.interval
     )
 
     daemon.start()
