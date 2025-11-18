@@ -4,13 +4,21 @@
 
 When the user says **"file ready"**, Claude Code should execute the following automated workflow:
 
-### 1. Repository Branch Inspection
+### 1. Check OCC Communications
+**FIRST:** Check for any communications from OCC before processing branches
+- Check `docs/occ_communication/` for new files since last run
+- Process any `VIOLATION_RESPONSE_*.md` files (fixes completed)
+- Process any `OCC_UPDATE_*.md` files (general updates/questions)
+- Process any `MERGE_REQUEST_*.md` files (specific merge requests)
+- Report OCC communications to user
+
+### 2. Repository Branch Inspection
 - Check the SimpleCP repository for any new branches created by OCC (Online Claude Code)
 - Use `git fetch` to ensure we have the latest remote branches
 - Use `git branch -r` to list all remote branches
 - Identify any new branches that aren't `main` or previously known branches
 
-### 2. File Limit Violation Check
+### 3. File Limit Violation Check
 Inspect each new branch for file size violations according to SimpleCP's strict limits:
 
 **File Size Limits:**
@@ -30,7 +38,7 @@ git checkout <branch_name>
 wc -l <file_path>  # Check line count for each critical file
 ```
 
-### 3. Alert on Violations & Generate OCC Communication
+### 4. Alert on Violations & Generate OCC Communication
 If any file exceeds its limit:
 - **STOP** the merge process immediately
 - Alert the user with specific details:
@@ -41,7 +49,7 @@ If any file exceeds its limit:
 - Include specific refactoring instructions and line count requirements
 - Provide user with simple OCC activation command
 
-### 4. Merge Process (if no violations)
+### 5. Merge Process (if no violations)
 If all files are within limits:
 ```bash
 git checkout main
@@ -51,7 +59,7 @@ git branch -d <branch_name>  # Clean up local branch
 git push origin --delete <branch_name>  # Clean up remote branch
 ```
 
-### 5. Report Results
+### 6. Report Results
 Provide a summary:
 - Branches processed
 - Files checked
@@ -93,33 +101,45 @@ REQUIRED ACTIONS:
 The main branch is protected - no merges will occur until all violations are resolved.
 ```
 
-## OCC Communication System
+## OCC Communication System (Bidirectional)
 
-When violations are detected, Local Claude Code automatically creates a detailed report file that OCC can read directly from the repository.
+The communication system enables both Local Claude Code and OCC to exchange information through repository files.
 
-### Automated Report Generation
+### Local Claude Code → OCC
+**Automated Report Generation:**
 - **File Location:** `docs/occ_communication/VIOLATION_REPORT_YYYY-MM-DD.md`
 - **Content:** Detailed violation analysis, refactoring instructions, priorities
 - **Timestamp:** Date/time of detection for audit trail
 
-### User Activation Command
-After violation report is created, user activates OCC with:
+**User Activation Command:**
 ```
 "Check docs/occ_communication/ for latest violation report and fix the issues"
 ```
 
-### OCC Response Process
-1. OCC reads the violation report
-2. Implements required refactoring
-3. Creates `VIOLATION_RESPONSE_YYYY-MM-DD.md` confirming completion
-4. Pushes updated branches for re-validation
+### OCC → Local Claude Code
+**Response File Types:**
+- `VIOLATION_RESPONSE_YYYY-MM-DD.md` - Confirmation of fixes completed
+- `OCC_UPDATE_YYYY-MM-DD.md` - General updates or questions for Local Claude Code
+- `MERGE_REQUEST_YYYY-MM-DD.md` - Request specific branch merges after validation
+
+**Processing:** During "file ready" workflow, Local Claude Code automatically:
+1. **FIRST** checks communication folder for new OCC files
+2. Processes and reports OCC communications to user
+3. **THEN** proceeds with normal branch inspection
+
+### Communication Protocol
+1. **Local Claude Code** detects violations → Creates `VIOLATION_REPORT_*`
+2. **User** activates OCC with simple command
+3. **OCC** reads report → Implements fixes → Creates `VIOLATION_RESPONSE_*`
+4. **User** runs "file ready" → Local Claude Code processes OCC response → Validates fixes
+5. **Local Claude Code** merges clean branches or reports remaining issues
 
 ### Benefits
-- ✅ No copy/paste required
-- ✅ Direct repository communication
-- ✅ Timestamped audit trail
-- ✅ Automated workflow integration
-- ✅ Clear action items and responses
+- ✅ **Bidirectional communication** - Both directions through repository
+- ✅ **No copy/paste required** - All communication via files
+- ✅ **Timestamped audit trail** - Complete history of interactions
+- ✅ **Automated workflow integration** - Seamless process
+- ✅ **Clear action items and responses** - Structured communication
 
 ## Quick Reference Commands
 
