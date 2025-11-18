@@ -45,6 +45,11 @@ data/*.json
 !data/example_*.json
 *.log
 
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Build artifacts
 *.app
 *.dmg
