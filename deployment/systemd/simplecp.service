@@ -1,0 +1,39 @@
+# SimpleCP Systemd Service
+# Installation:
+# 1. Copy this file to /etc/systemd/system/simplecp.service
+# 2. Update paths and user as needed
+# 3. Run: sudo systemctl daemon-reload
+# 4. Run: sudo systemctl enable simplecp
+# 5. Run: sudo systemctl start simplecp
+
+[Unit]
+Description=SimpleCP Clipboard Manager Daemon
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/path/to/SimpleCP
+Environment="PATH=/path/to/SimpleCP/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/path/to/SimpleCP"
+
+# Main service command
+ExecStart=/path/to/SimpleCP/venv/bin/python daemon.py --host 127.0.0.1 --port 8000
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=simplecp
+
+[Install]
+WantedBy=multi-user.target

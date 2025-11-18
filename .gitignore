@@ -44,6 +44,20 @@ Thumbs.db
 data/*.json
 !data/example_*.json
 *.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.tox/
+.hypothesis/
 
 # Build artifacts
 *.app
@@ -56,3 +70,7 @@ data/*.json
 
 # Reference repositories
 Flycut/
+
+# Docker
+*.pid
+.dockerignore
