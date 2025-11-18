@@ -15,6 +15,7 @@ sys.path.insert(0, project_root)
 
 from clipboard_manager import ClipboardManager
 
+
 def main():
     """Main application entry point."""
     try:
@@ -29,6 +30,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -33,10 +33,12 @@ class ClipboardManager:
         self,
         data_dir: Optional[str] = None,
         max_history: int = 50,
-        display_count: int = 10
+        display_count: int = 10,
     ):
         """Initialize ClipboardManager with multi-store pattern."""
-        self.history_store = HistoryStore(max_items=max_history, display_count=display_count)
+        self.history_store = HistoryStore(
+            max_items=max_history, display_count=display_count
+        )
         self.snippet_store = SnippetStore()
         self._current_clipboard = ""
         self.data_dir = data_dir or os.path.join(os.path.dirname(__file__), "data")
@@ -167,10 +169,12 @@ class ClipboardManager:
         return snippet
 
     def update_snippet(
-        self, folder_name: str, clip_id: str,
+        self,
+        folder_name: str,
+        clip_id: str,
         new_content: Optional[str] = None,
         new_name: Optional[str] = None,
-        new_tags: Optional[List[str]] = None
+        new_tags: Optional[List[str]] = None,
     ) -> bool:
         """Update snippet properties."""
         result = self.snippet_store.update_snippet(
@@ -186,51 +190,47 @@ class ClipboardManager:
         if result and self.auto_save_enabled:
             self.save_stores()
         return result
-
     def move_snippet(self, from_folder: str, to_folder: str, clip_id: str) -> bool:
         """Move snippet between folders."""
         result = self.snippet_store.move_snippet(from_folder, to_folder, clip_id)
         if result and self.auto_save_enabled:
             self.save_stores()
         return result
-
     # Search operations
     def search_all(self, query: str) -> Dict[str, List[ClipboardItem]]:
         """Search across history and snippets."""
         return {
             "history": self.history_store.search(query),
-            "snippets": self.snippet_store.search(query)
+            "snippets": self.snippet_store.search(query),
         }
-
     # Persistence operations
     def save_stores(self):
         """Save all stores to disk."""
         try:
             history_data = [item.to_dict() for item in self.history_store.items]
-            with open(self.history_file, 'w') as f:
+            with open(self.history_file, "w") as f:
                 json.dump(history_data, f, indent=2)
             snippet_data = {
                 folder: [item.to_dict() for item in items]
                 for folder, items in self.snippet_store.folders.items()
             }
-            with open(self.snippets_file, 'w') as f:
+            with open(self.snippets_file, "w") as f:
                 json.dump(snippet_data, f, indent=2)
             self.history_store.modified = False
             self.snippet_store.modified = False
         except Exception as e:
             print(f"Error saving stores: {e}")
-
     def load_stores(self):
         """Load all stores from disk."""
         try:
             if os.path.exists(self.history_file):
-                with open(self.history_file, 'r') as f:
+                with open(self.history_file, "r") as f:
                     data = json.load(f)
                 self.history_store.items = [
                     ClipboardItem.from_dict(item_data) for item_data in data
                 ]
             if os.path.exists(self.snippets_file):
-                with open(self.snippets_file, 'r') as f:
+                with open(self.snippets_file, "r") as f:
                     data = json.load(f)
                 for folder_name, items_data in data.items():
                     self.snippet_store.folders[folder_name] = [
@@ -245,5 +245,5 @@ class ClipboardManager:
             "history_count": len(self.history_store),
             "snippet_count": len(self.snippet_store),
             "folder_count": len(self.snippet_store.folders),
-            "max_history": self.history_store.max_items
+            "max_history": self.history_store.max_items,
         }

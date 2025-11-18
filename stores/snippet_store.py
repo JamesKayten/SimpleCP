@@ -40,7 +40,7 @@ class SnippetStore:
             return False
         self.folders[folder_name] = []
         self.modified = True
-        self._notify_delegates('folder_created', folder_name)
+        self._notify_delegates("folder_created", folder_name)
         return True
 
     def rename_folder(self, old_name: str, new_name: str) -> bool:
@@ -51,7 +51,7 @@ class SnippetStore:
         for item in self.folders[new_name]:
             item.folder_path = new_name
         self.modified = True
-        self._notify_delegates('folder_renamed', old_name, new_name)
+        self._notify_delegates("folder_renamed", old_name, new_name)
         return True
 
     def delete_folder(self, folder_name: str) -> bool:
@@ -60,7 +60,7 @@ class SnippetStore:
             return False
         del self.folders[folder_name]
         self.modified = True
-        self._notify_delegates('folder_deleted', folder_name)
+        self._notify_delegates("folder_deleted", folder_name)
         return True
 
     def add_snippet(self, folder_name: str, item: ClipboardItem) -> bool:
@@ -69,13 +69,12 @@ class SnippetStore:
             self.create_folder(folder_name)
         if not item.has_name:
             item.make_snippet(
-                name=item.snippet_name or item.display_string,
-                folder=folder_name
+                name=item.snippet_name or item.display_string, folder=folder_name
             )
         item.folder_path = folder_name
         self.folders[folder_name].append(item)
         self.modified = True
-        self._notify_delegates('snippet_added', folder_name, item)
+        self._notify_delegates("snippet_added", folder_name, item)
         return True
 
     def delete_snippet(self, folder_name: str, clip_id: str) -> bool:
@@ -86,7 +85,7 @@ class SnippetStore:
             if item.clip_id == clip_id:
                 deleted_item = self.folders[folder_name].pop(i)
                 self.modified = True
-                self._notify_delegates('snippet_deleted', folder_name, deleted_item)
+                self._notify_delegates("snippet_deleted", folder_name, deleted_item)
                 return True
         return False
 
@@ -96,7 +95,7 @@ class SnippetStore:
         clip_id: str,
         new_content: Optional[str] = None,
         new_name: Optional[str] = None,
-        new_tags: Optional[List[str]] = None
+        new_tags: Optional[List[str]] = None,
     ) -> bool:
         """Update snippet properties."""
         if folder_name not in self.folders:
@@ -111,7 +110,7 @@ class SnippetStore:
                 if new_tags is not None:
                     item.tags = new_tags
                 self.modified = True
-                self._notify_delegates('snippet_updated', folder_name, item)
+                self._notify_delegates("snippet_updated", folder_name, item)
                 return True
         return False
 
@@ -127,7 +126,7 @@ class SnippetStore:
                     self.create_folder(to_folder)
                 self.folders[to_folder].append(snippet)
                 self.modified = True
-                self._notify_delegates('snippet_moved', from_folder, to_folder, snippet)
+                self._notify_delegates("snippet_moved", from_folder, to_folder, snippet)
                 return True
         return False
 
@@ -141,10 +140,7 @@ class SnippetStore:
 
     def get_all_snippets(self) -> Dict[str, List[ClipboardItem]]:
         """Get all snippets organized by folder."""
-        return {
-            folder: items.copy()
-            for folder, items in self.folders.items()
-        }
+        return {folder: items.copy() for folder, items in self.folders.items()}
 
     def search(self, query: str) -> List[ClipboardItem]:
         """Search all snippets matching query."""

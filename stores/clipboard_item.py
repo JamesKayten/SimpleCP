@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any, List
 import hashlib
 import re
 
+
 class ClipboardItem:
     """
     Represents a single clipboard item with metadata.
@@ -40,7 +41,7 @@ class ClipboardItem:
         item_type: str = "history",
         content_type: Optional[str] = None,
         display_length: int = 50,
-        clip_id: Optional[str] = None
+        clip_id: Optional[str] = None,
     ):
         self.content = content
         self.timestamp = timestamp or datetime.now()
@@ -66,15 +67,23 @@ class ClipboardItem:
         content = self.content.strip()
 
         # URL detection
-        if re.match(r'^https?://', content):
+        if re.match(r"^https?://", content):
             return "url"
 
         # Email detection
-        if re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', content):
+        if re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", content):
             return "email"
 
         # Code detection (simple heuristics)
-        code_indicators = ['def ', 'class ', 'function ', 'import ', 'const ', 'var ', 'let ']
+        code_indicators = [
+            "def ",
+            "class ",
+            "function ",
+            "import ",
+            "const ",
+            "var ",
+            "let ",
+        ]
         if any(indicator in content for indicator in code_indicators):
             return "code"
 
@@ -90,19 +99,16 @@ class ClipboardItem:
         Create display string for UI.
         Flycut's display string logic adapted for Python.
         """
-        clean_text = self.content.replace('\n', ' ').replace('\t', ' ').strip()
+        clean_text = self.content.replace("\n", " ").replace("\t", " ").strip()
 
         if len(clean_text) <= self.display_length:
             return clean_text
 
-        return clean_text[:self.display_length - 3] + "..."
+        return clean_text[: self.display_length - 3] + "..."
 
     def make_snippet(
-        self,
-        name: str,
-        folder: str,
-        tags: Optional[List[str]] = None
-    ) -> 'ClipboardItem':
+        self, name: str, folder: str, tags: Optional[List[str]] = None
+    ) -> "ClipboardItem":
         """
         Convert history item to named snippet.
         Based on Flycut's clipHasName pattern.
@@ -159,11 +165,11 @@ class ClipboardItem:
             "has_name": self.has_name,
             "snippet_name": self.snippet_name,
             "folder_path": self.folder_path,
-            "tags": self.tags
+            "tags": self.tags,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ClipboardItem':
+    def from_dict(cls, data: Dict[str, Any]) -> "ClipboardItem":
         """Create ClipboardItem from dictionary."""
         item = cls(
             content=data["content"],
@@ -172,7 +178,7 @@ class ClipboardItem:
             item_type=data.get("item_type", "history"),
             content_type=data.get("content_type"),
             display_length=data.get("display_length", 50),
-            clip_id=data.get("clip_id")
+            clip_id=data.get("clip_id"),
         )
 
         # Restore snippet properties
