@@ -50,7 +50,11 @@ def create_app(clipboard_manager: ClipboardManager = None) -> FastAPI:
     @app.get("/")
     async def root():
         """Root endpoint."""
-        return {"name": "SimpleCP API", "version": "1.0.0", "status": "running"}
+        return {
+            "name": "SimpleCP API",
+            "version": "1.0.0",
+            "status": "running",
+        }
 
     @app.get("/health")
     async def health():

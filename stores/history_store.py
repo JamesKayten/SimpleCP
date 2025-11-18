@@ -24,7 +24,10 @@ class HistoryStore:
     """
 
     def __init__(
-        self, max_items: int = 50, display_count: int = 10, display_length: int = 50
+        self,
+        max_items: int = 50,
+        display_count: int = 10,
+        display_length: int = 50,
     ):
         """
         Initialize HistoryStore.
@@ -106,7 +109,9 @@ class HistoryStore:
         start_index = self.display_count
 
         while start_index < total_items:
-            end_index = min(start_index + self.display_count - 1, total_items - 1)
+            end_index = min(
+                start_index + self.display_count - 1, total_items - 1
+            )
             folder_name = f"{start_index + 1}-{end_index + 1}"
             folder_items = self.items[start_index : end_index + 1]
 

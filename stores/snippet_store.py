@@ -69,7 +69,8 @@ class SnippetStore:
             self.create_folder(folder_name)
         if not item.has_name:
             item.make_snippet(
-                name=item.snippet_name or item.display_string, folder=folder_name
+                name=item.snippet_name or item.display_string,
+                folder=folder_name,
             )
         item.folder_path = folder_name
         self.folders[folder_name].append(item)
@@ -85,7 +86,9 @@ class SnippetStore:
             if item.clip_id == clip_id:
                 deleted_item = self.folders[folder_name].pop(i)
                 self.modified = True
-                self._notify_delegates("snippet_deleted", folder_name, deleted_item)
+                self._notify_delegates(
+                    "snippet_deleted", folder_name, deleted_item
+                )
                 return True
         return False
 
@@ -114,7 +117,9 @@ class SnippetStore:
                 return True
         return False
 
-    def move_snippet(self, from_folder: str, to_folder: str, clip_id: str) -> bool:
+    def move_snippet(
+        self, from_folder: str, to_folder: str, clip_id: str
+    ) -> bool:
         """Move snippet between folders."""
         if from_folder not in self.folders:
             return False
@@ -126,7 +131,9 @@ class SnippetStore:
                     self.create_folder(to_folder)
                 self.folders[to_folder].append(snippet)
                 self.modified = True
-                self._notify_delegates("snippet_moved", from_folder, to_folder, snippet)
+                self._notify_delegates(
+                    "snippet_moved", from_folder, to_folder, snippet
+                )
                 return True
         return False
 
@@ -146,7 +153,9 @@ class SnippetStore:
         """Search all snippets matching query."""
         results = []
         for items in self.folders.values():
-            results.extend([item for item in items if item.matches_search(query)])
+            results.extend(
+                [item for item in items if item.matches_search(query)]
+            )
         return results
 
     def get_snippet_by_id(self, clip_id: str) -> Optional[ClipboardItem]:
@@ -180,4 +189,6 @@ class SnippetStore:
         return sum(len(items) for items in self.folders.values())
 
     def __repr__(self) -> str:
-        return f"SnippetStore(folders={len(self.folders)}, snippets={len(self)})"
+        return (
+            f"SnippetStore(folders={len(self.folders)}, snippets={len(self)})"
+        )
