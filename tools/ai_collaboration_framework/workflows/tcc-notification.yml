@@ -1,0 +1,133 @@
+name: TCC Violation Notification
+
+# This workflow creates a GitHub issue when TCC (Technical Control Claude)
+# detects violations in the codebase
+
+on:
+  push:
+    branches:
+      - 'claude/**'  # Triggers on any claude/ branch pushes
+    paths:
+      - 'docs/ai_communication/**'
+      - 'docs/occ_communication/**'
+  workflow_dispatch:  # Manual trigger option
+
+jobs:
+  check-violations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for TCC reports
+        id: check-reports
+        run: |
+          # Find the most recent TCC report
+          LATEST_REPORT=$(find docs/ai_communication docs/occ_communication -name "VALIDATION_REPORT_*.md" -o -name "*VIOLATION*.md" 2>/dev/null | sort -r | head -1)
+
+          if [ -n "$LATEST_REPORT" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "report_path=$LATEST_REPORT" >> $GITHUB_OUTPUT
+
+            # Extract report summary
+            SUMMARY=$(head -20 "$LATEST_REPORT" | tail -15)
+            echo "summary<<EOF" >> $GITHUB_OUTPUT
+            echo "$SUMMARY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create OCC Activation Issue
+        if: steps.check-reports.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportPath = '${{ steps.check-reports.outputs.report_path }}';
+            const summary = `${{ steps.check-reports.outputs.summary }}`;
+            const timestamp = new Date().toISOString();
+
+            const issueBody = `## 🚨 TCC Violation Report Detected
+
+**Report Location:** \`${reportPath}\`
+**Detection Time:** ${timestamp}
+**Branch:** \`${{ github.ref_name }}\`
+**Commit:** \`${{ github.sha }}\`
+
+---
+
+### 📋 Quick Actions
+
+**Option 1: Use OCC Launcher (Fastest - 3 clicks)**
+1. Open the [OCC Launcher](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/occ-launcher.html) (download and open in browser)
+2. Click "Copy OCC Activation Prompt"
+3. Click "Open Claude.ai" and paste
+
+**Option 2: Manual Activation**
+Copy this prompt and paste into Claude.ai:
+
+\`\`\`
+I am the Operational Control Claude (OCC) for the AI Collaboration Framework.
+
+TASK: Check for and respond to latest TCC (Technical Control Claude) reports
+
+INSTRUCTIONS:
+1. Read all files in docs/ai_communication/ directory
+2. Look for the most recent TCC report (sorted by timestamp)
+3. Review any violations or issues documented
+4. If violations found: Take immediate corrective action following OCC protocols
+5. If no violations: Confirm framework status is healthy
+
+FRAMEWORK LOCATION: The ${{ github.repository }} repository contains the framework in:
+- docs/ai_communication/ - All TCC reports and communication logs
+- docs/ai_collaboration_framework.md - Protocol documentation
+- .github/workflows/ - Automation systems
+
+Begin by checking the latest TCC report and respond accordingly.
+\`\`\`
+
+---
+
+### 📊 Report Preview
+
+\`\`\`
+${summary}
+\`\`\`
+
+[View Full Report](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/${reportPath})
+
+---
+
+### 🔗 Quick Links
+- [Open Claude.ai](https://claude.ai/new)
+- [View All Reports](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}/docs/ai_communication)
+- [Framework Documentation](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/docs/AI_COLLABORATION_FRAMEWORK.md)
+
+---
+
+*This issue was automatically created by the AI Collaboration Framework*
+*Close this issue once violations have been addressed*`;
+
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 OCC Activation Required - TCC Report ${new Date().toISOString().split('T')[0]}`,
+              body: issueBody,
+              labels: ['tcc-report', 'occ-activation', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}`);
+
+      - name: Comment on commit
+        if: steps.check-reports.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '🤖 TCC violation report detected. OCC activation issue created. Check Issues tab for details.'
+            });

@@ -8,7 +8,7 @@ A **plug-and-play framework** that enables any Local AI and Online AI to collabo
 ### Key Innovation
 Transforms development from *"human supervises AI coding"* to *"AIs collaborate to code better than either could alone"*
 
-## ⚡ Quick Start (3 Steps, 10 Minutes)
+## ⚡ Quick Start (4 Steps, 15 Minutes)
 
 ### 1. Download & Install
 ```bash
@@ -20,21 +20,37 @@ cd /path/to/your/project
 /path/to/ai_collaboration_framework/install.sh
 ```
 
-### 2. Customize for Your Project
+### 2. Set Up OCC Quick Launcher (Optional but Recommended)
+```bash
+# Open the OCC launcher in your browser
+open /path/to/ai_collaboration_framework/occ-launcher.html
+
+# Bookmark it (Cmd+D / Ctrl+D) for instant access
+# This gives you 3-click OCC activation
+```
+
+### 3. Install GitHub Action (Optional)
+```bash
+# Automatically create issues when TCC detects violations
+cp /path/to/ai_collaboration_framework/workflows/tcc-notification.yml .github/workflows/
+
+git add .github/workflows/tcc-notification.yml
+git commit -m "Add TCC notification workflow"
+git push
+```
+
+### 4. Customize & Start
 ```bash
 # Edit validation rules for your specific project needs
 edit docs/ai_communication/VALIDATION_RULES.md
 
-# Optional: Customize workflow
-edit docs/AI_WORKFLOW.md
-```
-
-### 3. Start AI Collaboration
-```bash
 # Command for Local AI to run validation workflow
 "work ready"
 
-# Command to activate Online AI when issues found
+# Option A: Use OCC Launcher (Fastest)
+# Click bookmark → Copy prompt → Open Claude → Paste
+
+# Option B: Manual activation
 "Check docs/ai_communication/ for latest report and address the issues"
 ```
 
@@ -42,6 +58,8 @@ edit docs/AI_WORKFLOW.md
 - ✅ Automated code validation
 - ✅ Bidirectional AI communication
 - ✅ Self-correcting development loop
+- ✅ Quick OCC activation (3-5 seconds)
+- ✅ Automatic GitHub notifications
 - ✅ Complete audit trail
 
 ## 🎯 What It Does
@@ -94,6 +112,58 @@ edit docs/AI_WORKFLOW.md
 - Documentation standards
 - Custom project rules
 
+## 🚀 OCC Quick Launcher
+
+The framework includes a beautiful HTML control panel for lightning-fast OCC activation:
+
+### Features
+- **One Standard Prompt**: No custom prompts needed - tells Claude to check framework automatically
+- **3-Click Activation**: Copy → Open Claude → Paste
+- **3-5 Second Workflow**: From notification to OCC working on fixes
+- **Keyboard Shortcuts**: `Cmd+K` to copy, `Cmd+Enter` to open Claude
+- **Visual Feedback**: Button animations confirm actions
+- **Quick Links**: Direct access to GitHub issues and reports
+
+### How It Works
+1. Open `occ-launcher.html` in your browser (bookmark it!)
+2. Click "Copy OCC Activation Prompt" (standard prompt)
+3. Click "Open Claude.ai" (opens in new tab)
+4. Paste (`Cmd+V`) and press Enter
+5. OCC automatically checks framework and responds to violations
+
+**No custom prompts!** The standard prompt tells Claude to:
+- Check `docs/ai_communication/` for latest TCC reports
+- Review any violations found
+- Take corrective action following OCC protocols
+- Respond with fixes and status
+
+## 🤖 Automated GitHub Notifications
+
+Optional GitHub Action that creates issues when TCC detects violations:
+
+### Features
+- **Automatic Issue Creation**: TCC report → GitHub issue with OCC prompt
+- **Smart Triggers**: Monitors communication directories for new reports
+- **Quick Actions**: Both OCC Launcher and manual activation options included
+- **Report Previews**: Shows violation summary in issue
+- **Direct Links**: One-click access to Claude.ai and full reports
+- **Labeled & Organized**: Auto-labels issues for easy filtering
+
+### Setup
+```bash
+cp workflows/tcc-notification.yml .github/workflows/
+git add .github/workflows/tcc-notification.yml
+git commit -m "Add TCC notification workflow"
+git push
+```
+
+### Workflow
+```
+TCC detects violation → Pushes report → GitHub Action triggers →
+Creates issue with prompt → You get notified → Open OCC Launcher →
+3 clicks → OCC fixes violations → Done
+```
+
 ## 📁 What Gets Installed
 
 ```
@@ -104,6 +174,31 @@ your-project/
 │   └── ai_communication/                # Communication folder
 │       ├── README.md                    # Communication guide
 │       └── VALIDATION_RULES.md          # Project validation rules
+```
+
+## 📦 Framework Directory Structure
+
+```
+ai_collaboration_framework/
+├── README.md                    # This file - complete guide
+├── DEPLOYMENT_GUIDE.md          # Detailed installation instructions
+├── install.sh                   # One-command installer
+├── occ-launcher.html           # Quick OCC activation control panel
+├── docs/                       # Framework documentation
+│   ├── AI_COLLABORATION_FRAMEWORK.md
+│   ├── AI_WORKFLOW.md
+│   ├── OCC_PROMPT.md
+│   ├── OCC_IMPLEMENTATION_TASKS.md
+│   ├── AI_COMMUNICATION_TEMPLATE.md
+│   └── FRAMEWORK_USAGE_GUIDE.md
+├── workflows/                  # GitHub Action templates
+│   ├── README.md              # Workflow setup guide
+│   └── tcc-notification.yml   # Auto-issue creation
+├── examples/                   # Example communication files
+│   ├── ai_communication/      # Sample TCC reports
+│   └── occ_communication/     # Sample OCC responses
+├── scripts/                    # Utility scripts
+└── templates/                  # Project templates
 ```
 
 ## 🔄 How It Works
@@ -259,7 +354,7 @@ documentation_ai: Maintains docs and comments
 
 ## 🎉 Ready to Start?
 
-### Installation Commands
+### Complete Setup Commands
 ```bash
 # 1. Copy this framework folder to your machine
 # 2. Navigate to your project
@@ -268,19 +363,42 @@ cd /path/to/your/project
 # 3. Install the framework
 /path/to/ai_collaboration_framework/install.sh
 
-# 4. Customize validation rules
+# 4. Set up OCC Quick Launcher (recommended)
+open /path/to/ai_collaboration_framework/occ-launcher.html
+# Bookmark it (Cmd+D / Ctrl+D)
+
+# 5. Install GitHub Action (optional)
+cp /path/to/ai_collaboration_framework/workflows/tcc-notification.yml .github/workflows/
+git add .github/workflows/tcc-notification.yml
+git commit -m "Add TCC notification workflow"
+git push
+
+# 6. Customize validation rules
 edit docs/ai_communication/VALIDATION_RULES.md
 
-# 5. Start AI collaboration
+# 7. Start AI collaboration
 "work ready"  # Command for Local AI
+
+# 8. When violations detected:
+# Option A: Click OCC Launcher bookmark → 3 clicks → Done
+# Option B: Manual: "Check docs/ai_communication/ for latest report"
 ```
 
 ### Next Steps After Installation
 1. **Test the workflow** with a simple change
-2. **Customize validation rules** for your project needs
-3. **Train your team** on the AI commands
-4. **Monitor AI collaboration** through communication files
-5. **Iterate and improve** validation rules based on results
+2. **Bookmark OCC Launcher** for quick access (3-second activation)
+3. **Configure GitHub notifications** for automatic issue creation
+4. **Customize validation rules** for your project needs
+5. **Train your team** on the AI commands and OCC Launcher
+6. **Monitor AI collaboration** through communication files and GitHub issues
+7. **Iterate and improve** validation rules based on results
+
+### Pro Tips
+- **OCC Launcher**: Keep it bookmarked in your browser's bookmark bar for instant access
+- **GitHub Actions**: Use issue labels to filter TCC reports (`tcc-report`)
+- **Standard Prompt**: The same OCC prompt works every time - no customization needed
+- **Keyboard Shortcuts**: `Cmd+K` copies prompt, `Cmd+Enter` opens Claude (in OCC Launcher)
+- **Mobile Friendly**: OCC Launcher works on mobile browsers too!
 
 ---
 
