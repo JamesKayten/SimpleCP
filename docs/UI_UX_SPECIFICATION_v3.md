@@ -1,160 +1,211 @@
-# SimpleCP - UI/UX Specification v3 (Header + Two-Column Layout)
+# SimpleCP - UI/UX Specification v3 (MenuBarExtra Dropdown)
 
-This document defines the **modern header-based interface** for SimpleCP, inspired by elegant clipboard managers like Clip-It.
+This document defines the **MenuBarExtra dropdown interface** for SimpleCP, providing quick access to clipboard history and snippets from the macOS menu bar.
 
-## Window Design Overview
+## App Design Overview
+
+**Type**: macOS MenuBarExtra (menu bar dropdown)
+**Size**: 600x400 pixels
+**Style**: Modern, clean two-column layout
+**Access**: Click menu bar icon to toggle dropdown
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ SimpleCP                                     🔍 [⚙️] [ X ]│ ← Header Bar
-├─────────────────────────────────────────────────────────────┤
-│ 🔍 Search clips and snippets...                           │ ← Search Bar
-├─────────────────────────────────────────────────────────────┤
-│ ➕ Create Folder    📁 Manage Folders    📋 Clear History   │ ← Control Bar
+│ 🔍 [Search clips and snippets...........] ➕ 📁 📋 ⚙️    │ ← Combined Bar
 ├─────────────────────┬───────────────────────────────────────┤
-│ 📋 RECENT CLIPS     │ 📁 SAVED SNIPPETS                   │
+│ 📋 RECENT CLIPS     │ 📁 SAVED SNIPPETS                    │
 │                     │                                       │
-│ 1. "Latest clip..." │ 📁 Email Templates ▼               │
+│ 1. "Latest clip..." │ 📁 Email Templates ▼                │
 │ 2. "Second clip..." │   ├── Meeting Request                │
-│ 3. "Third clip..."  │   ├── Follow Up                      │ ← Two-Column
-│ 4. "Fourth clip..." │   └── Thank You                      │   Content Area
+│ 3. "Third clip..."  │   ├── Follow Up                      │
+│ 4. "Fourth clip..." │   └── Thank You                      │
 │ 5. "Fifth clip..."  │                                       │
 │ 6. "Sixth clip..."  │ 📁 Code Snippets ▼                  │
 │ 7. "Seventh..."     │   ├── Python Main                    │
 │ 8. "Eighth..."      │   ├── Git Commit                     │
 │ 9. "Ninth..."       │   └── Docker Run                     │
 │ 10. "Tenth..."      │                                       │
-│ ──────────────────  │ 📁 Common Text ▲ (collapsed)        │
+│ ──────────────────  │ 📁 Common Text ▲ (collapsed)         │
 │ 📁 11 - 20         │                                       │
 │ 📁 21 - 30         │                                       │
 │ 📁 31 - 40         │                                       │
-│ 📁 41 - 50         │                                       │
 └─────────────────────┴───────────────────────────────────────┘
 ```
 
-## Header Bar Design
+## Combined Search & Control Bar
 
-### Window Header
-- **Title**: "SimpleCP" (left-aligned)
-- **Search Icon**: 🔍 (for global search, right side)
-- **Settings Icon**: ⚙️ (gear icon, top right)
-- **Close Button**: Standard macOS window controls
+Single horizontal bar containing all main controls:
 
-### Search Bar (Always Visible)
-- **Placeholder**: "Search clips and snippets..."
-- **Real-time filtering**: Updates both columns as user types
-- **Search scope**: Searches both recent clips and saved snippets
-- **Clear button**: ✖ appears when text is entered
-
-### Control Bar (Streamlined Snippet Workflow)
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ 💾 Save as Snippet    📁 Manage Folders    📋 Clear History │
-│                                           📤 Export  📥 Import │
-└─────────────────────────────────────────────────────────────┘
+🔍 [Search clips and snippets...........................] ➕ 📁 📋 ⚙️
 ```
 
-#### Control Bar Buttons:
-- **💾 Save as Snippet**: Complete snippet creation workflow (saves current clipboard)
-- **📁 Manage Folders**: Dropdown with folder operations
-- **📋 Clear History**: Clear all clipboard history
-- **📤 Export**: Export snippets to file
-- **📥 Import**: Import snippets from file
+### Layout (Left to Right):
+1. **🔍 Search Field** (expandable, takes most space)
+   - Placeholder: "Search clips and snippets..."
+   - Real-time filtering of both columns
+   - Searches content and snippet names
 
-### Manage Folders Dropdown
+2. **➕ Create Snippet** - Opens snippet creation dialog
+3. **📁 Manage Folders** - Opens folder management
+4. **📋 Clear History** - Clears all clipboard history
+5. **⚙️ Settings** - Opens settings window
+
+### Key Features:
+- **Space-efficient**: All controls in one compact row
+- **Clean design**: No separate header or title bar
+- **Quick access**: Most important actions immediately visible
+- **No window chrome**: Pure content (MenuBarExtra dropdown has no title bar)
+
+## Two-Column Layout
+
+### Left Column: Recent Clips
+
+Shows the 10 most recent clipboard items:
+
 ```
-📁 Manage Folders ▼
-├── 📝 Rename Folder...
-├── 📁 Organize Folders...
-├── 🎨 Change Folder Icon...
-├── ───────────────────────
-├── 📊 Folder Statistics...
-├── 🔒 Lock/Unlock Folders...
-├── ───────────────────────
-└── 🗑️ Delete Empty Folders
+📋 RECENT CLIPS
+─────────────────
+1. "Latest clipboard item..."        [💾]
+2. "Second most recent item..."      [💾]
+3. "Third clipboard item..."         [💾]
+...
+10. "Tenth item..."                  [💾]
+──────────────────
+📁 11 - 20
+📁 21 - 30
+📁 31 - 40
 ```
+
+**Features**:
+- Numbered list (1-10 most recent)
+- Auto-generated folders for older items (11-20, 21-30, etc.)
+- Hover shows save button [💾]
+- Click to copy to clipboard
+- Right-click context menu:
+  - Copy Again
+  - Save as Snippet...
+  - Remove from History
+
+### Right Column: Saved Snippets
+
+Organized folders of saved snippets:
+
+```
+📁 SAVED SNIPPETS
+─────────────────────
+📁 Email Templates ▼
+  ├── Meeting Request
+  ├── Follow Up
+  └── Thank You
+  ──────────────────
+  ➕ Add snippet here...
+
+📁 Code Snippets ▲
+  (5 snippets)
+
+📁 Common Text ▼
+  ├── Email signature
+  └── Address
+```
+
+**Features**:
+- Expandable/collapsible folders
+- Folder icons (customizable)
+- Snippet count when collapsed
+- Quick add option in each folder
+- Click snippet to copy
+- Right-click context menu:
+  - Copy to Clipboard
+  - Edit Content...
+  - Rename...
+  - Duplicate
+  - Move to Folder →
+  - Delete
 
 ## Search Functionality
 
-### Global Search Behavior
-- **As-you-type filtering**: Instant results while typing
-- **Highlights matches**: Search terms highlighted in results
-- **Cross-column search**: Searches both recent clips and snippets
-- **Smart ranking**: Most recent and most relevant results first
+### Real-time Filtering
 
-### Search Results Display
+As user types in search field:
+- Both columns filter simultaneously
+- Matching text highlighted
+- Folders auto-expand to show matches
+
 ```
 Search: "meeting"
 
 📋 RECENT CLIPS (Filtered)    │ 📁 SAVED SNIPPETS (Filtered)
                               │
 2. "Schedule the meeting..."   │ 📁 Email Templates ▼
-8. "Meeting notes from..."     │   ├── 🔍 Meeting Request ← highlighted
-                              │   └── 🔍 Meeting Follow-up ← highlighted
+8. "Meeting notes from..."     │   ├── 🔍 Meeting Request
+                              │   └── 🔍 Meeting Follow-up
 📁 11-20 (2 matches)          │
 📁 21-30 (1 match)           │ 📁 Work Notes ▼
                               │   └── 🔍 Weekly meeting agenda
 ```
 
-## Snippet Folder Management
+### Search Scope:
+- Clipboard content
+- Snippet names
+- Snippet content
+- Tags (if present)
 
-### Complete Save as Snippet Workflow
+## Snippet Creation Workflow
 
-#### Main Save as Snippet Dialog (💾 Button)
+### Save as Snippet Dialog
+
+Opened via:
+- ➕ button in control bar
+- 💾 hover button on clipboard items
+- Right-click → "Save as Snippet..."
+
 ```
-💾 Save as Snippet → Opens complete workflow dialog:
-
 ┌───────────────────────────────────────────────────┐
 │ Save as Snippet                              [ X ] │
 ├───────────────────────────────────────────────────┤
 │ Content Preview:                                  │
 │ ┌─────────────────────────────────────────────┐   │
 │ │ This is the current clipboard content      │   │
-│ │ that will be saved as a snippet...         │   │ ← Preview area
+│ │ that will be saved as a snippet...         │   │
 │ │ [Content shows here]                       │   │
 │ └─────────────────────────────────────────────┘   │
 │                                                   │
 │ Snippet Name:                                     │
 │ ┌─────────────────────────────────────────────┐   │
-│ │ Meeting Request Template                    │   │ ← Auto-suggested name
+│ │ Meeting Request Template                    │   │ ← Auto-suggested
 │ └─────────────────────────────────────────────┘   │
 │                                                   │
 │ Save to Folder:                                   │
 │ ┌─────────────────────────────────────────────┐   │
-│ │ Email Templates                         ▼   │   │ ← Dropdown with existing folders
+│ │ Email Templates                         ▼   │   │ ← Dropdown
 │ └─────────────────────────────────────────────┘   │
-│ ☐ Create new folder: [________________]          │ ← Option to create new folder
+│ ☐ Create new folder: [________________]          │
 │                                                   │
 │ Tags: (optional)                                  │
 │ ┌─────────────────────────────────────────────┐   │
-│ │ #email #template #meeting                   │   │ ← Optional tags for organization
+│ │ #email #template #meeting                   │   │
 │ └─────────────────────────────────────────────┘   │
 │                                                   │
 │        [ Save Snippet ]  [ Cancel ]               │
 └───────────────────────────────────────────────────┘
 ```
 
-#### Quick Save from History (Right-click any clip)
-```
-Right-click any history item:
-├── 📋 Copy Again
-├── 💾 Save as Snippet...     ← Opens same dialog with this clip's content
-├── ───────────────────────
-└── 🗑️ Remove from History
-```
+### Smart Name Suggestions
+- Auto-detect content type (email, code, URL, etc.)
+- Extract meaningful names from content
+- Learn from user naming patterns
+- First line or key phrase suggestions
 
-#### Smart Name Suggestions
-- **Auto-detect content type**: Email templates, code snippets, addresses, etc.
-- **Suggest meaningful names**: "Meeting Request Template", "Git Commit Command", etc.
-- **Learn from user patterns**: Remember naming conventions
-- **Extract from content**: Use first line or key phrases as suggestions
+## Folder Management
 
-### Advanced Folder Management
+### Manage Folders Dialog
+
+Opened via 📁 button:
+
 ```
-📁 Manage Folders → Opens sidebar:
-
 ┌─────────────────────┐
-│ Folder Management   │
+│ Manage Folders      │
 ├─────────────────────┤
 │ 📁 Email Templates  │ ← Drag to reorder
 │ 📁 Code Snippets    │
@@ -162,116 +213,48 @@ Right-click any history item:
 │ 📁 Work Notes       │
 ├─────────────────────┤
 │ ➕ New Folder       │
-│ 📋 Import Folder    │
 │ 🗑️ Delete Selected  │
 │                     │
 │ [ Done ]            │
 └─────────────────────┘
 ```
 
-### Folder Icons and Customization
-```
-🎨 Change Folder Icon → Icon picker:
+### Folder Context Menu
+Right-click any folder:
+- Rename Folder...
+- Change Icon...
+- Folder Statistics...
+- Delete Folder
 
-┌─────────────────────────────────┐
-│ Choose Folder Icon              │
-├─────────────────────────────────┤
-│ 📁 📂 📋 📝 📊 💼 🔧 ⚙️ 📧  │
-│ 🏢 👥 🎯 💡 🔒 🌟 🎨 📱 🖥️  │
-│ 🔍 📈 📉 📅 ⏰ 🎵 📷 🎮 🍕  │
-├─────────────────────────────────┤
-│ Custom: [🎭] [Load Image...]    │
-│                                 │
-│ [ Apply ] [ Cancel ] [ Reset ]  │
-└─────────────────────────────────┘
-```
+### Folder Icons
+Available icons for customization:
+- 📁 📂 📋 📝 📊 💼 🔧 ⚙️ 📧
+- 🏢 👥 🎯 💡 🔒 🌟 🎨 📱 🖥️
+- And more...
 
-## Right Column Enhancements
+## Settings Window
 
-### Folder States and Controls
-```
-📁 Email Templates ▼                    ← Expanded, click to collapse
-  ├── Meeting Request                    ← Individual snippets
-  ├── Follow Up
-  └── Thank You
-  ──────────────────
-  ➕ Add snippet here...                 ← Quick add option
-
-📁 Code Snippets ▲                      ← Collapsed, click to expand
-  (5 snippets)                          ← Show count when collapsed
-
-📁 Work Notes ▼                         ← Expanded folder
-  ├── Daily standup template
-  ├── Project status update
-  └── Weekly meeting agenda
-  ──────────────────
-  📋 Paste current clipboard here        ← Quick add from current clipboard
-```
-
-### Quick Save Options from Left Column
-```
-Each recent clip has a quick save button on hover:
-
-1. "Latest clipboard item preview..."     [💾]  ← Quick save button
-2. "Second most recent item..."           [💾]
-3. "Third clipboard item..."              [💾]
-```
-
-#### Drag & Drop Workflow
-```
-📋 RECENT CLIPS                    │ 📁 SAVED SNIPPETS
-                                   │
-1. "Meeting template..."     [💾]  │ 📁 Email Templates ▼
-   ┌─────────────────────┐        │   ├── Previous template
-   │ Drag me to folder → │ ═══════│   └── [Drop zone highlighted]
-   └─────────────────────┘        │
-                                   │ 📁 Code Snippets ▼
-                                   │   └── [Drop zone]
-```
-
-- **Drag from left to right**: Auto-opens name dialog
-- **Visual feedback**: Drop zones highlight when valid
-- **Smart folder detection**: Suggests appropriate folder based on content
-
-### Snippet Operations
-```
-Right-click any snippet:
-├── 📋 Copy to Clipboard
-├── 📝 Edit Content...
-├── 🏷️ Rename...
-├── 📋 Duplicate
-├── ───────────────────
-├── 📁 Move to Folder ▶
-├── ⭐ Add to Favorites
-├── 🏷️ Edit Tags...
-├── ───────────────────
-└── 🗑️ Delete
-```
-
-## Settings Window (⚙️ Gear Icon)
+Opened via ⚙️ button:
 
 ```
-⚙️ SimpleCP Settings
-
 ┌─────────────────────────────────────┐
 │ SimpleCP Preferences                │
 ├─────────────────────────────────────┤
-│ 🔧 General   🎨 Appearance   📋 Clips  📁 Snippets │ ← Tabs
+│ 🔧 General   🎨 Appearance   📋 Data │
 ├─────────────────────────────────────┤
 │ GENERAL SETTINGS                    │
 │                                     │
 │ Startup:                            │
 │ ☑ Launch at login                   │
-│ ☑ Start minimized                   │
-│                                     │
-│ Window:                             │
-│ Position: ● Center  ○ Remember      │
-│ Size: ○ Compact ● Normal ○ Large    │
 │                                     │
 │ Shortcuts:                          │
 │ Open SimpleCP: [⌘⌥V     ] [Set]    │
-│ Quick search: [⌘⌥F      ] [Set]    │
 │ Paste #1: [⌘⌥1         ] [Set]    │
+│ Paste #2: [⌘⌥2         ] [Set]    │
+│                                     │
+│ History:                            │
+│ Keep items: [100           ▼]      │
+│ ☑ Monitor clipboard                 │
 │                                     │
 │ [ Save ] [ Cancel ] [ Defaults ]    │
 └─────────────────────────────────────┘
@@ -282,223 +265,220 @@ Right-click any snippet:
 🎨 APPEARANCE SETTINGS
 
 Theme: ● Auto  ○ Light  ○ Dark
-Window opacity: [████████▓▓] 90%
 
 Fonts:
 Interface: [SF Pro        ▼] Size: [13▼]
 Clips: [SF Mono          ▼] Size: [12▼]
 
-Colors:
-Header: [#2D3748] Accent: [#3182CE]
-Background: [#F7FAFC] Text: [#2D3748]
-
 ☑ Show folder icons
 ☑ Animate folder expand/collapse
-☐ Show snippet previews on hover
+☑ Show save button on hover
 ```
 
-## Technical Implementation Updates
+### Data Settings Tab
+```
+📋 DATA SETTINGS
 
-### New Class Structure
-```python
-class SimpleCP(rumps.App):
-    def __init__(self):
-        super().__init__("📋")
-        self.main_window = None
+History:
+Max items: [100         ] items
+Auto-clear: [Never      ▼]
 
-    @rumps.clicked("Open SimpleCP")
-    def show_main_window(self, _):
-        if not self.main_window:
-            self.main_window = MainWindow()
-        self.main_window.show()
+Snippets:
+☑ Sync via iCloud
+☑ Backup automatically
 
-class MainWindow(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.setup_window()
-        self.create_header()
-        self.create_search_bar()
-        self.create_control_bar()
-        self.create_two_columns()
-
-    def create_header(self):
-        # Window header with title, search icon, settings icon
-        pass
-
-    def create_search_bar(self):
-        # Always-visible search with real-time filtering
-        pass
-
-    def create_control_bar(self):
-        # Snippet management buttons
-        pass
+[ 📤 Export All ] [ 📥 Import ] [ 🗑️ Clear All ]
 ```
 
-### Header Manager
-```python
-class HeaderManager:
-    def __init__(self, parent_window):
-        self.window = parent_window
-        self.search_var = tk.StringVar()
+## Interaction Patterns
 
-    def create_header_bar(self):
-        # Title, search icon, settings gear
-        pass
+### Click Actions
+- **Clipboard item**: Copy to clipboard
+- **Snippet**: Copy to clipboard
+- **Folder header**: Expand/collapse
+- **Save button (💾)**: Open save dialog
 
-    def create_search_bar(self):
-        # Real-time search with filtering
-        self.search_var.trace('w', self.on_search_change)
+### Hover States
+- Show save button on clipboard items
+- Highlight rows
+- Show tooltips on buttons
 
-    def on_search_change(self, *args):
-        # Filter both columns based on search
-        search_term = self.search_var.get()
-        self.window.filter_content(search_term)
+### Context Menus
+- Right-click clipboard items
+- Right-click snippets
+- Right-click folders
 
-    def show_settings(self):
-        # Open settings window
-        pass
+### Keyboard Shortcuts
+- `⌘⌥V`: Toggle SimpleCP dropdown
+- `⌘⌥1-9`: Quick paste from positions 1-9
+- `⌘F`: Focus search field
+- `Esc`: Close dropdown
+
+## Technical Implementation (Swift/SwiftUI)
+
+### App Structure
+```swift
+@main
+struct SimpleCPApp: App {
+    var body: some Scene {
+        MenuBarExtra("SimpleCP", systemImage: "doc.on.clipboard") {
+            ContentView()
+                .frame(width: 600, height: 400)
+        }
+        .menuBarExtraStyle(.window)
+    }
+}
 ```
 
-### Snippet Workflow Manager
-```python
-class SnippetWorkflowManager:
-    def __init__(self, parent_window):
-        self.window = parent_window
-        self.name_suggester = NameSuggester()
+### Main View Structure
+```swift
+struct ContentView: View {
+    @StateObject var appState = AppState()
+    @State private var searchText = ""
 
-    def save_as_snippet(self, content=None):
-        # Open complete save workflow dialog
-        if content is None:
-            content = pyperclip.paste()
+    var body: some View {
+        VStack(spacing: 0) {
+            // Combined search & control bar
+            CombinedBar(searchText: $searchText)
 
-        dialog = SnippetSaveDialog(
-            content=content,
-            suggested_name=self.name_suggester.suggest(content),
-            existing_folders=self.get_folders()
-        )
-        return dialog.show()
+            Divider()
 
-    def quick_save_from_history(self, clip_item):
-        # Right-click save from history item
-        return self.save_as_snippet(clip_item.content)
-
-    def drag_drop_save(self, clip_content, target_folder):
-        # Handle drag & drop to folder
-        name_dialog = QuickNameDialog(clip_content, target_folder)
-        return name_dialog.show()
-
-class NameSuggester:
-    def suggest(self, content):
-        # AI-powered name suggestion based on content
-        # - Detect email templates, code, URLs, etc.
-        # - Extract meaningful phrases
-        # - Learn from user patterns
-        pass
-
-class SnippetSaveDialog:
-    def __init__(self, content, suggested_name, existing_folders):
-        self.content = content
-        self.suggested_name = suggested_name
-        self.folders = existing_folders
-        self.create_dialog()
-
-    def create_dialog(self):
-        # Create the complete save workflow dialog
-        # - Content preview
-        # - Name field with suggestion
-        # - Folder dropdown + create new option
-        # - Tags field
-        # - Save/Cancel buttons
-        pass
+            // Two-column layout
+            HStack(spacing: 0) {
+                RecentClipsColumn(searchText: searchText)
+                Divider()
+                SavedSnippetsColumn(searchText: searchText)
+            }
+        }
+        .environmentObject(appState)
+    }
+}
 ```
 
-### Drag & Drop Manager
-```python
-class DragDropManager:
-    def __init__(self, left_column, right_column):
-        self.left_column = left_column
-        self.right_column = right_column
-        self.setup_drag_drop()
+### Combined Bar Component
+```swift
+struct CombinedBar: View {
+    @Binding var searchText: String
+    @EnvironmentObject var appState: AppState
 
-    def setup_drag_drop(self):
-        # Enable drag from left column items
-        # Enable drop on right column folders
-        pass
+    var body: some View {
+        HStack(spacing: 12) {
+            // Search field
+            HStack {
+                Image(systemName: "magnifyingglass")
+                TextField("Search clips and snippets...", text: $searchText)
+            }
+            .padding(8)
+            .background(Color.secondary.opacity(0.1))
+            .cornerRadius(6)
 
-    def on_drag_start(self, clip_item):
-        # Visual feedback for drag operation
-        pass
+            Spacer()
 
-    def on_drop_hover(self, folder):
-        # Highlight drop zones
-        pass
-
-    def on_drop_complete(self, clip_item, target_folder):
-        # Complete the save workflow
-        workflow = SnippetWorkflowManager(self.parent)
-        workflow.drag_drop_save(clip_item.content, target_folder)
+            // Control buttons
+            Button(action: { appState.showCreateSnippet = true }) {
+                Image(systemName: "plus.circle.fill")
+            }
+            Button(action: { appState.showManageFolders = true }) {
+                Image(systemName: "folder.fill")
+            }
+            Button(action: { appState.showClearHistory = true }) {
+                Image(systemName: "doc.on.clipboard.fill")
+            }
+            Button(action: { appState.showSettings = true }) {
+                Image(systemName: "gearshape.fill")
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+    }
+}
 ```
 
-### Settings Manager
-```python
-class SettingsManager:
-    def __init__(self):
-        self.load_settings()
+### Data Models
+```swift
+struct ClipboardItem: Identifiable, Codable {
+    let id: UUID
+    let clipId: String
+    let content: String
+    let timestamp: Date
+    let displayString: String
+    let snippetName: String?
+    let folderPath: String?
+    let tags: [String]
+}
 
-    def show_settings_window(self):
-        # Multi-tab settings window
-        pass
+struct SnippetFolder: Identifiable, Codable {
+    let id: UUID
+    let name: String
+    let icon: String
+    var isExpanded: Bool
+    var snippets: [ClipboardItem]
+}
+```
 
-    def apply_theme(self, theme_name):
-        # Apply light/dark/auto theme
-        pass
+### Backend Integration
+```swift
+class APIClient {
+    private let baseURL = "http://127.0.0.1:8000"
 
-    def set_shortcuts(self, shortcuts_dict):
-        # Configure keyboard shortcuts
-        pass
-
-    def get_snippet_settings(self):
-        # Return settings for snippet behavior
-        # - Auto-name suggestions on/off
-        # - Default folder behavior
-        # - Tag suggestions
-        pass
+    func getHistory() async throws -> [ClipboardItem]
+    func getSnippets() async throws -> [String: [ClipboardItem]]
+    func createSnippet(request: CreateSnippetRequest) async throws
+    func deleteHistoryItem(id: String) async throws
+    func clearHistory() async throws
+}
 ```
 
 ## Implementation Priority
 
-### Phase 1: Core Window Framework
-1. ✅ Window with header bar (title + gear icon)
-2. 🔍 Always-visible search bar
-3. 💾 Control bar with "Save as Snippet" button
-4. 📋 Basic two-column layout
+### Phase 1: Core Structure ✅
+- [x] MenuBarExtra app setup
+- [x] Combined search & control bar
+- [x] Two-column layout
+- [x] Basic data models
 
-### Phase 2: Snippet Workflow (Key Feature)
-1. 💾 Complete "Save as Snippet" dialog
-2. 🤖 Smart name suggestion system
-3. 📁 Folder creation within snippet workflow
-4. 🏷️ Tags and organization features
-5. 📋 Quick save buttons on history items
+### Phase 2: History Column
+- [ ] Display recent clips from backend
+- [ ] Auto-generated history folders
+- [ ] Click to copy functionality
+- [ ] Right-click context menus
+- [ ] Hover save button
 
-### Phase 3: Advanced Interactions
-1. 🖱️ Drag & drop from history to folders
-2. 👆 Right-click context menus
-3. 🔍 Real-time search filtering
-4. 📂 Folder expand/collapse functionality
+### Phase 3: Snippets Column
+- [ ] Display snippet folders
+- [ ] Expand/collapse folders
+- [ ] Click snippet to copy
+- [ ] Context menus
+- [ ] Folder management
 
-### Phase 4: History Management
-1. 📋 Auto-generated history folders (11-20, 21-30, etc.)
-2. 📊 History size configuration
-3. 🗑️ History management features
-4. 💾 Data persistence and loading
+### Phase 4: Snippet Workflow
+- [ ] Save as snippet dialog
+- [ ] Smart name suggestions
+- [ ] Folder selection
+- [ ] Tags support
+- [ ] Quick save from history
 
-### Phase 5: Polish & Settings
-1. ⚙️ Multi-tab settings window
-2. 🎨 Theme system (light/dark/auto)
-3. ⌨️ Global keyboard shortcuts
-4. 📤 Import/export functionality
-5. 🎨 Folder icons and customization
+### Phase 5: Search & Filtering
+- [ ] Real-time search
+- [ ] Filter both columns
+- [ ] Highlight matches
+- [ ] Auto-expand matching folders
 
-**Key Priority**: The snippet workflow (Phase 2) is the **core differentiator** and should be implemented early to validate the user experience.
+### Phase 6: Settings & Polish
+- [ ] Settings window
+- [ ] Theme support
+- [ ] Keyboard shortcuts
+- [ ] Import/export
+- [ ] iCloud sync
 
-This header-based design is **much more professional** and provides better organization of controls while maintaining the two-column efficiency!
+## Design Principles
+
+1. **Simplicity**: Clean, uncluttered MenuBarExtra dropdown
+2. **Speed**: Quick access from menu bar, instant search
+3. **Efficiency**: Combined bar saves vertical space
+4. **Familiarity**: Standard macOS UI patterns
+5. **Flexibility**: Customizable folders and shortcuts
+
+---
+
+**This MenuBarExtra design provides a lightweight, always-accessible clipboard manager that integrates seamlessly with macOS!** 🚀
