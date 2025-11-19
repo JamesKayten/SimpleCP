@@ -83,6 +83,74 @@ edit docs/ai_communication/VALIDATION_RULES.md
 - **Focuses** on high-level decisions while AIs handle quality assurance
 - **Benefits** from continuous code improvement
 
+## 🎚️ Progressive Automation: Start Free, Upgrade When Ready
+
+The framework supports **two modes** - start with free manual activation, upgrade to paid automation anytime.
+
+### Manual Mode (DEFAULT - FREE)
+**Perfect for:** Getting started, tight budgets, infrequent fixes
+
+✅ **Zero cost** - Uses your Claude Pro ($20/month)
+✅ **3-click activation** via OCC Launcher
+✅ **3-5 seconds** per activation
+✅ **Full functionality** - Everything works
+✅ **No setup complexity** - Just bookmark launcher
+
+**How it works:**
+1. TCC detects violation → GitHub creates issue
+2. You click OCC Launcher bookmark
+3. Copy prompt → Open Claude → Paste
+4. OCC fixes violations automatically
+
+### API Mode (OPTIONAL - AUTOMATED)
+**Perfect for:** High-volume usage, CI/CD integration, zero-touch operation
+
+✅ **Zero clicks** - Fully automated
+✅ **Instant** activation
+✅ **API-based** - Claude responds automatically
+✅ **Automatic fixes** - Commits and pushes for you
+✅ **Same framework** - Just flip a config setting
+
+**Cost:** ~$3-15 per activation (~$50-150/month typical usage)
+
+**How it works:**
+1. TCC detects violation → GitHub Action triggers
+2. API call sent to Claude automatically
+3. Claude analyzes and fixes violations
+4. Commits pushed, all done
+
+### Easy Upgrade Path
+
+Start with **Manual Mode** (free):
+```yaml
+# config.yml
+activation_mode: "manual"  # Default
+```
+
+When ready, upgrade to **API Mode** (automated):
+```yaml
+# config.yml
+activation_mode: "api"  # Just change this!
+```
+
+**That's it!** Add your Anthropic API key to GitHub Secrets and you're automated.
+
+[Complete API Setup Guide →](docs/API_SETUP.md)
+
+### Comparison
+
+| Feature | Manual Mode | API Mode |
+|---------|-------------|----------|
+| **Cost** | FREE ($0) | ~$3-15 per use |
+| **Speed** | 3-5 seconds | Instant |
+| **Clicks needed** | 3 | 0 |
+| **Setup** | Bookmark HTML file | API key + config |
+| **Best for** | Budget-conscious, occasional use | High volume, automation |
+| **Claude** | Uses Pro subscription | Separate API billing |
+| **Switching** | Edit config.yml anytime | Edit config.yml anytime |
+
+**Recommendation:** Start with Manual Mode, upgrade to API later if needed!
+
 ## 🏗️ Universal Compatibility
 
 ### Any Repository Type
@@ -181,23 +249,27 @@ your-project/
 ```
 ai_collaboration_framework/
 ├── README.md                    # This file - complete guide
+├── QUICK_START.md               # 5-minute setup guide
 ├── DEPLOYMENT_GUIDE.md          # Detailed installation instructions
+├── config.yml                   # Configuration (manual/API mode)
 ├── install.sh                   # One-command installer
 ├── occ-launcher.html           # Quick OCC activation control panel
 ├── docs/                       # Framework documentation
 │   ├── AI_COLLABORATION_FRAMEWORK.md
 │   ├── AI_WORKFLOW.md
 │   ├── OCC_PROMPT.md
+│   ├── API_SETUP.md           # Guide for enabling API mode
 │   ├── OCC_IMPLEMENTATION_TASKS.md
 │   ├── AI_COMMUNICATION_TEMPLATE.md
 │   └── FRAMEWORK_USAGE_GUIDE.md
 ├── workflows/                  # GitHub Action templates
 │   ├── README.md              # Workflow setup guide
-│   └── tcc-notification.yml   # Auto-issue creation
+│   └── tcc-notification.yml   # Hybrid workflow (manual + API)
+├── scripts/                    # Utility scripts
+│   └── activate-occ-api.sh    # API-based OCC activation
 ├── examples/                   # Example communication files
 │   ├── ai_communication/      # Sample TCC reports
 │   └── occ_communication/     # Sample OCC responses
-├── scripts/                    # Utility scripts
 └── templates/                  # Project templates
 ```
 
@@ -380,25 +452,27 @@ edit docs/ai_communication/VALIDATION_RULES.md
 "work ready"  # Command for Local AI
 
 # 8. When violations detected:
-# Option A: Click OCC Launcher bookmark → 3 clicks → Done
-# Option B: Manual: "Check docs/ai_communication/ for latest report"
+# Option A: Click OCC Launcher bookmark → 3 clicks → Done (Manual Mode)
+# Option B: Fully automated - no action needed (API Mode - see API_SETUP.md)
 ```
 
 ### Next Steps After Installation
 1. **Test the workflow** with a simple change
-2. **Bookmark OCC Launcher** for quick access (3-second activation)
-3. **Configure GitHub notifications** for automatic issue creation
-4. **Customize validation rules** for your project needs
+2. **Bookmark OCC Launcher** for quick access (Manual Mode)
+3. **Customize validation rules** for your project needs
+4. **Monitor AI collaboration** through communication files and GitHub issues
 5. **Train your team** on the AI commands and OCC Launcher
-6. **Monitor AI collaboration** through communication files and GitHub issues
-7. **Iterate and improve** validation rules based on results
+6. **Evaluate API mode** after you've used manual mode for a while
+7. **Upgrade to API** if automation is worth the cost (see [API Setup Guide](docs/API_SETUP.md))
 
 ### Pro Tips
+- **Start Manual**: Use free Manual Mode first, learn the system, then decide on API
 - **OCC Launcher**: Keep it bookmarked in your browser's bookmark bar for instant access
-- **GitHub Actions**: Use issue labels to filter TCC reports (`tcc-report`)
-- **Standard Prompt**: The same OCC prompt works every time - no customization needed
+- **GitHub Actions**: Use issue labels to filter TCC reports (`tcc-report`, `manual-mode`, `occ-success`)
+- **Standard Prompt**: The same OCC prompt works in both modes - no customization needed
 - **Keyboard Shortcuts**: `Cmd+K` copies prompt, `Cmd+Enter` opens Claude (in OCC Launcher)
-- **Mobile Friendly**: OCC Launcher works on mobile browsers too!
+- **Easy Upgrade**: Change one line in config.yml to switch between Manual and API modes
+- **Cost Tracking**: If using API mode, monitor usage at console.anthropic.com
 
 ---
 

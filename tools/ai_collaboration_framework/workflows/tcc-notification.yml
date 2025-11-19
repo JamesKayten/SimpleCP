@@ -1,7 +1,8 @@
-name: TCC Violation Notification
+name: TCC Violation Handler (Hybrid)
 
-# This workflow creates a GitHub issue when TCC (Technical Control Claude)
-# detects violations in the codebase
+# This workflow handles TCC violation reports in two modes:
+# - Manual mode: Creates GitHub issue for human to activate OCC
+# - API mode: Automatically activates OCC via Anthropic API
 
 on:
   push:
@@ -13,12 +14,20 @@ on:
   workflow_dispatch:  # Manual trigger option
 
 jobs:
-  check-violations:
+  handle-violations:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Need full history for git operations
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq yq curl
 
       - name: Check for TCC reports
         id: check-reports
@@ -39,8 +48,177 @@ jobs:
             echo "found=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create OCC Activation Issue
+      - name: Read framework configuration
+        id: read-config
         if: steps.check-reports.outputs.found == 'true'
+        run: |
+          CONFIG_FILE="tools/ai_collaboration_framework/config.yml"
+
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Config file not found, using defaults"
+            echo "activation_mode=manual" >> $GITHUB_OUTPUT
+            echo "create_issues=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Read activation mode
+          ACTIVATION_MODE=$(yq eval '.activation_mode' "$CONFIG_FILE" 2>/dev/null || echo "manual")
+          echo "activation_mode=$ACTIVATION_MODE" >> $GITHUB_OUTPUT
+
+          # Read GitHub settings
+          CREATE_ISSUES=$(yq eval '.github.create_issues' "$CONFIG_FILE" 2>/dev/null || echo "true")
+          echo "create_issues=$CREATE_ISSUES" >> $GITHUB_OUTPUT
+
+          echo "Configuration loaded:"
+          echo "  Activation mode: $ACTIVATION_MODE"
+          echo "  Create issues: $CREATE_ISSUES"
+
+      - name: Activate OCC via API (Automated Mode)
+        id: api-activation
+        if: |
+          steps.check-reports.outputs.found == 'true' &&
+          steps.read-config.outputs.activation_mode == 'api'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🤖 Automated mode: Activating OCC via API..."
+
+          # Check for API key
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "❌ ERROR: ANTHROPIC_API_KEY secret not set"
+            echo "Please add your Anthropic API key to repository secrets"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "error=API key not configured" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Run OCC activation script
+          cd tools/ai_collaboration_framework
+          ./scripts/activate-occ-api.sh "${{ steps.check-reports.outputs.report_path }}"
+
+          if [ $? -eq 0 ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ OCC activated successfully via API"
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "error=Script execution failed" >> $GITHUB_OUTPUT
+            echo "❌ OCC activation failed"
+            exit 1
+          fi
+
+      - name: Create audit issue (API mode)
+        if: |
+          steps.check-reports.outputs.found == 'true' &&
+          steps.read-config.outputs.activation_mode == 'api' &&
+          steps.read-config.outputs.create_issues == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportPath = '${{ steps.check-reports.outputs.report_path }}';
+            const summary = `${{ steps.check-reports.outputs.summary }}`;
+            const timestamp = new Date().toISOString();
+            const apiStatus = '${{ steps.api-activation.outputs.status }}';
+
+            const statusEmoji = apiStatus === 'success' ? '✅' : '❌';
+            const statusText = apiStatus === 'success' ? 'Successfully Activated' : 'Activation Failed';
+
+            const issueBody = `## 🤖 OCC Automated Activation ${statusEmoji}
+
+**Status:** ${statusText}
+**Activation Method:** API (Automated)
+**Report Location:** \`${reportPath}\`
+**Detection Time:** ${timestamp}
+**Branch:** \`${{ github.ref_name }}\`
+**Commit:** \`${{ github.sha }}\`
+
+---
+
+### 📊 Report Summary
+
+\`\`\`
+${summary}
+\`\`\`
+
+[View Full Report](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/${reportPath})
+
+---
+
+### 🔄 Automated Actions Taken
+
+${apiStatus === 'success' ? `
+- ✅ OCC was automatically activated via Anthropic API
+- ✅ Claude analyzed the violation report
+- ✅ Fixes have been applied and committed
+- ✅ Response saved to docs/ai_communication/
+
+**Next Steps:**
+- Check the latest commits for OCC's fixes
+- Review docs/ai_communication/ for OCC's response
+- TCC will re-validate automatically
+` : `
+- ❌ Automated activation failed
+- 🔧 Error: ${{ steps.api-activation.outputs.error }}
+
+**Manual Fallback Required:**
+Use the OCC Launcher or manual activation below.
+`}
+
+---
+
+### 🔧 Manual Fallback (If Needed)
+
+**Option 1: Use OCC Launcher**
+1. Download [OCC Launcher](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/occ-launcher.html)
+2. Click "Copy OCC Activation Prompt"
+3. Click "Open Claude.ai" and paste
+
+**Option 2: Manual Prompt**
+\`\`\`
+I am the Operational Control Claude (OCC) for the AI Collaboration Framework.
+
+TASK: Check for and respond to latest TCC (Technical Control Claude) reports
+
+INSTRUCTIONS:
+1. Read all files in docs/ai_communication/ directory
+2. Look for the most recent TCC report (sorted by timestamp)
+3. Review any violations or issues documented
+4. If violations found: Take immediate corrective action following OCC protocols
+5. If no violations: Confirm framework status is healthy
+
+FRAMEWORK LOCATION: The ${{ github.repository }} repository contains the framework in:
+- docs/ai_communication/ - All TCC reports and communication logs
+- docs/ai_collaboration_framework.md - Protocol documentation
+
+Begin by checking the latest TCC report and respond accordingly.
+\`\`\`
+
+---
+
+### 🔗 Quick Links
+- [View All Reports](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}/docs/ai_communication)
+- [Framework Configuration](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/config.yml)
+- [Open Claude.ai](https://claude.ai/new)
+
+---
+
+*This issue was automatically created for audit trail purposes*
+*${apiStatus === 'success' ? 'OCC has already processed this violation' : 'Manual intervention required'}*`;
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 OCC ${statusText} - TCC Report ${new Date().toISOString().split('T')[0]}`,
+              body: issueBody,
+              labels: ['tcc-report', 'occ-activation', 'automated', apiStatus === 'success' ? 'occ-success' : 'occ-failed']
+            });
+
+            console.log(`Created audit issue #${issue.data.number}`);
+
+      - name: Create manual activation issue (Manual mode)
+        if: |
+          steps.check-reports.outputs.found == 'true' &&
+          steps.read-config.outputs.activation_mode == 'manual'
         uses: actions/github-script@v7
         with:
           script: |
@@ -50,6 +228,7 @@ jobs:
 
             const issueBody = `## 🚨 TCC Violation Report Detected
 
+**Activation Mode:** Manual (Free)
 **Report Location:** \`${reportPath}\`
 **Detection Time:** ${timestamp}
 **Branch:** \`${{ github.ref_name }}\`
@@ -59,7 +238,7 @@ jobs:
 
 ### 📋 Quick Actions
 
-**Option 1: Use OCC Launcher (Fastest - 3 clicks)**
+**Option 1: Use OCC Launcher (Fastest - 3 clicks, FREE)**
 1. Open the [OCC Launcher](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/occ-launcher.html) (download and open in browser)
 2. Click "Copy OCC Activation Prompt"
 3. Click "Open Claude.ai" and paste
@@ -99,35 +278,64 @@ ${summary}
 
 ---
 
+### 💡 Want Automated Activation?
+
+This framework can automatically activate OCC via API!
+
+**To enable:**
+1. Get Anthropic API key from https://console.anthropic.com
+2. Add to GitHub Secrets: \`ANTHROPIC_API_KEY\`
+3. Edit \`tools/ai_collaboration_framework/config.yml\`
+4. Change \`activation_mode: "manual"\` to \`activation_mode: "api"\`
+
+Cost: ~$3-15 per activation | Time: Instant | Zero clicks needed
+
+---
+
 ### 🔗 Quick Links
 - [Open Claude.ai](https://claude.ai/new)
 - [View All Reports](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}/docs/ai_communication)
 - [Framework Documentation](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/docs/AI_COLLABORATION_FRAMEWORK.md)
+- [API Setup Guide](https://github.com/${{ github.repository }}/blob/main/tools/ai_collaboration_framework/docs/API_SETUP.md)
 
 ---
 
 *This issue was automatically created by the AI Collaboration Framework*
 *Close this issue once violations have been addressed*`;
 
-            // Create the issue
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `🤖 OCC Activation Required - TCC Report ${new Date().toISOString().split('T')[0]}`,
               body: issueBody,
-              labels: ['tcc-report', 'occ-activation', 'automated']
+              labels: ['tcc-report', 'occ-activation', 'manual-mode']
             });
 
-            console.log(`Created issue #${issue.data.number}`);
+            console.log(`Created manual activation issue #${issue.data.number}`);
 
       - name: Comment on commit
         if: steps.check-reports.outputs.found == 'true'
         uses: actions/github-script@v7
         with:
           script: |
+            const mode = '${{ steps.read-config.outputs.activation_mode }}';
+            const apiStatus = '${{ steps.api-activation.outputs.status }}';
+
+            let message = '🤖 TCC violation report detected. ';
+
+            if (mode === 'api') {
+              if (apiStatus === 'success') {
+                message += 'OCC was automatically activated and fixes have been applied. ✅';
+              } else {
+                message += 'OCC activation failed. Check Actions logs and Issues for details. ❌';
+              }
+            } else {
+              message += 'Check Issues tab for OCC activation instructions. 📋';
+            }
+
             await github.rest.repos.createCommitComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: context.sha,
-              body: '🤖 TCC violation report detected. OCC activation issue created. Check Issues tab for details.'
+              body: message
             });

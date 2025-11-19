@@ -1,0 +1,150 @@
+# AI Collaboration Framework Configuration
+#
+# This file controls how OCC (Operational Control Claude) gets activated
+# when TCC detects violations.
+
+# ============================================================================
+# ACTIVATION MODE
+# ============================================================================
+# Choose how OCC should be activated:
+#
+# "manual" - Free mode using OCC Launcher
+#   - GitHub creates issues with prompt
+#   - You click OCC Launcher bookmark (3 clicks)
+#   - Uses your existing Claude Pro subscription
+#   - Cost: $0 (included in Claude Pro)
+#   - Time: 3-5 seconds
+#
+# "api" - Automated mode using Anthropic API
+#   - GitHub automatically sends prompt to Claude via API
+#   - Claude responds and commits fixes automatically
+#   - Requires ANTHROPIC_API_KEY in GitHub Secrets
+#   - Cost: ~$3-15 per activation
+#   - Time: Instant (zero clicks)
+#
+activation_mode: "manual"  # Change to "api" for automated mode
+
+# ============================================================================
+# API CONFIGURATION (only used if activation_mode = "api")
+# ============================================================================
+api:
+  # Model to use for OCC activations
+  # Options: claude-sonnet-4-5, claude-opus-4, claude-sonnet-3-5
+  # Recommended: claude-sonnet-4-5 (best balance of speed/quality/cost)
+  model: "claude-sonnet-4-5-20250929"
+
+  # Maximum tokens for Claude's response
+  # Typical fixes: 2000-8000 tokens
+  # Complex refactors: 8000-16000 tokens
+  max_tokens: 16000
+
+  # Temperature (0.0 = deterministic, 1.0 = creative)
+  # Use 0.0 for code fixes (consistent results)
+  temperature: 0.0
+
+  # Timeout for API requests (seconds)
+  timeout: 120
+
+# ============================================================================
+# GITHUB INTEGRATION
+# ============================================================================
+github:
+  # Create issues even in API mode (for audit trail)
+  # true = Always create issues
+  # false = Only create issues in manual mode
+  create_issues: true
+
+  # Issue labels
+  labels:
+    - "tcc-report"
+    - "occ-activation"
+    - "automated"
+
+  # Auto-close issues after OCC fixes (only in API mode)
+  auto_close_on_fix: true
+
+  # Assign issues to specific users (optional)
+  # Leave empty for no assignment
+  assignees: []
+
+# ============================================================================
+# OCC BEHAVIOR
+# ============================================================================
+occ:
+  # Branch where OCC commits fixes
+  # "same" = Same branch where violation was found
+  # "new" = Create new branch (occ-fix-{timestamp})
+  fix_branch_strategy: "same"
+
+  # Commit message prefix for OCC fixes
+  commit_prefix: "[OCC]"
+
+  # Push fixes automatically (API mode only)
+  # true = Auto-push after fixing
+  # false = Leave fixes uncommitted for review
+  auto_push: true
+
+  # Create pull request after fixing (API mode only)
+  # true = Auto-create PR for review
+  # false = Just push to branch
+  create_pr_after_fix: false
+
+# ============================================================================
+# VALIDATION
+# ============================================================================
+validation:
+  # Re-validate after OCC fixes (API mode only)
+  # true = Run TCC validation again after OCC fixes
+  # false = Trust OCC's fixes
+  revalidate_after_fix: true
+
+  # Max retry attempts if fixes don't pass validation
+  max_retries: 2
+
+# ============================================================================
+# NOTIFICATIONS
+# ============================================================================
+notifications:
+  # Notification channels (requires additional setup)
+  slack:
+    enabled: false
+    webhook_url_secret: "SLACK_WEBHOOK_URL"  # GitHub Secret name
+
+  discord:
+    enabled: false
+    webhook_url_secret: "DISCORD_WEBHOOK_URL"  # GitHub Secret name
+
+  email:
+    enabled: false
+    smtp_secret: "EMAIL_SMTP_CONFIG"  # GitHub Secret name
+
+# ============================================================================
+# COST CONTROLS (API mode only)
+# ============================================================================
+cost_controls:
+  # Maximum OCC activations per day (prevent runaway costs)
+  # 0 = unlimited
+  max_activations_per_day: 10
+
+  # Maximum tokens per activation (hard limit)
+  # Prevents extremely expensive requests
+  max_tokens_per_activation: 20000
+
+  # Alert when daily cost exceeds threshold (USD)
+  # 0 = no alerts
+  daily_cost_alert_threshold: 50
+
+# ============================================================================
+# ADVANCED
+# ============================================================================
+advanced:
+  # Log level for debugging
+  # Options: debug, info, warning, error
+  log_level: "info"
+
+  # Preserve communication files after processing
+  preserve_reports: true
+
+  # Custom OCC prompt override (leave empty to use default)
+  # Only change if you know what you're doing!
+  custom_occ_prompt: ""
