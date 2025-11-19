@@ -1,6 +1,76 @@
 # AI Task Framework Usage Guide
 
-## Quick Start for AI Agents
+---
+
+## 📋 TCC: HOW TO ASSIGN TASKS (Read This First!)
+
+### Simple 3-Step Process
+
+**Step 1: Update `.ai/STATUS` file**
+```bash
+nano .ai/STATUS
+```
+Change these fields:
+- `TASK_STATE=PENDING` (was IDLE)
+- `SUMMARY="Brief task description"`
+- `PRIORITY=1` (1=Critical, 2=High, 3=Normal, 4=Low)
+- `ASSIGNED_TO=OCC` (or ANY for any AI)
+- `EFFORT_HOURS=4` (estimated hours)
+- `TASK_SECTION="Priority 1"` (optional - points to specific section)
+
+**Step 2: Update `.ai/CURRENT_TASK.md`**
+```bash
+# Use the template as a guide:
+cat .ai/CURRENT_TASK.md.TEMPLATE
+
+# Then edit CURRENT_TASK.md:
+nano .ai/CURRENT_TASK.md
+```
+Fill in the **ACTIVE ASSIGNMENT** section at the top:
+- Status: PENDING
+- Task description
+- Files to modify
+- Execution steps
+- Definition of done
+
+**Step 3: Done! 🎉**
+The assigned AI will detect the task automatically at next session start.
+
+### Example Assignment
+
+```bash
+# STATUS file becomes:
+TASK_STATE=PENDING
+TASK_FILE=OCC_IMPLEMENTATION_TASKS.md
+TASK_SECTION="PRIORITY 1"
+PRIORITY=1
+EFFORT_HOURS=6
+ASSIGNED_TO=OCC
+SUMMARY="Rebuild Swift MenuBar app with two-column layout"
+```
+
+Then in CURRENT_TASK.md, the top section shows:
+```markdown
+## 🎯 ACTIVE ASSIGNMENT
+**Status:** PENDING
+**Assigned to:** OCC
+**Priority:** 🔴 CRITICAL
+
+### TASK DESCRIPTION
+Rebuild the Swift MenuBar application using the two-column layout
+specified in OCC_IMPLEMENTATION_TASKS.md, starting with Priority 1 tasks.
+
+**Start immediately by:**
+1. Read OCC_IMPLEMENTATION_TASKS.md Priority 1 section
+2. Replace App.swift with MenuBarExtra structure
+3. Rebuild ContentView.swift for two-column layout
+```
+
+**That's it!** The AI will find this and start working immediately.
+
+---
+
+## 🤖 AI AGENTS: Quick Start for Executing Work
 
 ### 1. Check for Work (Instant Detection)
 ```bash
