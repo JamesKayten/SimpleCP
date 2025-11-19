@@ -1,13 +1,58 @@
 # AI COLLABORATION - START HERE
 
-**ANY AI working on this repository:**
+## 🚀 FRAMEWORK UPDATED - NEW TASK DETECTION SYSTEM
 
-1. **Read `.ai/BEHAVIOR_RULES.md`** - Understand working style requirements
-2. **Read `.ai/CURRENT_TASK.md`** - Get current assignment
-3. **Execute tasks immediately** - No questions, no exploration
-4. **Update `.ai/CURRENT_TASK.md`** when tasks completed
+**Read `.ai/FRAMEWORK_USAGE.md` for complete guide**
 
-## Quick Start
+---
+
+## For AI AGENTS (OCC/Other AIs) - EXECUTING Work
+
+1. **Check for pending work** (instant detection):
+```bash
+./.ai/check-tasks.sh
+# OR
+source .ai/STATUS && echo $TASK_STATE
+```
+
+2. **Read assignment** if PENDING:
+```bash
+cat .ai/CURRENT_TASK.md
+```
+
+3. **Read working rules**:
+```bash
+cat .ai/BEHAVIOR_RULES.md
+```
+
+4. **Execute immediately** - No questions, no exploration
+
+5. **Update status when done**:
+```bash
+sed -i 's/TASK_STATE=IN_PROGRESS/TASK_STATE=IDLE/' .ai/STATUS
+```
+
+---
+
+## For TCC - ASSIGNING Work
+
+**⚡ 60-second guide:** `.ai/TCC_QUICK_REFERENCE.md`
+**📖 Full documentation:** `.ai/FRAMEWORK_USAGE.md`
+
+**Quick assign:**
+```bash
+# 1. Update STATUS file
+nano .ai/STATUS  # Set TASK_STATE=PENDING, add details
+
+# 2. Update CURRENT_TASK.md with task description
+# Use .ai/CURRENT_TASK.md.TEMPLATE as guide
+
+# 3. Done - AI will detect and execute automatically
+```
+
+---
+
+## Quick Start (Legacy - Still Works)
 ```bash
 # Read current assignment
 cat .ai/CURRENT_TASK.md

@@ -1,0 +1,82 @@
+# CURRENT AI TASK - SimpleCP
+**Last Updated:** [timestamp]
+
+---
+
+## 🎯 ACTIVE ASSIGNMENT
+
+**Status:** `IDLE` | `PENDING` | `IN_PROGRESS` | `BLOCKED`
+
+**Assigned to:** ANY | OCC | TCC | [specific AI name]
+
+**Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 NORMAL | ⚪ LOW
+
+**Estimated Effort:** X hours
+
+---
+
+### TASK DESCRIPTION
+
+[When IDLE: "No pending tasks. Awaiting instructions."]
+
+[When PENDING/IN_PROGRESS: Clear, actionable task description]
+
+**Objective:** [What needs to be accomplished]
+
+**Files to modify:**
+- path/to/file1.ext
+- path/to/file2.ext
+
+**Related documentation:**
+- Reference to OCC_IMPLEMENTATION_TASKS.md
+- Reference to UX specs
+- API documentation links
+
+---
+
+### EXECUTION STEPS
+
+**Start immediately by:**
+
+1. [First specific action with exact command/file]
+2. [Second specific action]
+3. [Third specific action]
+
+**Verification:**
+```bash
+# Commands to verify completion
+```
+
+**Definition of Done:**
+- [ ] Checklist item 1
+- [ ] Checklist item 2
+- [ ] Tests pass
+- [ ] Files committed
+
+---
+
+### CONTEXT & NOTES
+
+[Any important background information]
+
+**Blockers:** [List any known blockers or NONE]
+
+**Dependencies:** [What must be done first, or NONE]
+
+---
+
+## 📊 RECENT COMPLETIONS
+
+[Move completed work history here - keeps it for reference but out of the way]
+
+### [Date] - [Task Name]
+- Completed by: [AI name]
+- Branch: [branch name]
+- Outcome: [brief summary]
+
+---
+
+## 🗂️ ARCHIVED TASKS
+
+[Older historical information - collapsed/hidden]
+
