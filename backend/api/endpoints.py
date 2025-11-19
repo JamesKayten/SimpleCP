@@ -127,7 +127,10 @@ def create_router(clipboard_manager):
             )
         return clipboard_item_to_response(snippet)
 
-    @router.put("/api/snippets/{folder_name}/{clip_id}", response_model=SuccessResponse)
+    @router.put(
+        "/api/snippets/{folder_name}/{clip_id}",
+        response_model=SuccessResponse,
+    )
     async def update_snippet(
         folder_name: str, clip_id: str, request: UpdateSnippetRequest
     ):
@@ -153,7 +156,9 @@ def create_router(clipboard_manager):
         "/api/snippets/{folder_name}/{clip_id}/move",
         response_model=SuccessResponse,
     )
-    async def move_snippet(folder_name: str, clip_id: str, request: MoveSnippetRequest):
+    async def move_snippet(
+        folder_name: str, clip_id: str, request: MoveSnippetRequest
+    ):
         """Move snippet to different folder."""
         success = clipboard_manager.move_snippet(
             folder_name, request.to_folder, clip_id
@@ -180,7 +185,9 @@ def create_router(clipboard_manager):
     @router.put("/api/folders/{folder_name}", response_model=SuccessResponse)
     async def rename_folder(folder_name: str, request: RenameFolderRequest):
         """Rename snippet folder."""
-        success = clipboard_manager.rename_snippet_folder(folder_name, request.new_name)
+        success = clipboard_manager.rename_snippet_folder(
+            folder_name, request.new_name
+        )
         if not success:
             raise HTTPException(
                 status_code=404, detail="Folder not found or new name exists"
@@ -210,8 +217,12 @@ def create_router(clipboard_manager):
         """Search across history and snippets."""
         results = clipboard_manager.search_all(q)
         return SearchResponse(
-            history=[clipboard_item_to_response(item) for item in results["history"]],
-            snippets=[clipboard_item_to_response(item) for item in results["snippets"]],
+            history=[
+                clipboard_item_to_response(item) for item in results["history"]
+            ],
+            snippets=[
+                clipboard_item_to_response(item) for item in results["snippets"]
+            ],
         )
 
     # Stats endpoint
@@ -244,7 +255,6 @@ def create_router(clipboard_manager):
             raise HTTPException(status_code=400, detail="Import failed")
         return SuccessResponse(success=True, message="Import successful")
 
-    # POST search endpoint
     @router.post("/api/search", response_model=SearchResponse)
     async def search_post(request: SearchRequest):
         """Search across history and snippets (POST)."""
