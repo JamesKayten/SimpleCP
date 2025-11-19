@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCC Quick Launcher</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            padding: 15px 25px;
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .copy-btn {
+            background: #10a37f;
+            color: white;
+        }
+        .copy-btn:hover {
+            background: #0d8c6c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16,163,127,0.4);
+        }
+        .copy-btn.copied {
+            background: #059669;
+        }
+        .open-btn {
+            background: #764ba2;
+            color: white;
+        }
+        .open-btn:hover {
+            background: #5e3a82;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(118,75,162,0.4);
+        }
+        .github-btn {
+            background: #24292e;
+            color: white;
+        }
+        .github-btn:hover {
+            background: #1a1e21;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(36,41,46,0.4);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1e40af;
+        }
+        .prompt-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #374151;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fef3c7;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #92400e;
+        }
+        .instructions ol {
+            color: #78350f;
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+        .emoji {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 OCC Quick Launcher</h1>
+        <p class="subtitle">Operational Control Claude - AI Collaboration Framework</p>
+
+        <button class="button copy-btn" onclick="copyPrompt()">
+            <span class="emoji">📋</span>
+            <span id="copyText">Copy OCC Activation Prompt</span>
+        </button>
+
+        <button class="button open-btn" onclick="openClaude()">
+            <span class="emoji">🚀</span>Open Claude.ai in New Tab
+        </button>
+
+        <a href="https://github.com/JamesKayten/SimpleCP/issues?q=is%3Aissue+label%3Atcc-report+sort%3Acreated-desc"
+           class="button github-btn" target="_blank">
+            <span class="emoji">📊</span>View Latest TCC Reports on GitHub
+        </a>
+
+        <div class="status">
+            <strong>Standard Prompt Mode:</strong> This prompt tells OCC to check the framework for the latest TCC reports automatically. No custom prompts needed!
+        </div>
+
+        <details style="margin-top: 20px;">
+            <summary style="cursor: pointer; color: #6366f1; font-weight: 600;">
+                👁️ Preview Prompt
+            </summary>
+            <div class="prompt-preview" id="promptPreview"></div>
+        </details>
+
+        <div class="instructions">
+            <h3>⚡ Quick Start Guide</h3>
+            <ol>
+                <li>Click "<strong>Copy OCC Activation Prompt</strong>" (turns green when copied)</li>
+                <li>Click "<strong>Open Claude.ai</strong>" (opens in new tab)</li>
+                <li>Paste (<kbd>Cmd+V</kbd> / <kbd>Ctrl+V</kbd>) into Claude's input field</li>
+                <li>Press Enter - OCC will check framework and respond to latest violations</li>
+            </ol>
+            <p style="margin: 15px 0 0 0; font-size: 13px; color: #92400e;">
+                <strong>💡 Tip:</strong> Bookmark this page for instant access! Press <kbd>Cmd+D</kbd> / <kbd>Ctrl+D</kbd>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Standard OCC activation prompt - tells Claude to check framework for latest reports
+        const OCC_PROMPT = `I am the Operational Control Claude (OCC) for the AI Collaboration Framework.
+
+TASK: Check for and respond to latest TCC (Technical Control Claude) reports
+
+INSTRUCTIONS:
+1. Read all files in docs/ai_communication/ directory
+2. Look for the most recent TCC report (sorted by timestamp)
+3. Review any violations or issues documented
+4. If violations found: Take immediate corrective action following OCC protocols
+5. If no violations: Confirm framework status is healthy
+
+FRAMEWORK LOCATION: The SimpleCP repository contains the framework in:
+- docs/ai_communication/ - All TCC reports and communication logs
+- docs/ai_collaboration_framework.md - Protocol documentation
+- .github/workflows/ - Automation systems
+
+Begin by checking the latest TCC report and respond accordingly.`;
+
+        // Display prompt preview
+        document.getElementById('promptPreview').textContent = OCC_PROMPT;
+
+        // Copy prompt to clipboard
+        function copyPrompt() {
+            navigator.clipboard.writeText(OCC_PROMPT).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const text = document.getElementById('copyText');
+
+                // Visual feedback
+                btn.classList.add('copied');
+                text.textContent = '✓ Copied! Now open Claude and paste';
+
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    text.textContent = 'Copy OCC Activation Prompt';
+                }, 3000);
+            }).catch(err => {
+                alert('Failed to copy. Please copy manually from the preview below.');
+                console.error('Copy failed:', err);
+            });
+        }
+
+        // Open Claude.ai in new tab
+        function openClaude() {
+            window.open('https://claude.ai/new', '_blank');
+
+            // Show reminder
+            const status = document.querySelector('.status');
+            status.innerHTML = '<strong>🎯 Next Step:</strong> Paste the prompt (Cmd+V / Ctrl+V) into Claude and press Enter!';
+            status.style.background = '#dcfce7';
+            status.style.borderColor = '#22c55e';
+            status.style.color = '#166534';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Cmd/Ctrl + K to copy
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                copyPrompt();
+            }
+            // Cmd/Ctrl + Enter to open Claude
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault();
+                openClaude();
+            }
+        });
+    </script>
+</body>
+</html>
