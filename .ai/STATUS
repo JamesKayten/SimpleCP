@@ -2,25 +2,25 @@
 # Source this file or parse key=value pairs
 
 # Task state: IDLE | PENDING | IN_PROGRESS | BLOCKED
-TASK_STATE=IDLE
+TASK_STATE=PENDING
 
 # Points to detailed instructions (relative to project root)
-TASK_FILE=.ai/CURRENT_TASK.md
+TASK_FILE=.ai/COMMUNICATION_TEST.md
 
 # Quick reference to specific section/task
-TASK_SECTION=""
+TASK_SECTION="Test Task for Second AI"
 
 # Priority: 1=Critical, 2=High, 3=Normal, 4=Low
-PRIORITY=3
+PRIORITY=2
 
 # Estimated effort in hours (0 if unknown)
-EFFORT_HOURS=0
+EFFORT_HOURS=0.25
 
 # Which AI is assigned: ANY | OCC | TCC | SPECIFIC_NAME
 ASSIGNED_TO=ANY
 
 # Last updated timestamp
-UPDATED_AT=2025-11-19T15:47:00Z
+UPDATED_AT=2025-11-19T15:50:00Z
 
 # Quick one-line summary (empty if idle)
-SUMMARY=""
+SUMMARY="Communication test: Respond to PING with PONG"
