@@ -209,6 +209,152 @@ struct HistoryFolderRanges: View {
     }
 }
 
+struct SnippetFolderRow: View {
+    let folder: SnippetFolder
+    @State private var isExpanded = true
+    @EnvironmentObject var clipboardService: ClipboardService
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Folder header
+            HStack(spacing: 8) {
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Image(systemName: "folder.fill")
+                    .foregroundColor(.blue)
+
+                Text(folder.folderName)
+                    .font(.body)
+                    .fontWeight(.medium)
+
+                Spacer()
+
+                Text("\(folder.snippets.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.secondary.opacity(0.15))
+                    .cornerRadius(4)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            }
+            .contextMenu {
+                Button("New Snippet") {
+                    // TODO: Create new snippet
+                }
+                Button("Rename Folder") {
+                    // TODO: Rename folder
+                }
+                Divider()
+                Button("Delete Folder", role: .destructive) {
+                    Task {
+                        await deleteFolder()
+                    }
+                }
+            }
+
+            // Snippet items
+            if isExpanded {
+                VStack(spacing: 2) {
+                    ForEach(folder.snippets) { snippet in
+                        SnippetRow(snippet: snippet, folderName: folder.folderName)
+                    }
+                }
+                .padding(.leading, 16)
+            }
+        }
+    }
+
+    private func deleteFolder() async {
+        // TODO: Implement folder deletion
+    }
+}
+
+struct SnippetRow: View {
+    let snippet: ClipboardItem
+    let folderName: String
+    @State private var isHovering = false
+    @EnvironmentObject var clipboardService: ClipboardService
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "doc.text")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            VStack(alignment: .leading, spacing: 2) {
+                if let name = snippet.name {
+                    Text(name)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                }
+                Text(snippet.preview)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+
+            Spacer()
+
+            if !snippet.tags.isEmpty {
+                HStack(spacing: 4) {
+                    ForEach(snippet.tags.prefix(2), id: \.self) { tag in
+                        Text(tag)
+                            .font(.caption2)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.15))
+                            .foregroundColor(.blue)
+                            .cornerRadius(3)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(isHovering ? Color.secondary.opacity(0.1) : Color.clear)
+        .cornerRadius(4)
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            isHovering = hovering
+        }
+        .onTapGesture {
+            Task {
+                await clipboardService.copyItem(snippet)
+            }
+        }
+        .contextMenu {
+            Button("Copy") {
+                Task { await clipboardService.copyItem(snippet) }
+            }
+            Button("Edit") {
+                // TODO: Edit snippet
+            }
+            Divider()
+            Button("Delete", role: .destructive) {
+                Task {
+                    await deleteSnippet()
+                }
+            }
+        }
+    }
+
+    private func deleteSnippet() async {
+        // TODO: Implement snippet deletion
+    }
+}
+
 #Preview {
     ContentView()
 }
