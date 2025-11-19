@@ -53,6 +53,7 @@ data/*.json
 # Temporary files
 *.tmp
 *.temp
+*.old
 
 # Reference repositories
 Flycut/SESSION_EXIT_SNAPSHOT.md
