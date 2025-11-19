@@ -1,0 +1,48 @@
+name: OCC Fix Violations
+
+# Triggers when TCC reports violations
+on:
+  push:
+    paths:
+      - '.ai/VIOLATIONS_FOR_OCC.md'
+    branches:
+      - main
+
+jobs:
+  occ-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read violation report
+        run: |
+          cat .ai/VIOLATIONS_FOR_OCC.md
+
+      - name: Execute OCC fixes via Claude API
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Call Claude API to fix violations
+          bash .github/scripts/occ-fix-executor.sh
+
+      - name: Commit fixes
+        run: |
+          # Get the branch that had violations
+          BRANCH=$(git branch -r | grep "occ/task-" | tail -1 | tr -d ' ' | cut -d'/' -f2-)
+          git checkout origin/$BRANCH
+          git config user.name "OCC (Online Claude Code)"
+          git config user.email "occ@anthropic.com"
+          git add .
+          git commit -m "OCC: Fixed violations reported by TCC" || echo "No changes"
+          git push origin HEAD:$BRANCH
+
+      - name: Notify TCC fixes complete
+        run: |
+          echo "OCC fixed violations on branch: $BRANCH" > .ai/OCC_COMPLETED.md
+          git checkout main
+          git add .ai/OCC_COMPLETED.md
+          git commit -m "OCC: Violations fixed, ready for re-validation"
+          git push origin main

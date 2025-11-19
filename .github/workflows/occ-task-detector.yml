@@ -1,0 +1,55 @@
+name: OCC Task Detector
+
+# Triggers when TCC pushes a new task
+on:
+  push:
+    paths:
+      - '.ai/TASK_FOR_OCC.md'
+    branches:
+      - main
+
+jobs:
+  occ-respond:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read task from TCC
+        id: read_task
+        run: |
+          if [ -f .ai/TASK_FOR_OCC.md ]; then
+            echo "Task file found"
+            cat .ai/TASK_FOR_OCC.md
+          else
+            echo "No task file found"
+            exit 0
+          fi
+
+      - name: Execute OCC via Claude API
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Call Claude API with the task
+          # This script reads TASK_FOR_OCC.md and has Claude implement it
+          bash .github/scripts/occ-executor.sh
+
+      - name: Commit OCC's work
+        run: |
+          git config user.name "OCC (Online Claude Code)"
+          git config user.email "occ@anthropic.com"
+          git checkout -b occ/task-$(date +%s)
+          git add .
+          git commit -m "OCC: Completed task from TCC" || echo "No changes"
+          git push origin HEAD
+
+      - name: Notify TCC of completion
+        run: |
+          # Create notification for TCC
+          echo "OCC completed task on branch: occ/task-$(date +%s)" > .ai/OCC_COMPLETED.md
+          git checkout main
+          git add .ai/OCC_COMPLETED.md
+          git commit -m "OCC: Notify TCC task completed"
+          git push origin main

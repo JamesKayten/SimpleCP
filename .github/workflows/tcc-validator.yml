@@ -1,0 +1,67 @@
+name: TCC Validator
+
+# Triggers when OCC notifies completion
+on:
+  push:
+    paths:
+      - '.ai/OCC_COMPLETED.md'
+    branches:
+      - main
+
+jobs:
+  tcc-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read OCC completion notice
+        id: read_notice
+        run: |
+          cat .ai/OCC_COMPLETED.md
+          BRANCH=$(grep "branch:" .ai/OCC_COMPLETED.md | cut -d: -f2 | tr -d ' ')
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Fetch OCC branch
+        run: |
+          git fetch origin ${{ steps.read_notice.outputs.branch }}
+          git checkout ${{ steps.read_notice.outputs.branch }}
+
+      - name: Run TCC validation
+        run: |
+          # File size validation
+          bash .github/scripts/validate-file-sizes.sh > .ai/VALIDATION_REPORT.md
+
+          # Code quality validation
+          bash .github/scripts/validate-code-quality.sh >> .ai/VALIDATION_REPORT.md
+
+      - name: Check if violations found
+        id: check_violations
+        run: |
+          if grep -q "VIOLATION" .ai/VALIDATION_REPORT.md; then
+            echo "violations=true" >> $GITHUB_OUTPUT
+          else
+            echo "violations=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-merge if clean
+        if: steps.check_violations.outputs.violations == 'false'
+        run: |
+          git checkout main
+          git merge ${{ steps.read_notice.outputs.branch }} --no-ff -m "TCC: Auto-merge clean code from OCC"
+          git push origin main
+          echo "✅ MERGED - Code passed all validations" > .ai/TCC_RESULT.md
+          git add .ai/TCC_RESULT.md
+          git commit -m "TCC: Merged OCC work - all validations passed"
+          git push origin main
+
+      - name: Create violation report if issues found
+        if: steps.check_violations.outputs.violations == 'true'
+        run: |
+          git checkout main
+          cp .ai/VALIDATION_REPORT.md .ai/VIOLATIONS_FOR_OCC.md
+          git add .ai/VIOLATIONS_FOR_OCC.md
+          git commit -m "TCC: Violations found - OCC needs to fix"
+          git push origin main
