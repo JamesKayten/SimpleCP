@@ -6,12 +6,13 @@ No UI code - designed to be consumed by REST API and future Swift frontend.
 """
 
 import pyperclip
-import json
 import os
 from typing import Optional, List, Dict, Any
 from stores.clipboard_item import ClipboardItem
 from stores.history_store import HistoryStore
 from stores.snippet_store import SnippetStore
+from import_export_utils import export_snippets, import_snippets
+from persistence_utils import save_stores as _save_stores, load_stores as _load_stores
 
 
 class ClipboardManager:
@@ -201,39 +202,15 @@ class ClipboardManager:
     # Persistence operations
     def save_stores(self):
         """Save all stores to disk."""
-        try:
-            history_data = [item.to_dict() for item in self.history_store.items]
-            with open(self.history_file, "w") as f:
-                json.dump(history_data, f, indent=2)
-            snippet_data = {
-                folder: [item.to_dict() for item in items]
-                for folder, items in self.snippet_store.folders.items()
-            }
-            with open(self.snippets_file, "w") as f:
-                json.dump(snippet_data, f, indent=2)
-            self.history_store.modified = False
-            self.snippet_store.modified = False
-        except Exception as e:
-            print(f"Error saving stores: {e}")
+        _save_stores(
+            self.history_store, self.snippet_store, self.history_file, self.snippets_file
+        )
 
     def load_stores(self):
         """Load all stores from disk."""
-        try:
-            if os.path.exists(self.history_file):
-                with open(self.history_file, "r") as f:
-                    data = json.load(f)
-                self.history_store.items = [
-                    ClipboardItem.from_dict(item_data) for item_data in data
-                ]
-            if os.path.exists(self.snippets_file):
-                with open(self.snippets_file, "r") as f:
-                    data = json.load(f)
-                for folder_name, items_data in data.items():
-                    self.snippet_store.folders[folder_name] = [
-                        ClipboardItem.from_dict(item_data) for item_data in items_data
-                    ]
-        except Exception as e:
-            print(f"Error loading stores: {e}")
+        _load_stores(
+            self.history_store, self.snippet_store, self.history_file, self.snippets_file
+        )
 
     def get_stats(self) -> Dict[str, Any]:
         """Get manager statistics."""
@@ -254,28 +231,12 @@ class ClipboardManager:
 
     def export_snippets(self) -> Dict[str, Any]:
         """Export all snippets."""
-        all_snippets = []
-        for folder, items in self.snippet_store.folders.items():
-            for item in items:
-                all_snippets.append(item.to_dict())
-        return {
-            "version": "1.0",
-            "export_date": datetime.now().isoformat(),
-            "snippets": all_snippets,
-            "metadata": {"folder_count": len(self.snippet_store.folders)},
-        }
+        return export_snippets(self.snippet_store)
 
     def import_snippets(self, import_data: Dict[str, Any]) -> bool:
         """Import snippets from export data."""
-        try:
-            snippets = import_data.get("snippets", [])
-            for snippet_data in snippets:
-                item = ClipboardItem.from_dict(snippet_data)
-                folder = item.folder_path or "Imported"
-                self.snippet_store.add_snippet(folder, item)
-            if self.auto_save_enabled:
-                self.save_stores()
-            return True
-        except Exception as e:
-            print(f"Error importing snippets: {e}")
-            return False
+        return import_snippets(
+            self.snippet_store,
+            import_data,
+            self.save_stores if self.auto_save_enabled else None,
+        )
