@@ -1,0 +1,160 @@
+name: TCC Report Detector
+
+on:
+  push:
+    paths:
+      - 'docs/ai_communication/AI_REPORT_*.md'
+    branches:
+      - '**'
+
+jobs:
+  notify-occ-needed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect new TCC report
+        id: detect
+        run: |
+          # Find the most recent AI_REPORT file
+          LATEST_REPORT=$(ls -t docs/ai_communication/AI_REPORT_*.md 2>/dev/null | head -1)
+
+          if [ -z "$LATEST_REPORT" ]; then
+            echo "No AI_REPORT found"
+            exit 0
+          fi
+
+          # Extract date from filename
+          REPORT_DATE=$(basename "$LATEST_REPORT" | sed 's/AI_REPORT_//' | sed 's/.md//')
+
+          # Check if corresponding response exists
+          RESPONSE_FILE="docs/ai_communication/AI_RESPONSE_${REPORT_DATE}.md"
+
+          if [ -f "$RESPONSE_FILE" ]; then
+            echo "Response already exists for this report"
+            exit 0
+          fi
+
+          # Extract summary from report
+          SUMMARY=$(head -20 "$LATEST_REPORT" | grep -A 3 "## Summary" | tail -1 || echo "Validation violations detected")
+
+          # Count violations
+          VIOLATION_COUNT=$(grep -c "🔴 CRITICAL\|🟡 WARNING" "$LATEST_REPORT" || echo "0")
+
+          echo "report_file=$LATEST_REPORT" >> $GITHUB_OUTPUT
+          echo "report_date=$REPORT_DATE" >> $GITHUB_OUTPUT
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+          echo "violation_count=$VIOLATION_COUNT" >> $GITHUB_OUTPUT
+          echo "needs_occ=true" >> $GITHUB_OUTPUT
+
+      - name: Create OCC activation issue
+        if: steps.detect.outputs.needs_occ == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportDate = '${{ steps.detect.outputs.report_date }}';
+            const violationCount = '${{ steps.detect.outputs.violation_count }}';
+            const summary = '${{ steps.detect.outputs.summary }}';
+            const reportFile = '${{ steps.detect.outputs.report_file }}';
+
+            // Check if issue already exists for this report
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['occ-activation', `report-${reportDate}`]
+            });
+
+            if (issues.data.length > 0) {
+              console.log('Issue already exists for this report');
+              return;
+            }
+
+            // Create new issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 OCC Activation Required - ${violationCount} Violations Detected`,
+              labels: ['occ-activation', `report-${reportDate}`, 'automated'],
+              body: `# 🚨 TCC Report Detected - OCC Action Required
+
+## Report Details
+- **Date:** ${reportDate}
+- **Violations:** ${violationCount}
+- **Report File:** \`${reportFile}\`
+- **Branch:** \`${context.ref.replace('refs/heads/', '')}\`
+
+## Summary
+${summary}
+
+---
+
+## 🚀 Activate OCC Now
+
+### Quick Start (Copy & Paste to Claude Web):
+
+\`\`\`
+I am OCC (Online Claude Component) for the SimpleCP AI Collaboration Framework.
+
+IMMEDIATE ACTIONS:
+1. Check docs/ai_communication/ for pending TCC reports
+2. Find AI_REPORT_${reportDate}.md
+3. Check if AI_RESPONSE_${reportDate}.md already exists
+4. If no response exists, begin implementing fixes automatically
+5. Create AI_RESPONSE_${reportDate}.md when complete
+6. Commit and push all changes
+
+Repository context is already loaded. Begin work immediately.
+\`\`\`
+
+### Manual Alternative:
+
+1. Open Claude (web) with this repository context
+2. Say: "Check docs/ai_communication/ for the latest TCC report and implement the fixes"
+3. OCC will read the report and start working automatically
+
+---
+
+## 📋 After OCC Completes:
+
+Run with TCC (local Claude Code):
+\`\`\`
+work ready
+\`\`\`
+
+TCC will validate OCC's fixes and merge if clean.
+
+---
+
+**Automated by:** TCC Report Detector Workflow
+**Framework:** AI Collaboration v1.1
+**Close this issue after OCC completes the work.**
+            `
+            });
+
+            console.log(\`Created issue #\${issue.data.number}\`);
+
+      - name: Comment on commit
+        if: steps.detect.outputs.needs_occ == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportDate = '${{ steps.detect.outputs.report_date }}';
+            const violationCount = '${{ steps.detect.outputs.violation_count }}';
+
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: `🤖 **TCC Report Detected**
+
+${violationCount} violations found in AI_REPORT_${reportDate}.md
+
+**Action Required:** Activate OCC (Online Claude Component) to implement fixes.
+
+See issue for activation instructions.`
+            });

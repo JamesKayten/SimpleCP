@@ -1,0 +1,103 @@
+name: OCC Response Validator
+
+on:
+  push:
+    paths:
+      - 'docs/ai_communication/AI_RESPONSE_*.md'
+    branches:
+      - '**'
+
+jobs:
+  close-activation-issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect OCC response
+        id: detect
+        run: |
+          # Find the most recent AI_RESPONSE file
+          LATEST_RESPONSE=$(ls -t docs/ai_communication/AI_RESPONSE_*.md 2>/dev/null | head -1)
+
+          if [ -z "$LATEST_RESPONSE" ]; then
+            echo "No AI_RESPONSE found"
+            exit 0
+          fi
+
+          # Extract date from filename
+          RESPONSE_DATE=$(basename "$LATEST_RESPONSE" | sed 's/AI_RESPONSE_//' | sed 's/.md//')
+
+          echo "response_date=$RESPONSE_DATE" >> $GITHUB_OUTPUT
+          echo "response_found=true" >> $GITHUB_OUTPUT
+
+      - name: Close activation issue
+        if: steps.detect.outputs.response_found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const responseDate = '${{ steps.detect.outputs.response_date }}';
+
+            // Find open OCC activation issue for this date
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['occ-activation', `report-${responseDate}`]
+            });
+
+            if (issues.data.length === 0) {
+              console.log('No matching activation issue found');
+              return;
+            }
+
+            // Close the issue with a comment
+            for (const issue of issues.data) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `✅ **OCC Work Completed**
+
+AI_RESPONSE_${responseDate}.md has been created by OCC.
+
+**Next Steps:**
+1. Run \`work ready\` with TCC (local Claude Code)
+2. TCC will validate the fixes
+3. TCC will merge to main if all checks pass
+
+**Branch:** \`${context.ref.replace('refs/heads/', '')}\`
+**Commit:** ${context.sha.substring(0, 7)}
+
+Closing this issue as OCC has completed the requested work.`
+              });
+
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                labels: [...issue.labels.map(l => l.name), 'completed']
+              });
+
+              console.log(\`Closed issue #\${issue.number}\`);
+            }
+
+      - name: Comment on commit
+        if: steps.detect.outputs.response_found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const responseDate = '${{ steps.detect.outputs.response_date }}';
+
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: `✅ **OCC Response Received**
+
+AI_RESPONSE_${responseDate}.md created successfully.
+
+**Next:** Run \`work ready\` with TCC to validate and merge.`
+            });
