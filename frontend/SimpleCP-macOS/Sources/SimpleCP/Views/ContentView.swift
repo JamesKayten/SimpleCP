@@ -44,6 +44,7 @@ struct ContentView: View {
                     .frame(minWidth: 250, idealWidth: 300)
             }
         }
+        .focusable()
         .sheet(isPresented: $showSaveSnippetDialog) {
             SaveSnippetDialog(
                 isPresented: $showSaveSnippetDialog,
@@ -135,21 +136,23 @@ struct ContentView: View {
     private var controlBar: some View {
         HStack(spacing: 12) {
             Button(action: {
+                print("Save snippet button clicked")
                 showSaveSnippetDialog = true
             }) {
                 Label("Save as Snippet", systemImage: "square.and.arrow.down")
                     .font(.system(size: 11))
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.borderedProminent)
             .help("Save current clipboard as snippet")
 
             Button(action: {
+                print("New folder button clicked")
                 createNewFolder()
             }) {
                 Label("New Folder", systemImage: "folder.badge.plus")
                     .font(.system(size: 11))
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.borderedProminent)
             .help("Create new snippet folder")
 
             Menu {
@@ -207,6 +210,7 @@ struct ContentView: View {
     // MARK: - Actions
 
     private func createNewFolder() {
+        print("Create new folder function called")
         let alert = NSAlert()
         alert.messageText = "Create New Folder"
         alert.informativeText = "Enter a name for the new folder:"
@@ -217,10 +221,14 @@ struct ContentView: View {
         textField.placeholderString = "Folder name"
         alert.accessoryView = textField
 
-        if alert.runModal() == .alertFirstButtonReturn {
-            let folderName = textField.stringValue
-            if !folderName.isEmpty {
-                clipboardManager.createFolder(name: folderName)
+        DispatchQueue.main.async {
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                let folderName = textField.stringValue
+                if !folderName.isEmpty {
+                    self.clipboardManager.createFolder(name: folderName)
+                    print("Folder created: \(folderName)")
+                }
             }
         }
     }
