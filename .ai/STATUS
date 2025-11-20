@@ -2,25 +2,25 @@
 # Source this file or parse key=value pairs
 
 # Task state: IDLE | PENDING | IN_PROGRESS | BLOCKED
-TASK_STATE=IN_PROGRESS
+TASK_STATE=IDLE
 
 # Points to detailed instructions (relative to project root)
 TASK_FILE=.ai/CURRENT_TASK.md
 
 # Quick reference to specific section/task
-TASK_SECTION="Framework Update Review"
+TASK_SECTION=""
 
 # Priority: 1=Critical, 2=High, 3=Normal, 4=Low
-PRIORITY=2
+PRIORITY=0
 
 # Estimated effort in hours (0 if unknown)
-EFFORT_HOURS=1
+EFFORT_HOURS=0
 
 # Which AI is assigned: ANY | OCC | TCC | SPECIFIC_NAME
-ASSIGNED_TO=TCC
+ASSIGNED_TO=ANY
 
 # Last updated timestamp
-UPDATED_AT=2025-11-20T17:35:00Z
+UPDATED_AT=2025-11-20T17:40:00Z
 
 # Quick one-line summary (empty if idle)
-SUMMARY="Review and merge natural language command framework updates - OCC UI fixes completed"
+SUMMARY=""
