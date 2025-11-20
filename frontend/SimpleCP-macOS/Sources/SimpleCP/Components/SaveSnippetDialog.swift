@@ -196,6 +196,8 @@ struct SaveSnippetDialog: View {
         }
         .padding()
         .frame(width: 500)
+        .background(Color(NSColor.windowBackgroundColor))
+        .cornerRadius(12)
         .allowsHitTesting(true)
         .onAppear {
             setupInitialState()

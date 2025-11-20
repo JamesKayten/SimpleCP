@@ -39,6 +39,17 @@ struct SavedSnippetsColumn: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
+
+                // New Folder Button
+                Button(action: {
+                    createAutoNamedFolder()
+                }) {
+                    Image(systemName: "folder.badge.plus")
+                        .font(.system(size: 12))
+                        .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+                .help("Create New Folder")
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -64,6 +75,7 @@ struct SavedSnippetsColumn: View {
                 }
                 .padding(.vertical, 4)
             }
+            .focusable()
         }
         .sheet(item: $editingSnippet) { snippet in
             EditSnippetDialog(snippet: snippet)
@@ -83,6 +95,22 @@ struct SavedSnippetsColumn: View {
         return folderSnippets.filter { snippet in
             filteredSnippets.contains(where: { $0.id == snippet.id })
         }
+    }
+
+    private func createAutoNamedFolder() {
+        // Generate a unique folder name
+        var folderNumber = 1
+        var proposedName = "Folder \(folderNumber)"
+
+        // Find the next available folder name
+        while clipboardManager.folders.contains(where: { $0.name == proposedName }) {
+            folderNumber += 1
+            proposedName = "Folder \(folderNumber)"
+        }
+
+        // Create the folder immediately
+        clipboardManager.createFolder(name: proposedName)
+        print("✅ Created folder: \(proposedName)")
     }
 }
 

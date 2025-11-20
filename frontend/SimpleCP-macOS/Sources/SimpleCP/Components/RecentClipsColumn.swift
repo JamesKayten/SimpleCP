@@ -97,6 +97,7 @@ struct RecentClipsColumn: View {
                 }
                 .padding(.vertical, 4)
             }
+            .focusable()
         }
     }
 

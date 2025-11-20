@@ -46,12 +46,21 @@ struct ContentView: View {
             }
         }
         .focusable()
-        .sheet(isPresented: $showSaveSnippetDialog) {
-            SaveSnippetDialog(
-                isPresented: $showSaveSnippetDialog,
-                content: selectedClipForSave?.content ?? clipboardManager.currentClipboard
-            )
-            .environmentObject(clipboardManager)
+        .overlay {
+            if showSaveSnippetDialog {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        showSaveSnippetDialog = false
+                    }
+
+                SaveSnippetDialog(
+                    isPresented: $showSaveSnippetDialog,
+                    content: selectedClipForSave?.content ?? clipboardManager.currentClipboard
+                )
+                .environmentObject(clipboardManager)
+                .shadow(color: .black.opacity(0.3), radius: 20)
+            }
         }
         // Error alert for clipboard manager errors
         .alert("Error", isPresented: $clipboardManager.showError, presenting: clipboardManager.lastError) { error in
