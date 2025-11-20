@@ -5,22 +5,22 @@
 TASK_STATE=PENDING
 
 # Points to detailed instructions (relative to project root)
-TASK_FILE=docs/ai_communication/AI_REPORT_INTERFACE_FIXES_2025-11-19.md
+TASK_FILE=.ai/CURRENT_TASK.md
 
 # Quick reference to specific section/task
-TASK_SECTION="CRITICAL INTERFACE PROBLEMS"
+TASK_SECTION="API Integration Priority Task"
 
 # Priority: 1=Critical, 2=High, 3=Normal, 4=Low
 PRIORITY=1
 
 # Estimated effort in hours (0 if unknown)
-EFFORT_HOURS=3
+EFFORT_HOURS=4
 
 # Which AI is assigned: ANY | OCC | TCC | SPECIFIC_NAME
 ASSIGNED_TO=OCC
 
 # Last updated timestamp
-UPDATED_AT=2025-11-19T20:51:00Z
+UPDATED_AT=2025-11-20T16:15:00Z
 
 # Quick one-line summary (empty if idle)
-SUMMARY="Fix MenuBarExtra dialog interactions - text input redirects to terminal, dialogs close on button clicks"
+SUMMARY="Integrate Swift frontend with Python REST API - replace UserDefaults with HTTP API calls"

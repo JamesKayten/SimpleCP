@@ -13,16 +13,16 @@ import os
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
 
-from clipboard_manager import ClipboardManager  # noqa: E402
+from api.server import run_server  # noqa: E402
 
 
 def main():
     """Main application entry point."""
     try:
-        app = ClipboardManager()
-        print("🚀 Starting SimpleCP...")
-        print("📋 Clipboard manager running in menu bar")
-        app.run()
+        print("🚀 Starting SimpleCP API Server...")
+        print("📋 Clipboard manager REST API")
+        print("🌐 Server will be available at http://127.0.0.1:8000")
+        run_server()
     except KeyboardInterrupt:
         print("\n👋 SimpleCP stopped by user")
     except Exception as e:
