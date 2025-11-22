@@ -467,33 +467,16 @@ struct RenameFolderDialog: View {
             HStack {
                 Spacer()
 
-                HStack {
-                    Text("Cancel")
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(6)
-                .contentShape(Rectangle())
-                .onTapGesture {
+                Button("Cancel") {
                     dismiss()
                 }
+                .keyboardShortcut(.cancelAction)
 
-                HStack {
-                    Text("Rename")
-                        .foregroundColor(newName.trimmingCharacters(in: .whitespaces).isEmpty ? .secondary : .white)
+                Button("Rename") {
+                    renameFolder()
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(newName.trimmingCharacters(in: .whitespaces).isEmpty ? Color.gray : Color.blue)
-                .cornerRadius(6)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if !newName.trimmingCharacters(in: .whitespaces).isEmpty {
-                        renameFolder()
-                    }
-                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
         .padding()
@@ -502,11 +485,9 @@ struct RenameFolderDialog: View {
 
     private func renameFolder() {
         let trimmedName = newName.trimmingCharacters(in: .whitespaces)
-        if !trimmedName.isEmpty {
-            var updatedFolder = folder
-            updatedFolder.rename(to: trimmedName)
-            clipboardManager.updateFolder(updatedFolder)
-        }
+        var updatedFolder = folder
+        updatedFolder.rename(to: trimmedName)
+        clipboardManager.updateFolder(updatedFolder)
         dismiss()
     }
 }

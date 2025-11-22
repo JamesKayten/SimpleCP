@@ -408,21 +408,64 @@ class ClipboardManager: ObservableObject {
     }
 
     func updateFolder(_ folder: SnippetFolder) {
-        if let index = folders.firstIndex(where: { $0.id == folder.id }) {
-            folders[index] = folder
-            saveFolders()
-            logger.info("✏️ Updated folder: \(folder.name)")
+        // Find the original folder to get the old name for API update
+        guard let index = folders.firstIndex(where: { $0.id == folder.id }) else { return }
+        let originalFolder = folders[index]
+
+        Task {
+            do {
+                // If folder name changed, call rename API
+                if originalFolder.name != folder.name {
+                    let request = ["new_name": folder.name]
+                    let requestData = try JSONEncoder().encode(request)
+
+                    try await makeAPIRequestNoResponse(
+                        endpoint: "/api/folders/\(originalFolder.name)",
+                        method: "PUT",
+                        body: requestData
+                    )
+
+                    logger.info("✅ Renamed folder '\(originalFolder.name)' to '\(folder.name)' in API")
+                }
+            } catch {
+                logger.warning("⚠️ Failed to update folder in API: \(error.localizedDescription)")
+            }
+
+            // Always update locally as backup/cache
+            await MainActor.run {
+                folders[index] = folder
+                saveFolders()
+                logger.info("✏️ Updated folder locally: \(folder.name)")
+            }
         }
     }
 
     func deleteFolder(_ folder: SnippetFolder) {
         let snippetCount = snippets.filter { $0.folderId == folder.id }.count
-        // Remove snippets in this folder
-        snippets.removeAll { $0.folderId == folder.id }
-        folders.removeAll { $0.id == folder.id }
-        saveFolders()
-        saveSnippets()
-        logger.info("🗑️ Deleted folder '\(folder.name)' and \(snippetCount) snippets")
+
+        Task {
+            do {
+                // Delete folder via API
+                try await makeAPIRequestNoResponse(
+                    endpoint: "/api/folders/\(folder.name)",
+                    method: "DELETE"
+                )
+
+                logger.info("✅ Deleted folder '\(folder.name)' from API")
+            } catch {
+                logger.warning("⚠️ Failed to delete folder from API: \(error.localizedDescription)")
+            }
+
+            // Always delete locally as backup/cache
+            await MainActor.run {
+                // Remove snippets in this folder
+                snippets.removeAll { $0.folderId == folder.id }
+                folders.removeAll { $0.id == folder.id }
+                saveFolders()
+                saveSnippets()
+                logger.info("🗑️ Deleted folder '\(folder.name)' and \(snippetCount) snippets locally")
+            }
+        }
     }
 
     func toggleFolderExpansion(_ folderId: UUID) {
