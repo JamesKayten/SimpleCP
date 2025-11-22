@@ -449,6 +449,8 @@ struct RenameFolderDialog: View {
 
     let folder: SnippetFolder
     @State private var newName: String
+    @State private var isRenaming = false
+    @State private var errorMessage: String?
 
     init(folder: SnippetFolder, newName: Binding<String>) {
         self.folder = folder
@@ -465,6 +467,7 @@ struct RenameFolderDialog: View {
                     .font(.subheadline)
                 TextField("Folder name", text: $newName)
                     .textFieldStyle(.roundedBorder)
+                    .disabled(isRenaming)
                     .onAppear {
                         // Pre-select the text for easy editing
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -474,6 +477,18 @@ struct RenameFolderDialog: View {
                             }
                         }
                     }
+                    .onSubmit {
+                        if !isRenaming {
+                            Task { await renameFolder() }
+                        }
+                    }
+
+                // Show error message if any
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                }
             }
 
             HStack {
@@ -483,26 +498,52 @@ struct RenameFolderDialog: View {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
+                .disabled(isRenaming)
 
-                Button("Rename") {
-                    renameFolder()
+                Button(action: {
+                    Task { await renameFolder() }
+                }) {
+                    HStack {
+                        if isRenaming {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                        Text(isRenaming ? "Renaming..." : "Rename")
+                    }
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty || isRenaming)
             }
         }
         .padding()
         .frame(width: 400)
     }
 
-    private func renameFolder() {
+    private func renameFolder() async {
         let trimmedName = newName.trimmingCharacters(in: .whitespaces)
         guard !trimmedName.isEmpty else { return }
 
+        // Clear any previous error
+        errorMessage = nil
+        isRenaming = true
+
         var updatedFolder = folder
         updatedFolder.rename(to: trimmedName)
-        clipboardManager.updateFolder(updatedFolder)
-        dismiss()
+
+        let result = await clipboardManager.updateFolderAsync(updatedFolder)
+
+        isRenaming = false
+
+        switch result {
+        case .success:
+            dismiss()
+        case .failure(let error):
+            if let appError = error as? AppError {
+                errorMessage = appError.localizedDescription
+            } else {
+                errorMessage = "Failed to rename folder: \(error.localizedDescription)"
+            }
+        }
     }
 }
 

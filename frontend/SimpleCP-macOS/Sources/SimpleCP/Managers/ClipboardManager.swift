@@ -430,8 +430,14 @@ class ClipboardManager: ObservableObject {
                     let request = ["new_name": folder.name]
                     let requestData = try JSONEncoder().encode(request)
 
+                    // URL encode the folder name to handle spaces and special characters
+                    guard let encodedName = originalFolder.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+                        logger.error("❌ Failed to URL encode folder name: '\(originalFolder.name)'")
+                        return
+                    }
+
                     try await makeAPIRequestNoResponse(
-                        endpoint: "/api/folders/\(originalFolder.name)",
+                        endpoint: "/api/folders/\(encodedName)",
                         method: "PUT",
                         body: requestData
                     )
@@ -451,14 +457,66 @@ class ClipboardManager: ObservableObject {
         }
     }
 
+    @MainActor
+    func updateFolderAsync(_ folder: SnippetFolder) async -> Result<Void, Error> {
+        // Find the original folder to get the old name for API update
+        guard let index = folders.firstIndex(where: { $0.id == folder.id }) else {
+            return .failure(AppError.invalidData)
+        }
+        let originalFolder = folders[index]
+
+        do {
+            // If folder name changed, call rename API
+            if originalFolder.name != folder.name {
+                let request = ["new_name": folder.name]
+                let requestData = try JSONEncoder().encode(request)
+
+                // URL encode the folder name to handle spaces and special characters
+                guard let encodedName = originalFolder.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+                    logger.error("❌ Failed to URL encode folder name: '\(originalFolder.name)'")
+                    return .failure(AppError.encodingFailure("folder name"))
+                }
+
+                try await makeAPIRequestNoResponse(
+                    endpoint: "/api/folders/\(encodedName)",
+                    method: "PUT",
+                    body: requestData
+                )
+
+                logger.info("✅ Renamed folder '\(originalFolder.name)' to '\(folder.name)' in API")
+            }
+
+            // Update locally
+            folders[index] = folder
+            saveFolders()
+            logger.info("✏️ Updated folder locally: \(folder.name)")
+
+            return .success(())
+        } catch {
+            logger.warning("⚠️ Failed to update folder in API: \(error.localizedDescription)")
+
+            // Still update locally as fallback
+            folders[index] = folder
+            saveFolders()
+            logger.info("✏️ Updated folder locally as fallback: \(folder.name)")
+
+            return .failure(error)
+        }
+    }
+
     func deleteFolder(_ folder: SnippetFolder) {
         let snippetCount = snippets.filter { $0.folderId == folder.id }.count
 
         Task {
             do {
                 // Delete folder via API
+                guard let encodedName = folder.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+                    logger.error("❌ Failed to URL encode folder name for deletion: '\(folder.name)'")
+                    return
+                }
+
                 try await makeAPIRequestNoResponse(
-                    endpoint: "/api/folders/\(folder.name)",
+                    endpoint: "/api/folders/\(encodedName)",
                     method: "DELETE"
                 )
 
