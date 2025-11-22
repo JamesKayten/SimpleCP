@@ -31,6 +31,9 @@ edit docs/AI_WORKFLOW.md
 
 ### 3. Start AI Collaboration
 ```bash
+# NEW! OCC can now respond to verbal commands:
+"check the board"  # Immediately detects and begins pending tasks
+
 # Command for Local AI to run validation workflow
 "work ready"
 
@@ -43,6 +46,7 @@ edit docs/AI_WORKFLOW.md
 - ✅ Bidirectional AI communication
 - ✅ Self-correcting development loop
 - ✅ Complete audit trail
+- ✅ **NEW!** Verbal command recognition for instant task detection
 
 ## 🎯 What It Does
 
@@ -53,11 +57,13 @@ edit docs/AI_WORKFLOW.md
 - **Blocks** problematic code until fixed
 - **Reports** all activities to human developer
 
-### For Online AI
+### For Online AI (OCC)
+- **Responds** to verbal commands like "check the board" immediately (NEW!)
 - **Receives** specific issue reports with remediation instructions
 - **Implements** fixes according to detailed requirements
 - **Communicates** completion status back through repository
 - **Requests** re-validation of updated code
+- **Detects** pending tasks automatically via `.ai/check-tasks.sh` (NEW!)
 
 ### For Human Developer
 - **Orchestrates** AI collaboration with simple commands
@@ -98,6 +104,15 @@ edit docs/AI_WORKFLOW.md
 
 ```
 your-project/
+├── .ai/                                 # Task assignment framework (NEW!)
+│   ├── README.md                        # Quick start for AI agents
+│   ├── OCC_COMMANDS.md                  # Verbal command mappings (NEW!)
+│   ├── BEHAVIOR_RULES.md                # Working style guidelines
+│   ├── CURRENT_TASK.md                  # Active task assignments
+│   ├── FRAMEWORK_USAGE.md               # Complete framework docs
+│   ├── TCC_QUICK_REFERENCE.md           # Quick task assignment guide
+│   ├── STATUS                           # Machine-readable task state
+│   └── check-tasks.sh                   # Task detection script
 ├── docs/
 │   ├── AI_COLLABORATION_FRAMEWORK.md    # Framework overview
 │   ├── AI_WORKFLOW.md                   # Workflow instructions

@@ -20,11 +20,11 @@ cat .ai/CURRENT_TASK.md
 ```
 
 ## Project Info
-- **Type:** Python Backend/API
-- **Language:** python
-- **File Size Limit:** 300 lines
-- **Test Coverage:** 90%
-- **Tools:** black,flake8,pytest
+- **Project:** {{PROJECT_NAME}}
+- **Type:** [Customize: Python Backend/API, React Frontend, etc.]
+- **File Size Limit:** [Customize: e.g., 300 lines]
+- **Test Coverage:** [Customize: e.g., 90%]
+- **Tools:** [Customize: e.g., black,flake8,pytest]
 
 ## File Structure
 - `OCC_COMMANDS.md` - Verbal command reference (NEW!)
