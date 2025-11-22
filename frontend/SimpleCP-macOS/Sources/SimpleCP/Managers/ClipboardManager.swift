@@ -125,6 +125,28 @@ class ClipboardManager: ObservableObject {
 
     // MARK: - API Conversion Methods
 
+    private func convertHexToUUID(_ hexString: String) -> UUID {
+        // If it's already a valid UUID, use it
+        if let uuid = UUID(uuidString: hexString) {
+            return uuid
+        }
+
+        // Convert hex string to UUID format
+        // Pad with zeros if necessary and format as UUID
+        let paddedHex = String(hexString.prefix(32)).padding(toLength: 32, withPad: "0", startingAt: 0)
+
+        // Break down the conversion step by step
+        let part1 = String(paddedHex.prefix(8))
+        let part2 = String(paddedHex.dropFirst(8).prefix(4))
+        let part3 = String(paddedHex.dropFirst(12).prefix(4))
+        let part4 = String(paddedHex.dropFirst(16).prefix(4))
+        let part5 = String(paddedHex.dropFirst(20))
+
+        let uuidString = "\(part1)-\(part2)-\(part3)-\(part4)-\(part5)"
+
+        return UUID(uuidString: uuidString) ?? UUID()
+    }
+
     private func convertToClipItem(_ apiItem: APIClipboardItem) -> ClipItem {
         // Convert string timestamp to Date
         let formatter = ISO8601DateFormatter()
@@ -142,7 +164,7 @@ class ClipboardManager: ObservableObject {
         }()
 
         return ClipItem(
-            id: UUID(uuidString: apiItem.clip_id) ?? UUID(),
+            id: convertHexToUUID(apiItem.clip_id),
             content: apiItem.content,
             timestamp: timestamp,
             contentType: contentType
@@ -154,7 +176,7 @@ class ClipboardManager: ObservableObject {
         let timestamp = formatter.date(from: apiItem.timestamp) ?? Date()
 
         return Snippet(
-            id: UUID(uuidString: apiItem.clip_id) ?? UUID(),
+            id: convertHexToUUID(apiItem.clip_id),
             name: apiItem.snippet_name ?? "Untitled",
             content: apiItem.content,
             tags: apiItem.tags,
