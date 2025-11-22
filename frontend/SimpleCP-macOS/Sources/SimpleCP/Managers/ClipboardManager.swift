@@ -378,7 +378,7 @@ class ClipboardManager: ObservableObject {
 
     // MARK: - Folder Management
 
-    func createFolder(name: String, icon: String = "📁") {
+    func createFolder(name: String, icon: String = "📁", order: Int? = nil) {
         Task {
             do {
                 // Create API request
@@ -398,11 +398,25 @@ class ClipboardManager: ObservableObject {
 
             // Always save locally as backup/cache
             await MainActor.run {
-                let order = folders.count
-                let folder = SnippetFolder(name: name, icon: icon, order: order)
-                folders.append(folder)
+                let folderOrder = order ?? folders.count
+
+                if folderOrder == 0 && !folders.isEmpty {
+                    // Insert at top - reorder existing folders
+                    for i in 0..<folders.count {
+                        folders[i].setOrder(folders[i].order + 1)
+                    }
+                }
+
+                let folder = SnippetFolder(name: name, icon: icon, order: folderOrder)
+
+                if folderOrder == 0 {
+                    folders.insert(folder, at: 0)
+                } else {
+                    folders.append(folder)
+                }
+
                 saveFolders()
-                logger.info("📁 Created folder locally: \(name)")
+                logger.info("📁 Created folder locally: \(name) at order \(folderOrder)")
             }
         }
     }

@@ -49,6 +49,11 @@ struct SnippetFolder: Identifiable, Codable, Hashable {
         modifiedAt = Date()
     }
 
+    mutating func setOrder(_ newOrder: Int) {
+        self.order = newOrder
+        modifiedAt = Date()
+    }
+
     static func defaultFolders() -> [SnippetFolder] {
         [
             SnippetFolder(name: "Email Templates", icon: "📧", order: 0),

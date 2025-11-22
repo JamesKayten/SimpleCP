@@ -15,7 +15,6 @@ struct SavedSnippetsColumn: View {
     @State private var editingSnippetId: UUID?
     @State private var editingSnippet: Snippet?
     @State private var renamingFolder: SnippetFolder?
-    @State private var newFolderName: String = ""
 
     private var filteredSnippets: [Snippet] {
         if searchText.isEmpty {
@@ -68,8 +67,7 @@ struct SavedSnippetsColumn: View {
                             hoveredSnippetId: $hoveredSnippetId,
                             editingSnippetId: $editingSnippetId,
                             editingSnippet: $editingSnippet,
-                            renamingFolder: $renamingFolder,
-                            newFolderName: $newFolderName
+                            renamingFolder: $renamingFolder
                         )
                     }
                 }
@@ -82,7 +80,7 @@ struct SavedSnippetsColumn: View {
                 .environmentObject(clipboardManager)
         }
         .sheet(item: $renamingFolder) { folder in
-            RenameFolderDialog(folder: folder, newName: $newFolderName)
+            RenameFolderDialog(folder: folder, newName: .constant(""))
                 .environmentObject(clipboardManager)
         }
     }
@@ -108,8 +106,8 @@ struct SavedSnippetsColumn: View {
             proposedName = "Folder \(folderNumber)"
         }
 
-        // Create the folder immediately
-        clipboardManager.createFolder(name: proposedName)
+        // Create the folder immediately - it will appear at the top
+        clipboardManager.createFolder(name: proposedName, icon: "📁", order: 0)
         print("✅ Created folder: \(proposedName)")
     }
 }
@@ -126,7 +124,6 @@ struct FolderView: View {
     @Binding var editingSnippetId: UUID?
     @Binding var editingSnippet: Snippet?
     @Binding var renamingFolder: SnippetFolder?
-    @Binding var newFolderName: String
 
     @State private var isHovered = false
 
@@ -165,7 +162,6 @@ struct FolderView: View {
             }
             .contextMenu {
                 Button("Rename Folder...") {
-                    newFolderName = folder.name
                     renamingFolder = folder
                 }
                 Button("Change Icon...") {
@@ -441,7 +437,12 @@ struct RenameFolderDialog: View {
     @Environment(\.dismiss) private var dismiss
 
     let folder: SnippetFolder
-    @Binding var newName: String
+    @State private var newName: String
+
+    init(folder: SnippetFolder, newName: Binding<String>) {
+        self.folder = folder
+        self._newName = State(initialValue: folder.name)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -485,6 +486,8 @@ struct RenameFolderDialog: View {
 
     private func renameFolder() {
         let trimmedName = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmedName.isEmpty else { return }
+
         var updatedFolder = folder
         updatedFolder.rename(to: trimmedName)
         clipboardManager.updateFolder(updatedFolder)
