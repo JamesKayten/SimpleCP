@@ -15,6 +15,7 @@ struct SavedSnippetsColumn: View {
     @State private var editingSnippetId: UUID?
     @State private var editingSnippet: Snippet?
     @State private var renamingFolder: SnippetFolder?
+    @State private var isCreatingFolder = false
 
     private var filteredSnippets: [Snippet] {
         if searchText.isEmpty {
@@ -48,6 +49,7 @@ struct SavedSnippetsColumn: View {
                         .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain)
+                .disabled(isCreatingFolder)
                 .help("Create New Folder")
             }
             .padding(.horizontal, 12)
@@ -96,6 +98,10 @@ struct SavedSnippetsColumn: View {
     }
 
     private func createAutoNamedFolder() {
+        guard !isCreatingFolder else { return }
+
+        isCreatingFolder = true
+
         // Generate a unique folder name
         var folderNumber = 1
         var proposedName = "Folder \(folderNumber)"
@@ -106,8 +112,13 @@ struct SavedSnippetsColumn: View {
             proposedName = "Folder \(folderNumber)"
         }
 
-        // Create the folder immediately - it will appear at the top
-        clipboardManager.createFolder(name: proposedName, icon: "📁", order: 0)
+        // Create the folder - it will appear at the top
+        clipboardManager.createFolder(name: proposedName, icon: "📁") {
+            // Re-enable button after creation completes
+            DispatchQueue.main.async {
+                self.isCreatingFolder = false
+            }
+        }
         print("✅ Created folder: \(proposedName)")
     }
 }
