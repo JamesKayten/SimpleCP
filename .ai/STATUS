@@ -2,25 +2,25 @@
 # Source this file or parse key=value pairs
 
 # Task state: IDLE | PENDING | IN_PROGRESS | BLOCKED
-TASK_STATE=IDLE
+TASK_STATE=PENDING
 
 # Points to detailed instructions (relative to project root)
-TASK_FILE=.ai/CURRENT_TASK.md
+TASK_FILE=.ai/OCC_CRITICAL_ANALYSIS_TASK.md
 
 # Quick reference to specific section/task
-TASK_SECTION=""
+TASK_SECTION="CRITICAL ISSUE SUMMARY"
 
 # Priority: 1=Critical, 2=High, 3=Normal, 4=Low
-PRIORITY=0
+PRIORITY=1
 
 # Estimated effort in hours (0 if unknown)
-EFFORT_HOURS=0
+EFFORT_HOURS=3
 
 # Which AI is assigned: ANY | OCC | TCC | SPECIFIC_NAME
-ASSIGNED_TO=ANY
+ASSIGNED_TO=OCC
 
 # Last updated timestamp
-UPDATED_AT=2025-11-22T17:20:00Z
+UPDATED_AT=2025-11-22T18:00:00Z
 
 # Quick one-line summary (empty if idle)
-SUMMARY="Framework enhanced with 'works ready' workflow - OCC integration complete"
+SUMMARY="CRITICAL: Folder rename completely broken - button clicks not registering, no API calls made"
