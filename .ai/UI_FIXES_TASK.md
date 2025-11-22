@@ -4,7 +4,7 @@
 **To:** OCC (Other Claude Chat)
 **Date:** 2025-11-19
 **Priority:** HIGH
-**Status:** DELEGATED TO OCC
+**Status:** ✅ COMPLETED (2025-11-19)
 
 ## 📋 **TASK OVERVIEW**
 
@@ -16,25 +16,28 @@ SimpleCP frontend is successfully running but has **3 critical usability issues*
 - MenuBar integration functional
 - Basic UI structure complete
 
-### 🐛 **ISSUES TO FIX:**
+### ✅ **ISSUES FIXED:**
 
-#### **1. Scroll Function Broken in Left Panel**
-- **Problem:** Left panel (Recent Clips) doesn't scroll with mouse wheel
-- **Requirement:** Remove visible scrollbar, enable mouse wheel scrolling only
-- **File:** `frontend/SimpleCP-macOS/Sources/SimpleCP/Components/RecentClipsColumn.swift`
-- **Fix:** Use `ScrollView(.vertical, showsIndicators: false)` and ensure mouse wheel works
+#### **✅ 1. Scroll Function Fixed in Both Panels**
+- **Solution:** Added `ScrollView(.vertical, showsIndicators: false)` to both columns
+- **File:** `frontend/SimpleCP-macOS/Sources/SimpleCP/Components/RecentClipsColumn.swift:48`
+- **File:** `frontend/SimpleCP-macOS/Sources/SimpleCP/Components/SavedSnippetsColumn.swift`
+- **Result:** Clean interface with mouse wheel scrolling, no visible scrollbars
+- **Commit:** `66e9873`
 
-#### **2. Save Snippet Functionality Broken**
-- **Problem:** "Save as Snippet" button doesn't work
+#### **✅ 2. Save Snippet Functionality Working**
+- **Solution:** Fixed button responsiveness with `.borderedProminent` style and tap gestures
 - **Files:**
   - `frontend/SimpleCP-macOS/Sources/SimpleCP/Components/SaveSnippetDialog.swift`
   - `frontend/SimpleCP-macOS/Sources/SimpleCP/Views/ContentView.swift`
-- **Expected:** Should open dialog to save clipboard items as permanent snippets
+- **Result:** Dialog opens reliably, saves snippets correctly
+- **Commits:** `66e9873`, `97ec592`, `32c6a65`
 
-#### **3. Create Snippet Folder Missing**
-- **Problem:** No visible way to create new folders for organizing snippets
-- **Requirement:** Add folder creation UI in the right panel or control bar
-- **Expected:** User should be able to create custom folders easily
+#### **✅ 3. Create Snippet Folder UI Added**
+- **Solution:** Added prominent "New Folder" button with auto-naming
+- **File:** `frontend/SimpleCP-macOS/Sources/SimpleCP/Views/ContentView.swift:150-159`
+- **Result:** One-click folder creation, generates "Folder 1", "Folder 2", etc.
+- **Commit:** `66e9873`
 
 ## 🎯 **AUTONOMOUS WORKFLOW REQUEST**
 
