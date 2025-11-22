@@ -458,37 +458,49 @@ class ClipboardManager: ObservableObject {
     }
 
     func updateFolderAsync(_ folder: SnippetFolder) async -> Result<Void, Error> {
+        print("🔧 DEBUG: updateFolderAsync called for folder: '\(folder.name)' with ID: \(folder.id)")
+
         // Find the original folder to get the old name for API update (on main thread)
         let (originalFolder, index): (SnippetFolder?, Int) = await MainActor.run {
+            print("🔧 DEBUG: Looking for folder with ID: \(folder.id) in \(folders.count) folders")
             guard let index = folders.firstIndex(where: { $0.id == folder.id }) else {
+                print("🔧 DEBUG: Folder not found in folders array!")
                 return (nil, -1)
             }
+            print("🔧 DEBUG: Found folder at index \(index): '\(folders[index].name)'")
             return (folders[index], index)
         }
 
         guard let originalFolder = originalFolder, index >= 0 else {
+            print("🔧 DEBUG: Failed to find original folder, returning invalidData error")
             return .failure(AppError.invalidData)
         }
 
         do {
             // If folder name changed, call rename API (on background thread)
             if originalFolder.name != folder.name {
+                print("🔧 DEBUG: Name changed from '\(originalFolder.name)' to '\(folder.name)', making API call")
                 let request = ["new_name": folder.name]
                 let requestData = try JSONEncoder().encode(request)
 
                 // URL encode the folder name to handle spaces and special characters
                 guard let encodedName = originalFolder.name.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlPathAllowed) else {
+                    print("🔧 DEBUG: Failed to URL encode folder name: '\(originalFolder.name)'")
                     logger.error("❌ Failed to URL encode folder name: '\(originalFolder.name)'")
                     return .failure(AppError.encodingFailure("folder name"))
                 }
 
+                print("🔧 DEBUG: Making PUT request to: /api/folders/\(encodedName)")
                 try await makeAPIRequestNoResponse(
                     endpoint: "/api/folders/\(encodedName)",
                     method: "PUT",
                     body: requestData
                 )
 
+                print("🔧 DEBUG: API call successful")
                 logger.info("✅ Renamed folder '\(originalFolder.name)' to '\(folder.name)' in API")
+            } else {
+                print("🔧 DEBUG: No name change detected ('\(originalFolder.name)' == '\(folder.name)')")
             }
 
             // Update locally (back on main thread)

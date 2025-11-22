@@ -520,24 +520,36 @@ struct RenameFolderDialog: View {
     }
 
     private func renameFolder() async {
+        print("🔧 DEBUG: renameFolder() called")
         let trimmedName = newName.trimmingCharacters(in: .whitespaces)
-        guard !trimmedName.isEmpty else { return }
+        print("🔧 DEBUG: Original name: '\(folder.name)', New name: '\(trimmedName)'")
+
+        guard !trimmedName.isEmpty else {
+            print("🔧 DEBUG: Empty name, returning early")
+            return
+        }
 
         // Clear any previous error
         errorMessage = nil
         isRenaming = true
+        print("🔧 DEBUG: Starting rename operation")
 
         var updatedFolder = folder
         updatedFolder.rename(to: trimmedName)
+        print("🔧 DEBUG: Created updated folder with name: '\(updatedFolder.name)'")
 
+        print("🔧 DEBUG: Calling updateFolderAsync...")
         let result = await clipboardManager.updateFolderAsync(updatedFolder)
+        print("🔧 DEBUG: updateFolderAsync completed with result: \(result)")
 
         isRenaming = false
 
         switch result {
         case .success:
+            print("🔧 DEBUG: Rename successful, dismissing dialog")
             dismiss()
         case .failure(let error):
+            print("🔧 DEBUG: Rename failed with error: \(error)")
             if let appError = error as? AppError {
                 errorMessage = appError.localizedDescription
             } else {
