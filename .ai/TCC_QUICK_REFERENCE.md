@@ -46,4 +46,85 @@ source .ai/STATUS && echo "State: $TASK_STATE | Assigned to: $ASSIGNED_TO"
 
 ---
 
+## Validate & Merge Completed Work
+
+### Step 1: Sync Repository (CRITICAL)
+```bash
+# Always sync first - OCC may have pushed changes
+git fetch origin
+git pull origin main  # Or your branch name
+```
+
+### Step 2: Check Task Completion
+```bash
+source .ai/STATUS
+if [ "$TASK_STATE" = "IDLE" ]; then
+    echo "✅ OCC marked task complete"
+fi
+```
+
+### Step 3: Validate Compliance
+Check against project standards:
+```bash
+# File size check (example: 300 line limit)
+find . -name "*.py" -exec wc -l {} \; | awk '$1 > 300 {print}'
+
+# Run project validation
+cat docs/ai_communication/VALIDATION_RULES.md  # Review standards
+```
+
+**Check:**
+- ✅ File size limits (e.g., ≤300 lines)
+- ✅ Code quality (linting, formatting)
+- ✅ Test coverage (e.g., ≥90%)
+- ✅ No security issues
+- ✅ All acceptance criteria met
+
+### Step 4: Decision
+
+#### ✅ If COMPLIANT → Merge to Main
+```bash
+# Review changes
+git log --oneline -5
+git diff main
+
+# Merge to main
+git checkout main
+git merge <feature-branch>
+git push origin main
+
+# Update STATUS
+sed -i 's/TASK_STATE=.*/TASK_STATE=IDLE/' .ai/STATUS
+sed -i 's/SUMMARY=.*/SUMMARY=""/' .ai/STATUS
+
+# Sync again to ensure everything is current
+git pull origin main
+```
+
+#### ❌ If NON-COMPLIANT → Request Refactoring
+```bash
+# Update CURRENT_TASK.md with specific issues
+nano .ai/CURRENT_TASK.md
+# Add: "Files exceeding size limit: file1.py (450 lines), file2.py (380 lines)"
+# Add: "Required: Split into modules ≤300 lines each"
+
+# Update STATUS
+sed -i 's/TASK_STATE=.*/TASK_STATE=PENDING/' .ai/STATUS
+sed -i 's/SUMMARY=.*/SUMMARY="Refactor: file size compliance"/' .ai/STATUS
+
+# Commit and push feedback
+git add .ai/
+git commit -m "Request refactoring for file size compliance"
+git push origin main
+```
+
+### Step 5: Always Sync After Changes
+```bash
+# Keep local and remote in sync
+git pull origin main
+git push origin main
+```
+
+---
+
 **Full guide:** `.ai/FRAMEWORK_USAGE.md`
