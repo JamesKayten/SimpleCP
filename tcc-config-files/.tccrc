@@ -1,0 +1,150 @@
+# TCC (Terminal Control Center) Configuration
+# This file is sourced when TCC starts a new session
+# It provides paths to the AI Collaboration Management framework
+
+# ============================================================================
+# FRAMEWORK LOCATION
+# ============================================================================
+# Standard location for AI Collaboration Management framework
+export AI_FRAMEWORK_REPO="$HOME/AI-Collaboration-Management"
+
+# Alternative: If framework is in a different location, update this path
+# export AI_FRAMEWORK_REPO="/path/to/your/AI-Collaboration-Management"
+
+# ============================================================================
+# FRAMEWORK PATHS
+# ============================================================================
+export AI_RULES_DIR="$AI_FRAMEWORK_REPO/rules"
+export AI_TEMPLATES_DIR="$AI_FRAMEWORK_REPO/templates"
+export AI_WORKFLOWS_DIR="$AI_FRAMEWORK_REPO/.ai-framework"
+
+# ============================================================================
+# RULE FILES
+# ============================================================================
+export AI_GENERAL_RULES="$AI_RULES_DIR/GENERAL_AI_RULES.md"
+export AI_STARTUP_PROTOCOL="$AI_RULES_DIR/STARTUP_PROTOCOL.md"
+export AI_RULE_IMPROVEMENTS="$AI_RULES_DIR/RULE_IMPROVEMENTS.md"
+
+# ============================================================================
+# PROJECT CONTEXT
+# ============================================================================
+# Current working project (will be set dynamically)
+export CURRENT_PROJECT_DIR="$(pwd)"
+export PROJECT_AI_DIR="$CURRENT_PROJECT_DIR/.ai"
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+# Check if framework repository exists
+check_framework() {
+    if [ ! -d "$AI_FRAMEWORK_REPO" ]; then
+        echo "⚠️  AI Framework not found at: $AI_FRAMEWORK_REPO"
+        echo "📥 Clone it with: git clone https://github.com/JamesKayten/AI-Collaboration-Management.git $AI_FRAMEWORK_REPO"
+        return 1
+    else
+        echo "✅ AI Framework found at: $AI_FRAMEWORK_REPO"
+        return 0
+    fi
+}
+
+# Display framework status
+framework_status() {
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🤖 TCC Framework Status"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Framework Location: $AI_FRAMEWORK_REPO"
+    echo "Current Project:    $CURRENT_PROJECT_DIR"
+    echo ""
+
+    if check_framework; then
+        echo ""
+        echo "📋 Available Rules:"
+        [ -f "$AI_GENERAL_RULES" ] && echo "  ✅ General AI Rules" || echo "  ❌ General AI Rules"
+        [ -f "$AI_STARTUP_PROTOCOL" ] && echo "  ✅ Startup Protocol" || echo "  ❌ Startup Protocol"
+        [ -f "$AI_RULE_IMPROVEMENTS" ] && echo "  ✅ Rule Improvements" || echo "  ❌ Rule Improvements"
+
+        echo ""
+        echo "📁 Project Context:"
+        [ -d "$PROJECT_AI_DIR" ] && echo "  ✅ .ai directory found" || echo "  ℹ️  No .ai directory (use 'setup_project')"
+    fi
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+# Quick access to check the board
+check_board() {
+    if [ -f "$PROJECT_AI_DIR/BOARD.md" ]; then
+        cat "$PROJECT_AI_DIR/BOARD.md"
+    else
+        echo "❌ No BOARD.md found in $PROJECT_AI_DIR"
+        echo "ℹ️  Make sure you're in a project directory with .ai/BOARD.md"
+    fi
+}
+
+# Quick access to view rules
+view_rules() {
+    if [ -f "$AI_GENERAL_RULES" ]; then
+        echo "📖 Viewing GENERAL_AI_RULES.md..."
+        cat "$AI_GENERAL_RULES"
+    else
+        echo "❌ Rules not found. Run 'framework_status' to diagnose."
+    fi
+}
+
+# Quick access to startup protocol
+view_startup() {
+    if [ -f "$AI_STARTUP_PROTOCOL" ]; then
+        echo "📖 Viewing STARTUP_PROTOCOL.md..."
+        cat "$AI_STARTUP_PROTOCOL"
+    else
+        echo "❌ Startup protocol not found. Run 'framework_status' to diagnose."
+    fi
+}
+
+# Setup TCC for current project
+setup_project() {
+    echo "🔧 Setting up TCC for project: $CURRENT_PROJECT_DIR"
+
+    # Update project directory
+    export CURRENT_PROJECT_DIR="$(pwd)"
+    export PROJECT_AI_DIR="$CURRENT_PROJECT_DIR/.ai"
+
+    # Check for .ai directory
+    if [ -d "$PROJECT_AI_DIR" ]; then
+        echo "✅ Project .ai directory found"
+    else
+        echo "⚠️  No .ai directory found in current project"
+        echo "ℹ️  TCC should create this during initialization"
+    fi
+
+    framework_status
+}
+
+# Sync framework repository
+sync_framework() {
+    if [ -d "$AI_FRAMEWORK_REPO" ]; then
+        echo "🔄 Syncing AI Framework..."
+        cd "$AI_FRAMEWORK_REPO" && git pull origin main
+        cd - > /dev/null
+        echo "✅ Framework synced"
+    else
+        echo "❌ Framework not found. Cannot sync."
+    fi
+}
+
+# ============================================================================
+# ALIASES
+# ============================================================================
+alias tcc-status='framework_status'
+alias tcc-board='check_board'
+alias tcc-rules='view_rules'
+alias tcc-startup='view_startup'
+alias tcc-setup='setup_project'
+alias tcc-sync='sync_framework'
+
+# ============================================================================
+# STARTUP MESSAGE
+# ============================================================================
+echo "🤖 TCC Configuration Loaded"
+echo "   Run 'tcc-status' to check framework availability"
+echo "   Run 'tcc-setup' to configure TCC for current project"
