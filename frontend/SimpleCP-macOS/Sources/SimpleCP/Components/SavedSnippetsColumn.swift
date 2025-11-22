@@ -495,66 +495,63 @@ struct RenameFolderDialog: View {
                 Spacer()
 
                 Button("Cancel") {
+                    NSLog("🔧 CANCEL BUTTON CLICKED!")
                     dismiss()
                 }
-                .keyboardShortcut(.cancelAction)
-                .disabled(isRenaming)
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color(NSColor.controlBackgroundColor))
+                .foregroundColor(.secondary)
+                .cornerRadius(6)
 
                 Button(action: {
-                    Task { await renameFolder() }
-                }) {
-                    HStack {
-                        if isRenaming {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        }
-                        Text(isRenaming ? "Renaming..." : "Rename")
+                    NSLog("🔧 RENAME BUTTON CLICKED!")
+                    print("🔧 RENAME BUTTON CLICKED!")
+                    if !newName.trimmingCharacters(in: .whitespaces).isEmpty {
+                        NSLog("🔧 About to call renameFolder()")
+                        renameFolder()
                     }
+                }) {
+                    Text("Rename")
+                        .foregroundColor(newName.trimmingCharacters(in: .whitespaces).isEmpty ? .secondary : .white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(newName.trimmingCharacters(in: .whitespaces).isEmpty ? Color.gray : Color.blue)
+                        .cornerRadius(6)
                 }
-                .keyboardShortcut(.defaultAction)
-                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty || isRenaming)
+                .buttonStyle(.plain)
+                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
         .padding()
         .frame(width: 400)
     }
 
-    private func renameFolder() async {
+    private func renameFolder() {
+        NSLog("🔧 DEBUG: renameFolder() called")
         print("🔧 DEBUG: renameFolder() called")
         let trimmedName = newName.trimmingCharacters(in: .whitespaces)
+        NSLog("🔧 DEBUG: Original name: '\(folder.name)', New name: '\(trimmedName)'")
         print("🔧 DEBUG: Original name: '\(folder.name)', New name: '\(trimmedName)'")
 
-        guard !trimmedName.isEmpty else {
-            print("🔧 DEBUG: Empty name, returning early")
-            return
-        }
+        if !trimmedName.isEmpty {
+            var updatedFolder = folder
+            updatedFolder.rename(to: trimmedName)
+            NSLog("🔧 DEBUG: Calling updateFolderAsync with: '\(updatedFolder.name)'")
+            print("🔧 DEBUG: Calling updateFolderAsync with: '\(updatedFolder.name)'")
 
-        // Clear any previous error
-        errorMessage = nil
-        isRenaming = true
-        print("🔧 DEBUG: Starting rename operation")
-
-        var updatedFolder = folder
-        updatedFolder.rename(to: trimmedName)
-        print("🔧 DEBUG: Created updated folder with name: '\(updatedFolder.name)'")
-
-        print("🔧 DEBUG: Calling updateFolderAsync...")
-        let result = await clipboardManager.updateFolderAsync(updatedFolder)
-        print("🔧 DEBUG: updateFolderAsync completed with result: \(result)")
-
-        isRenaming = false
-
-        switch result {
-        case .success:
-            print("🔧 DEBUG: Rename successful, dismissing dialog")
-            dismiss()
-        case .failure(let error):
-            print("🔧 DEBUG: Rename failed with error: \(error)")
-            if let appError = error as? AppError {
-                errorMessage = appError.localizedDescription
-            } else {
-                errorMessage = "Failed to rename folder: \(error.localizedDescription)"
+            Task {
+                let result = await clipboardManager.updateFolderAsync(updatedFolder)
+                await MainActor.run {
+                    NSLog("🔧 DEBUG: updateFolderAsync completed with result: \(result)")
+                    print("🔧 DEBUG: updateFolderAsync completed with result: \(result)")
+                    dismiss()
+                }
             }
+        } else {
+            NSLog("🔧 DEBUG: Empty name, dismissing")
+            dismiss()
         }
     }
 }
