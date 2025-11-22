@@ -20,7 +20,7 @@ EFFORT_HOURS=0
 ASSIGNED_TO=ANY
 
 # Last updated timestamp
-UPDATED_AT=2025-11-20T17:40:00Z
+UPDATED_AT=2025-11-22T17:20:00Z
 
 # Quick one-line summary (empty if idle)
-SUMMARY=""
+SUMMARY="Framework enhanced with 'works ready' workflow - OCC integration complete"

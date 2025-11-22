@@ -46,6 +46,22 @@ sed -i 's/TASK_STATE=PENDING/TASK_STATE=IN_PROGRESS/' .ai/STATUS
 ```
 Marks task as in progress.
 
+**"Works ready"** / **"Ready to merge"**
+```bash
+# Automated OCC collaboration workflow
+# 1. Check OCC's latest work for file size restrictions
+# 2. Merge OCC's updates into current branch
+# 3. Verify compatibility and build status
+# 4. Prepare for frontend testing phase
+```
+**Execution Protocol:**
+1. Review OCC's latest branch/commits for file size compliance
+2. Check for any files >1MB or other restrictions noted in project docs
+3. Merge OCC's work if compliant (or notify OCC if refactoring needed)
+4. Build and verify the merged solution
+5. Update status to ready for frontend testing
+6. Provide summary of merged changes and test readiness
+
 **"Task complete"** / **"Finished"**
 ```bash
 # Update STATUS to IDLE
@@ -114,6 +130,7 @@ AI agents should trigger framework checks when hearing:
 - **status**, **state**, **pending**, **assigned**
 - **check**, **what**, **show**, **read**
 - **priority**, **urgent**, **critical**
+- **works ready**, **ready to merge**, **merge OCC**, **collaboration**
 
 ## 💡 Design Philosophy
 
@@ -144,6 +161,17 @@ AI: "Yes, assigned to OCC"
 AI: "Task completed. Updating board..."
 AI: *Runs: sed -i 's/TASK_STATE=IN_PROGRESS/TASK_STATE=IDLE/' .ai/STATUS*
 AI: "Board updated to IDLE"
+```
+
+### Scenario 4: OCC Collaboration Integration
+```
+Human: "works ready"
+AI: "Executing OCC collaboration workflow..."
+AI: *Checks OCC's latest work for file size restrictions*
+AI: *Reviews commits for >1MB files or compatibility issues*
+AI: *Merges OCC's branch into current work*
+AI: *Builds and verifies merged solution*
+AI: "✅ OCC's dialog fixes merged successfully. Build completed. Ready for frontend testing."
 ```
 
 ## 🔄 Integration with Existing Framework
