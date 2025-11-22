@@ -8,6 +8,12 @@ A **plug-and-play framework** that enables any Local AI and Online AI to collabo
 ### Key Innovation
 Transforms development from *"human supervises AI coding"* to *"AIs collaborate to code better than either could alone"*
 
+### New Features (Latest Update)
+- 🤖 **Automatic Communication Monitoring** - Background scripts that detect AI-to-AI communications in real-time
+- 📋 **Self-Documenting Task System** - Zero-friction task assignment between humans and AIs
+- ⚡ **Instant Task Detection** - AIs automatically discover and execute assigned work
+- 🔄 **State Management** - Clear task lifecycle (IDLE → PENDING → IN_PROGRESS → COMPLETED)
+
 ## ⚡ Quick Start (3 Steps, 10 Minutes)
 
 ### 1. Download & Install
@@ -98,6 +104,17 @@ edit docs/AI_WORKFLOW.md
 
 ```
 your-project/
+├── .ai/                                 # AI control center
+│   ├── README.md                        # Quick start guide for AIs
+│   ├── STATUS                           # Machine-readable task state
+│   ├── CURRENT_TASK.md                  # Human-readable task details
+│   ├── FRAMEWORK_USAGE.md               # Complete usage guide
+│   ├── TCC_QUICK_REFERENCE.md           # 60-second task assignment guide
+│   └── check-tasks.sh                   # Automatic task detection
+├── .ai-framework/                       # Framework automation scripts
+│   ├── auto-communication-monitor.sh    # Background PING/PONG monitor
+│   ├── start-comm-monitor.sh            # Easy monitor launcher
+│   └── comm-status.sh                   # Quick status checker
 ├── docs/
 │   ├── AI_COLLABORATION_FRAMEWORK.md    # Framework overview
 │   ├── AI_WORKFLOW.md                   # Workflow instructions
@@ -208,7 +225,48 @@ reproducibility: Seed-based testing
 
 ## 🚧 Advanced Features
 
-### Custom Validation Scripts
+### 1. Automatic Communication Monitoring
+Real-time detection of AI-to-AI interactions:
+```bash
+# Start the background monitor
+./.ai-framework/start-comm-monitor.sh
+
+# Check monitor status
+./.ai-framework/comm-status.sh
+
+# Features:
+# • Detects PING/PONG file changes in real-time
+# • Monitors remote repository updates
+# • Logs all communication activity
+# • 30-second check intervals, 1-hour max runtime
+```
+
+### 2. Task Assignment System
+Zero-friction task delegation to AIs:
+```bash
+# Human assigns task (3 steps, 60 seconds):
+# 1. Edit .ai/STATUS file
+nano .ai/STATUS  # Set TASK_STATE=PENDING, add summary
+
+# 2. Edit .ai/CURRENT_TASK.md
+nano .ai/CURRENT_TASK.md  # Fill in ACTIVE ASSIGNMENT section
+
+# 3. Done! AI detects automatically at next session
+
+# AI detects task automatically:
+./.ai/check-tasks.sh  # Returns task state and details
+```
+
+### 3. State Management
+Clear task lifecycle tracking:
+```bash
+IDLE         → No pending work
+PENDING      → Task assigned, waiting for AI to start
+IN_PROGRESS  → AI actively working on task
+BLOCKED      → Task stuck, needs attention
+```
+
+### 4. Custom Validation Scripts
 Add project-specific validators:
 ```bash
 docs/ai_communication/validators/
@@ -218,7 +276,7 @@ docs/ai_communication/validators/
 └── custom_rules.py
 ```
 
-### Integration Hooks
+### 5. Integration Hooks
 Connect to existing tools:
 ```yaml
 ci_cd_integration: GitHub Actions/Jenkins
@@ -227,7 +285,7 @@ monitoring: DataDog/New Relic
 notifications: Slack/Teams/Email
 ```
 
-### Multi-AI Scenarios
+### 6. Multi-AI Scenarios
 Scale beyond two AIs:
 ```yaml
 security_ai: Focuses on vulnerability detection
