@@ -457,22 +457,27 @@ class ClipboardManager: ObservableObject {
         }
     }
 
-    @MainActor
     func updateFolderAsync(_ folder: SnippetFolder) async -> Result<Void, Error> {
-        // Find the original folder to get the old name for API update
-        guard let index = folders.firstIndex(where: { $0.id == folder.id }) else {
+        // Find the original folder to get the old name for API update (on main thread)
+        let (originalFolder, index): (SnippetFolder?, Int) = await MainActor.run {
+            guard let index = folders.firstIndex(where: { $0.id == folder.id }) else {
+                return (nil, -1)
+            }
+            return (folders[index], index)
+        }
+
+        guard let originalFolder = originalFolder, index >= 0 else {
             return .failure(AppError.invalidData)
         }
-        let originalFolder = folders[index]
 
         do {
-            // If folder name changed, call rename API
+            // If folder name changed, call rename API (on background thread)
             if originalFolder.name != folder.name {
                 let request = ["new_name": folder.name]
                 let requestData = try JSONEncoder().encode(request)
 
                 // URL encode the folder name to handle spaces and special characters
-                guard let encodedName = originalFolder.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+                guard let encodedName = originalFolder.name.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlPathAllowed) else {
                     logger.error("❌ Failed to URL encode folder name: '\(originalFolder.name)'")
                     return .failure(AppError.encodingFailure("folder name"))
                 }
@@ -486,19 +491,23 @@ class ClipboardManager: ObservableObject {
                 logger.info("✅ Renamed folder '\(originalFolder.name)' to '\(folder.name)' in API")
             }
 
-            // Update locally
-            folders[index] = folder
-            saveFolders()
-            logger.info("✏️ Updated folder locally: \(folder.name)")
+            // Update locally (back on main thread)
+            await MainActor.run {
+                folders[index] = folder
+                saveFolders()
+                logger.info("✏️ Updated folder locally: \(folder.name)")
+            }
 
             return .success(())
         } catch {
             logger.warning("⚠️ Failed to update folder in API: \(error.localizedDescription)")
 
-            // Still update locally as fallback
-            folders[index] = folder
-            saveFolders()
-            logger.info("✏️ Updated folder locally as fallback: \(folder.name)")
+            // Still update locally as fallback (on main thread)
+            await MainActor.run {
+                folders[index] = folder
+                saveFolders()
+                logger.info("✏️ Updated folder locally as fallback: \(folder.name)")
+            }
 
             return .failure(error)
         }
