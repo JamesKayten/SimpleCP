@@ -1,1 +1,43 @@
-{}
+{
+  "General": [
+    {
+      "content": "Hello World from API test",
+      "timestamp": "2025-11-20T10:47:04.893185",
+      "clip_id": "07b9becabc9686a6",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "Hello World from API test",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "Test Snippet",
+      "folder_path": "General",
+      "tags": [
+        "test",
+        "api"
+      ]
+    }
+  ],
+  "Test Folder": [],
+  "Code Snippets": [
+    {
+      "content": "func testSwiftIntegration() {\n    print(\"API integration working!\")\n}",
+      "timestamp": "2025-11-20T10:49:44.709364",
+      "clip_id": "4b702c705b1eb376",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "func testSwiftIntegration() {     print(\"API in...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "Swift Test Function",
+      "folder_path": "Code Snippets",
+      "tags": [
+        "swift",
+        "test",
+        "integration"
+      ]
+    }
+  ],
+  "Folder 1": []
+}
