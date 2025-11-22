@@ -96,7 +96,15 @@ class ClipboardManager: ObservableObject {
             throw AppError.networkError("HTTP \(httpResponse.statusCode)")
         }
 
-        return try JSONDecoder().decode(T.self, from: data)
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            // Log the actual response data for debugging
+            let responseString = String(data: data, encoding: .utf8) ?? "Unable to decode response as string"
+            logger.error("🔥 JSON Decode Error for \(endpoint): \(error)")
+            logger.error("🔥 Response data: \(responseString)")
+            throw AppError.decodingFailure("API response for \(endpoint)")
+        }
     }
 
     private func makeAPIRequestNoResponse(endpoint: String, method: String = "POST", body: Data? = nil) async throws {
@@ -564,36 +572,49 @@ class ClipboardManager: ObservableObject {
     private func loadFromAPI() async throws {
         logger.info("🔌 Loading data from API...")
 
-        // Load history from API
-        let apiHistory: [APIClipboardItem] = try await makeAPIRequest(endpoint: "/api/history/recent")
-        await MainActor.run {
-            clipHistory = apiHistory.map { convertToClipItem($0) }
+        // Load history from API with error handling
+        do {
+            let apiHistory: [APIClipboardItem] = try await makeAPIRequest(endpoint: "/api/history/recent")
+            await MainActor.run {
+                clipHistory = apiHistory.map { convertToClipItem($0) }
+            }
+            logger.info("✅ Loaded \(apiHistory.count) clips from API")
+        } catch {
+            logger.error("⚠️ Failed to load history from API: \(error)")
+            // Continue loading - don't fail completely
         }
-        logger.info("✅ Loaded \(apiHistory.count) clips from API")
 
-        // Load snippets from API
-        let apiSnippetFolders: [APISnippetFolder] = try await makeAPIRequest(endpoint: "/api/snippets")
-        await MainActor.run {
-            // Clear existing data
-            snippets.removeAll()
-            folders.removeAll()
+        // Load snippets from API with error handling
+        do {
+            let apiSnippetFolders: [APISnippetFolder] = try await makeAPIRequest(endpoint: "/api/snippets")
+            await MainActor.run {
+                // Clear existing data
+                snippets.removeAll()
+                folders.removeAll()
 
-            // Convert API data to local models
-            for apiFolder in apiSnippetFolders {
-                let folderId = findOrCreateFolder(apiFolder.folder_name)
+                // Convert API data to local models
+                for apiFolder in apiSnippetFolders {
+                    let folderId = findOrCreateFolder(apiFolder.folder_name)
 
-                for apiSnippet in apiFolder.snippets {
-                    let snippet = convertToSnippet(apiSnippet, folderId: folderId)
-                    snippets.append(snippet)
+                    for apiSnippet in apiFolder.snippets {
+                        let snippet = convertToSnippet(apiSnippet, folderId: folderId)
+                        snippets.append(snippet)
+                    }
+                }
+
+                // Ensure we have default folders if none exist
+                if folders.isEmpty {
+                    folders = SnippetFolder.defaultFolders()
                 }
             }
-
-            // Ensure we have default folders if none exist
-            if folders.isEmpty {
+            logger.info("✅ Loaded \(self.snippets.count) snippets and \(self.folders.count) folders from API")
+        } catch {
+            logger.error("⚠️ Failed to load snippets from API: \(error)")
+            // Create default folders as fallback
+            await MainActor.run {
                 folders = SnippetFolder.defaultFolders()
             }
         }
-        logger.info("✅ Loaded \(self.snippets.count) snippets and \(self.folders.count) folders from API")
     }
 
     private func loadFromUserDefaults() async {

@@ -18,7 +18,6 @@
       ]
     }
   ],
-  "Test Folder": [],
   "Code Snippets": [
     {
       "content": "func testSwiftIntegration() {\n    print(\"API integration working!\")\n}",
