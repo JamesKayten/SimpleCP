@@ -11,14 +11,29 @@ import os.log
 class BackendService: ObservableObject {
     @Published var isRunning: Bool = false
     @Published var backendError: String?
+    @Published var restartCount: Int = 0
+    @Published var isMonitoring: Bool = false
 
     private var backendProcess: Process?
     private let logger = Logger(subsystem: "com.simplecp.app", category: "backend")
     private let port: Int = 8000
     private let pidFilePath = "/tmp/simplecp_backend.pid"
 
+    // Monitoring and auto-restart configuration
+    private var monitoringTimer: Timer?
+    private var autoRestartEnabled: Bool = true
+    private var maxRestartAttempts: Int = 5
+    private var restartDelay: TimeInterval = 2.0
+    private var lastRestartTime: Date?
+    private var consecutiveFailures: Int = 0
+
+    // Health check configuration
+    private var healthCheckInterval: TimeInterval = 30.0
+    private var healthCheckTimer: Timer?
+
     init() {
-        logger.info("🚀 BackendService initialized")
+        logger.info("🚀 BackendService initialized with monitoring capabilities")
+        startMonitoring()
     }
 
     // MARK: - Port Management
@@ -88,9 +103,9 @@ class BackendService: ObservableObject {
 
         // Check if port is in use and try to free it
         if isPortInUse(port) {
-            logger.warning("⚠️ Port \(port) is already in use. Attempting to free it...")
-            if !killProcessOnPort(port) {
-                backendError = "Port \(port) is in use and couldn't be freed. Please run: ./kill_backend.sh"
+            logger.warning("⚠️ Port \(self.port) is already in use. Attempting to free it...")
+            if !killProcessOnPort(self.port) {
+                self.backendError = "Port \(self.port) is in use and couldn't be freed. Please run: ./kill_backend.sh"
                 logger.error("❌ Failed to start backend: port conflict")
                 return
             }
@@ -248,7 +263,8 @@ class BackendService: ObservableObject {
 
     /// Restart the backend
     func restartBackend() {
-        logger.info("🔄 Restarting backend...")
+        logger.info("🔄 Manually restarting backend...")
+        resetRestartCounter() // Reset counters on manual restart
         stopBackend()
         Thread.sleep(forTimeInterval: 0.5)
         startBackend()
@@ -263,15 +279,202 @@ class BackendService: ObservableObject {
 
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 logger.info("✅ Backend health check passed")
+                DispatchQueue.main.async {
+                    self.consecutiveFailures = 0
+                    self.backendError = nil
+                }
             } else {
                 logger.warning("⚠️ Backend health check returned unexpected response")
+                await handleHealthCheckFailure()
             }
         } catch {
             logger.error("❌ Backend health check failed: \(error.localizedDescription)")
-            DispatchQueue.main.async {
-                self.backendError = "Backend started but health check failed"
+            await handleHealthCheckFailure()
+        }
+    }
+
+    private func handleHealthCheckFailure() async {
+        DispatchQueue.main.async {
+            self.consecutiveFailures += 1
+            self.logger.warning("⚠️ Health check failure #\(self.consecutiveFailures)")
+
+            if self.consecutiveFailures >= 3 && self.autoRestartEnabled {
+                self.logger.error("❌ Multiple health check failures detected, triggering restart")
+                self.triggerAutoRestart(reason: "Health check failures")
             }
         }
+    }
+
+    // MARK: - Process Monitoring and Auto-Restart
+
+    /// Start continuous monitoring of the backend process
+    private func startMonitoring() {
+        guard monitoringTimer == nil else { return }
+
+        logger.info("👁️ Starting backend process monitoring")
+        isMonitoring = true
+
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.checkBackendStatus()
+        }
+
+        // Start periodic health checks
+        startHealthChecks()
+    }
+
+    /// Stop monitoring
+    private func stopMonitoring() {
+        logger.info("👁️ Stopping backend process monitoring")
+        isMonitoring = false
+
+        monitoringTimer?.invalidate()
+        monitoringTimer = nil
+
+        healthCheckTimer?.invalidate()
+        healthCheckTimer = nil
+    }
+
+    /// Start periodic health checks
+    private func startHealthChecks() {
+        guard healthCheckTimer == nil else { return }
+
+        healthCheckTimer = Timer.scheduledTimer(withTimeInterval: healthCheckInterval, repeats: true) { [weak self] _ in
+            Task { [weak self] in
+                await self?.verifyBackendHealth()
+            }
+        }
+    }
+
+    /// Check if backend process is still running and healthy
+    private func checkBackendStatus() {
+        guard let process = backendProcess else {
+            if isRunning {
+                logger.warning("⚠️ Backend marked as running but process is nil")
+                DispatchQueue.main.async {
+                    self.isRunning = false
+                    if self.autoRestartEnabled {
+                        self.triggerAutoRestart(reason: "Process lost")
+                    }
+                }
+            }
+            return
+        }
+
+        // Check if process is still running
+        if !process.isRunning {
+            logger.error("❌ Backend process died unexpectedly (exit code: \(process.terminationStatus))")
+            DispatchQueue.main.async {
+                self.isRunning = false
+                self.backendProcess = nil
+
+                // Trigger auto-restart if enabled
+                if self.autoRestartEnabled {
+                    let reason = "Process died (exit code: \(process.terminationStatus))"
+                    self.triggerAutoRestart(reason: reason)
+                }
+            }
+            return
+        }
+
+        // Process is running, perform lightweight health check
+        Task {
+            await quickHealthCheck()
+        }
+    }
+
+    /// Quick health check without triggering restart
+    private func quickHealthCheck() async {
+        do {
+            let url = URL(string: "http://localhost:\(port)/health")!
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 5.0
+
+            let (_, response) = try await URLSession.shared.data(for: request)
+
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                // Backend is responsive
+                DispatchQueue.main.async {
+                    self.consecutiveFailures = 0
+                    if !self.isRunning {
+                        self.isRunning = true
+                        self.logger.info("✅ Backend recovered and responding")
+                    }
+                }
+            }
+        } catch {
+            // Don't log every failed health check to avoid spam
+            // Only track consecutive failures
+            DispatchQueue.main.async {
+                self.consecutiveFailures += 1
+            }
+        }
+    }
+
+    /// Trigger automatic restart with exponential backoff
+    private func triggerAutoRestart(reason: String) {
+        guard autoRestartEnabled else {
+            logger.info("🚫 Auto-restart disabled, not restarting")
+            return
+        }
+
+        guard restartCount < maxRestartAttempts else {
+            logger.error("❌ Maximum restart attempts (\(self.maxRestartAttempts)) reached, disabling auto-restart")
+            autoRestartEnabled = false
+            backendError = "Backend failed to restart after \(self.maxRestartAttempts) attempts. Please check logs."
+            return
+        }
+
+        // Implement exponential backoff
+        let now = Date()
+        if let lastRestart = lastRestartTime {
+            let timeSinceLastRestart = now.timeIntervalSince(lastRestart)
+            if timeSinceLastRestart < restartDelay {
+                let waitTime = restartDelay - timeSinceLastRestart
+                logger.info("⏱️ Waiting \(String(format: "%.1f", waitTime))s before restart attempt")
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + waitTime) {
+                    self.performAutoRestart(reason: reason)
+                }
+                return
+            }
+        }
+
+        performAutoRestart(reason: reason)
+    }
+
+    /// Perform the actual auto-restart
+    private func performAutoRestart(reason: String) {
+        restartCount += 1
+        lastRestartTime = Date()
+
+        // Double the restart delay for exponential backoff (max 30 seconds)
+        restartDelay = min(restartDelay * 2, 30.0)
+
+        logger.info("🔄 Auto-restarting backend (attempt \(self.restartCount)/\(self.maxRestartAttempts)) - Reason: \(reason)")
+
+        // Clean stop first
+        stopBackend()
+
+        // Wait a moment then start
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.startBackend()
+        }
+    }
+
+    /// Enable/disable auto-restart functionality
+    func setAutoRestartEnabled(_ enabled: Bool) {
+        autoRestartEnabled = enabled
+        logger.info("🔧 Auto-restart \(enabled ? "enabled" : "disabled")")
+    }
+
+    /// Reset restart counter (call when manually restarting)
+    func resetRestartCounter() {
+        restartCount = 0
+        consecutiveFailures = 0
+        restartDelay = 2.0
+        lastRestartTime = nil
+        autoRestartEnabled = true
+        logger.info("🔄 Restart counter reset")
     }
 
     // MARK: - Utility Functions
@@ -350,6 +553,7 @@ class BackendService: ObservableObject {
     }
 
     deinit {
+        stopMonitoring()
         stopBackend()
     }
 }

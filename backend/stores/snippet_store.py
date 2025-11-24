@@ -43,16 +43,66 @@ class SnippetStore:
         self._notify_delegates("folder_created", folder_name)
         return True
 
-    def rename_folder(self, old_name: str, new_name: str) -> bool:
-        """Rename folder."""
-        if old_name not in self.folders or new_name in self.folders:
-            return False
-        self.folders[new_name] = self.folders.pop(old_name)
-        for item in self.folders[new_name]:
-            item.folder_path = new_name
-        self.modified = True
-        self._notify_delegates("folder_renamed", old_name, new_name)
-        return True
+    def rename_folder(self, old_name: str, new_name: str) -> dict:
+        """Rename folder. Returns success status and specific error details."""
+        # Validate input
+        if not old_name or not old_name.strip():
+            return {"success": False, "error": "SOURCE_EMPTY", "message": "Source folder name cannot be empty"}
+
+        if not new_name or not new_name.strip():
+            return {"success": False, "error": "TARGET_EMPTY", "message": "New folder name cannot be empty"}
+
+        # Sanitize names
+        old_name = old_name.strip()
+        new_name = new_name.strip()
+
+        # Check if source folder exists
+        if old_name not in self.folders:
+            return {
+                "success": False,
+                "error": "SOURCE_NOT_FOUND",
+                "message": f"Folder '{old_name}' does not exist"
+            }
+
+        # Check if target name is the same as source
+        if old_name == new_name:
+            return {
+                "success": False,
+                "error": "SAME_NAME",
+                "message": "New folder name must be different from the current name"
+            }
+
+        # Check if target folder already exists
+        if new_name in self.folders:
+            return {
+                "success": False,
+                "error": "TARGET_EXISTS",
+                "message": f"A folder named '{new_name}' already exists"
+            }
+
+        # Perform the rename
+        try:
+            self.folders[new_name] = self.folders.pop(old_name)
+            for item in self.folders[new_name]:
+                item.folder_path = new_name
+            self.modified = True
+            self._notify_delegates("folder_renamed", old_name, new_name)
+
+            return {
+                "success": True,
+                "message": f"Folder renamed from '{old_name}' to '{new_name}' successfully"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": "RENAME_FAILED",
+                "message": f"Failed to rename folder: {str(e)}"
+            }
+
+    def rename_folder_legacy(self, old_name: str, new_name: str) -> bool:
+        """Legacy rename method for backward compatibility."""
+        result = self.rename_folder(old_name, new_name)
+        return result["success"]
 
     def delete_folder(self, folder_name: str) -> bool:
         """Delete folder and all its snippets."""

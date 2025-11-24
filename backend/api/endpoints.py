@@ -179,13 +179,28 @@ def create_router(clipboard_manager):
 
     @router.put("/api/folders/{folder_name}", response_model=SuccessResponse)
     async def rename_folder(folder_name: str, request: RenameFolderRequest):
-        """Rename snippet folder."""
-        success = clipboard_manager.rename_snippet_folder(folder_name, request.new_name)
-        if not success:
-            raise HTTPException(
-                status_code=404, detail="Folder not found or new name exists"
-            )
-        return SuccessResponse(success=True, message="Folder renamed")
+        """Rename snippet folder with detailed error handling."""
+        result = clipboard_manager.rename_snippet_folder(folder_name, request.new_name)
+
+        if not result["success"]:
+            error_code = result.get("error", "UNKNOWN_ERROR")
+            error_message = result.get("message", "Unknown error occurred")
+
+            # Map specific errors to appropriate HTTP status codes
+            if error_code == "SOURCE_NOT_FOUND":
+                raise HTTPException(status_code=404, detail=error_message)
+            elif error_code == "TARGET_EXISTS":
+                raise HTTPException(status_code=409, detail=error_message)
+            elif error_code in ["SOURCE_EMPTY", "TARGET_EMPTY", "SAME_NAME"]:
+                raise HTTPException(status_code=400, detail=error_message)
+            else:
+                # Generic server error for unexpected failures
+                raise HTTPException(status_code=500, detail=error_message)
+
+        return SuccessResponse(
+            success=True,
+            message=result.get("message", "Folder renamed successfully")
+        )
 
     @router.delete("/api/folders/{folder_name}", response_model=SuccessResponse)
     async def delete_folder(folder_name: str):
@@ -255,5 +270,12 @@ def create_router(clipboard_manager):
             history=[clipboard_item_to_response(item) for item in history],
             snippets=[clipboard_item_to_response(item) for item in snippets],
         )
+
+    # Health endpoint for API route consistency
+    @router.get("/api/health", response_model=dict)
+    async def api_health():
+        """Health check endpoint under /api/ path."""
+        stats = clipboard_manager.get_stats()
+        return {"status": "healthy", "stats": stats}
 
     return router

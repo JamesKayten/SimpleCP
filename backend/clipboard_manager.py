@@ -124,12 +124,17 @@ class ClipboardManager:
             self.save_stores()
         return result
 
-    def rename_snippet_folder(self, old_name: str, new_name: str) -> bool:
-        """Rename snippet folder."""
+    def rename_snippet_folder(self, old_name: str, new_name: str) -> dict:
+        """Rename snippet folder. Returns detailed result with success status and error info."""
         result = self.snippet_store.rename_folder(old_name, new_name)
-        if result and self.auto_save_enabled:
+        if result["success"] and self.auto_save_enabled:
             self.save_stores()
         return result
+
+    def rename_snippet_folder_legacy(self, old_name: str, new_name: str) -> bool:
+        """Legacy rename method for backward compatibility."""
+        result = self.rename_snippet_folder(old_name, new_name)
+        return result["success"]
 
     def delete_snippet_folder(self, folder_name: str) -> bool:
         """Delete snippet folder."""
