@@ -287,8 +287,8 @@ class ClipboardManager: ObservableObject {
                         await MainActor.run {
                             logger.info("✏️ Folder renamed: '\(oldName)' → '\(newName)' (synced with backend)")
                         }
-                        // CRITICAL FIX: Re-sync with backend after successful rename
-                        await syncWithBackendAsync()
+                        // Note: No need to re-sync with backend here as local state is already updated
+                        // Re-syncing causes unnecessary state changes and view recreations
                     } catch {
                         await MainActor.run {
                             logger.error("❌ Failed to sync folder rename with backend: \(error.localizedDescription)")
