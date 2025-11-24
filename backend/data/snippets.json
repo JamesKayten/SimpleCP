@@ -16,6 +16,20 @@
         "test",
         "api"
       ]
+    },
+    {
+      "content": "test",
+      "timestamp": "2025-11-24T03:48:48.466961",
+      "clip_id": "fc0a66c26075ae3a",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "test",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "Test",
+      "folder_path": "General",
+      "tags": []
     }
   ],
   "Code Snippets": [
@@ -70,5 +84,6 @@
       ]
     }
   ],
-  "Integration Test Folder": []
+  "Integration Test Folder": [],
+  "Test Folder 1763956128": []
 }
