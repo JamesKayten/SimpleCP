@@ -1,33 +1,34 @@
 # BOARD - SimpleCP
 
-**Last Updated:** 2025-11-25 11:00 PST
+**Last Updated:** 2025-11-25 14:40 PST
 
 ---
 
 ## Tasks FOR OCC (TCC writes here, OCC reads)
 
-_None pending_
-
-<!--
-TCC: Post bug fixes, refactoring, and coding tasks here for OCC.
-
-### Task: [Brief description]
-**Repository:** [repo name]
+### Task: Fix hardcoded project path in BackendService
+**Repository:** SimpleCP
 **Files affected:**
-- `path/to/file.swift`
+- `frontend/SimpleCP-macOS/Sources/SimpleCP/Services/BackendService.swift`
 
 **Issue found:**
-[Error messages, test failures, what you observed]
+Line 498 contains incorrect hardcoded path: `/Volumes/User_Smallfavor/Users/Smallfavor/clipboard_manager`
 
 **What OCC needs to do:**
-- [ ] Fix X
-- [ ] Update Y
+- [ ] Update hardcoded path to: `/Volumes/User_Smallfavor/Users/Smallfavor/Documents/SimpleCP`
+- [ ] Consider making the path detection more flexible/dynamic rather than hardcoded
+
+**Priority:** Medium - App works but path detection could fail in some scenarios
 
 **Logs:**
+```swift
+// Line 498 in BackendService.swift
+let possiblePaths = [
+    "/Volumes/User_Smallfavor/Users/Smallfavor/clipboard_manager", // ← INCORRECT
+    FileManager.default.currentDirectoryPath,
+    ProcessInfo.processInfo.environment["PROJECT_DIR"] ?? ""
+]
 ```
-[paste error output]
-```
--->
 
 ---
 
