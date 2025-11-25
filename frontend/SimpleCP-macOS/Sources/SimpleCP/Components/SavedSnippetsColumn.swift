@@ -149,6 +149,7 @@ struct FolderView: View {
             .contentShape(Rectangle())
             .onTapGesture {
                 // Single click: select folder and toggle expansion
+                print("🔵 FOLDER CLICKED: '\(folder.name)' (ID: \(folder.id))")
                 onSelect()
                 clipboardManager.toggleFolderExpansion(folder.id)
             }
