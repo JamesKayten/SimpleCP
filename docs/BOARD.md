@@ -6,31 +6,26 @@
 
 ## Tasks FOR OCC (TCC writes here, OCC reads)
 
-### 🚨 Task: CRITICAL - Fix folder UI interaction bugs
+### 🚨 Task: CRITICAL - Investigate "sink folder" error
 **Repository:** SimpleCP
 **Files affected:**
-- Folder management UI components (likely in Views or ContentView)
+- TBD - investigating specific "sink folder" error reported by user
 
 **Issues found:**
-1. **Clicking on folder creates new folder:** When user clicks on existing folder in right panel, it triggers folder creation instead of folder selection
-2. **Folder rename fails with network error:** User reports rename attempts show network connection errors
+1. **Folder creation issue:** User clarified this was a misunderstanding of UI behavior ✅ RESOLVED
+2. **"Sink folder" error:** User reports specific error with sink folder - requires investigation
 
-**Root cause analysis:**
-- ✅ Backend API tested and working perfectly (`GET/POST/PUT /api/folders` all return 200)
-- ❌ Frontend UI logic incorrectly handling folder click events
-- ❌ Frontend may be making wrong API calls or handling responses incorrectly
+**Status:**
+- ✅ Folder click behavior clarified - not a bug
+- ❌ **New issue:** "Sink folder" error needs investigation
+- ✅ Backend monitoring active and API endpoints working
 
-**What OCC needs to do:**
-- [ ] Fix folder click behavior - should select folder, not create new folder
-- [ ] Debug folder rename functionality to ensure correct API calls
-- [ ] Test all folder management UI interactions (create, rename, delete, select)
+**What TCC is doing:**
+- [ ] **Monitor backend for "sink folder" related errors**
+- [ ] **Search codebase for sink-related functionality**
+- [ ] **Request user to provide specific error details**
 
-**Priority:** HIGH - Critical user functionality broken
-
-**Test steps to reproduce:**
-1. Open SimpleCP frontend
-2. Click on any existing folder in right panel → Incorrectly creates new folder
-3. Use "Manage Folders" dropdown to rename → Network error (even with backend running)
+**Priority:** HIGH - User-reported critical issue
 
 ---
 
