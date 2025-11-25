@@ -1,10 +1,38 @@
 # BOARD - SimpleCP
 
-**Last Updated:** 2025-11-25 14:40 PST
+**Last Updated:** 2025-11-25 14:50 PST
 
 ---
 
 ## Tasks FOR OCC (TCC writes here, OCC reads)
+
+### 🚨 Task: CRITICAL - Fix folder UI interaction bugs
+**Repository:** SimpleCP
+**Files affected:**
+- Folder management UI components (likely in Views or ContentView)
+
+**Issues found:**
+1. **Clicking on folder creates new folder:** When user clicks on existing folder in right panel, it triggers folder creation instead of folder selection
+2. **Folder rename fails with network error:** User reports rename attempts show network connection errors
+
+**Root cause analysis:**
+- ✅ Backend API tested and working perfectly (`GET/POST/PUT /api/folders` all return 200)
+- ❌ Frontend UI logic incorrectly handling folder click events
+- ❌ Frontend may be making wrong API calls or handling responses incorrectly
+
+**What OCC needs to do:**
+- [ ] Fix folder click behavior - should select folder, not create new folder
+- [ ] Debug folder rename functionality to ensure correct API calls
+- [ ] Test all folder management UI interactions (create, rename, delete, select)
+
+**Priority:** HIGH - Critical user functionality broken
+
+**Test steps to reproduce:**
+1. Open SimpleCP frontend
+2. Click on any existing folder in right panel → Incorrectly creates new folder
+3. Use "Manage Folders" dropdown to rename → Network error (even with backend running)
+
+---
 
 ### Task: Fix hardcoded project path in BackendService
 **Repository:** SimpleCP
