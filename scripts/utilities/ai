@@ -1,0 +1,93 @@
+#!/bin/bash
+# MASTER AI COLLABORATION COMMAND
+# Usage: ~/ai [command] [options]
+
+FRAMEWORK_DIR="/Volumes/User_Smallfavor/Users/Smallfavor/Documents/AI-Collaboration-Management"
+
+case "$1" in
+    "setup"|"init")
+        # AI Collaboration Setup
+        shift
+        exec "$FRAMEWORK_DIR/setup-ai-collaboration.sh" "$@"
+        ;;
+
+    "restore"|"start")
+        # Session Recovery - Start
+        if [ -f "./restore_session.sh" ]; then
+            exec ./restore_session.sh
+        else
+            echo "❌ No session recovery in this project"
+            echo "💡 Run: ~/ai setup --preset python"
+        fi
+        ;;
+
+    "snapshot"|"save"|"end")
+        # Session Recovery - End
+        if [ -f "./create_session_snapshot.sh" ]; then
+            exec ./create_session_snapshot.sh
+        else
+            echo "❌ No session recovery in this project"
+            echo "💡 Run: ~/ai setup --preset python"
+        fi
+        ;;
+
+    "rules")
+        # Rules Management
+        shift
+        exec "$FRAMEWORK_DIR/update-claude-rules.sh" "$@"
+        ;;
+
+    "status")
+        # Show status of all systems
+        echo "🤖 AI COLLABORATION STATUS"
+        echo "=========================="
+        echo
+
+        # Check if current project has framework
+        if [ -f "./restore_session.sh" ]; then
+            echo "✅ Current project: AI collaboration enabled"
+        else
+            echo "❌ Current project: No AI collaboration"
+            echo "   Run: ~/ai setup --preset python"
+        fi
+
+        # Show rules count
+        if [ -f "$FRAMEWORK_DIR/CLAUDE_BEHAVIOR_RULES.md" ]; then
+            RULE_COUNT=$(grep -c "^-" "$FRAMEWORK_DIR/CLAUDE_BEHAVIOR_RULES.md")
+            echo "✅ Behavior rules: $RULE_COUNT active rules"
+        else
+            echo "❌ Behavior rules: Not found"
+        fi
+
+        echo
+        echo "🛠️ AVAILABLE COMMANDS:"
+        echo "~/ai setup --preset python    # Add AI collaboration to project"
+        echo "~/ai restore                   # Start session (instant recovery)"
+        echo "~/ai save                      # End session (capture state)"
+        echo "~/ai rules --show              # View behavior rules"
+        echo "~/ai rules --add 'new rule'    # Add behavior rule"
+        echo "~/ai status                    # Show this status"
+        ;;
+
+    *)
+        # Auto-restore if in project with session recovery
+        if [ -f "./restore_session.sh" ]; then
+            exec ./restore_session.sh
+        else
+            echo "🤖 AI COLLABORATION MASTER COMMAND"
+            echo "=================================="
+            echo
+            echo "USAGE:"
+            echo "  ~/ai setup --preset python     # Add AI collaboration to project"
+            echo "  ~/ai restore                    # Start session (instant recovery)"
+            echo "  ~/ai save                       # End session (capture state)"
+            echo "  ~/ai rules --show               # View behavior rules"
+            echo "  ~/ai rules --add 'new rule'     # Add behavior rule"
+            echo "  ~/ai status                     # Show system status"
+            echo
+            echo "EXAMPLES:"
+            echo "  ~/ai setup --preset react --max-file-size 150"
+            echo "  ~/ai rules --add 'Be concise, no long explanations'"
+        fi
+        ;;
+esac
