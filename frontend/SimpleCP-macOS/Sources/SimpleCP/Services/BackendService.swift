@@ -495,7 +495,7 @@ class BackendService: ObservableObject {
 
         // Fallback: try common development paths
         let possiblePaths = [
-            "/Volumes/User_Smallfavor/Users/Smallfavor/clipboard_manager",
+            "/Volumes/User_Smallfavor/Users/Smallfavor/Documents/SimpleCP",
             FileManager.default.currentDirectoryPath,
             ProcessInfo.processInfo.environment["PROJECT_DIR"] ?? ""
         ]

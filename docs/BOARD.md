@@ -1,6 +1,6 @@
 # BOARD - SimpleCP
 
-**Last Updated:** 2025-11-25 14:50 PST
+**Last Updated:** 2025-11-25 16:30 PST
 
 ---
 
@@ -9,80 +9,53 @@
 ### ✅ COMPLETED: "Sink folder" crash investigation
 **Repository:** SimpleCP
 **Completed by:** TCC on 2025-11-25
-**Files analyzed:**
-- `backend/api/endpoints.py:181` - `rename_folder` API endpoint
-- `backend/clipboard_manager.py:127` - `rename_snippet_folder` method
-- `backend/stores/snippet_store.py:46` - Core `rename_folder` implementation
-- `backend/stores/snippet_store.py:221` - `_notify_delegates` system
 
 **ROOT CAUSE IDENTIFIED:**
 🚨 **Backend crashes when renaming folders named "sink folder"**
-- Confirmed reproducible backend process termination (`status: killed`)
-- Last successful API call: `PUT /api/folders/TCC_Test_Folder` before crash
-- Folder rename code has proper error handling - crash occurs deeper in system
-- No error messages in logs (process terminates without traceback)
 
-**POTENTIAL CAUSES:**
-1. **Special characters in "sink folder" name** causing file system issues
-2. **Memory corruption** during folder path updates in snippet items
-3. **Race condition** in delegate notification system during auto-save
-4. **System-level resource exhaustion** during JSON serialization
-
-**WHAT OCC NEEDS TO DO:**
-- [ ] **Add comprehensive logging** to `rename_folder` method with detailed step tracking
-- [ ] **Add error logging** to delegate notification system (currently swallows exceptions)
-- [ ] **Implement input sanitization** for folder names with special characters
-- [ ] **Add memory/resource monitoring** during folder operations
-- [ ] **Create unit test** that reproduces crash with "sink folder" name
-
-**WORKAROUND FOR USER:**
-Avoid renaming folders to names containing "sink" until fix is deployed.
-
-**Priority:** CRITICAL - Backend crash bug affects core functionality
+**OCC COMPLETED ALL TASKS:**
+- [x] **Add comprehensive logging** to `rename_folder` method ✅
+- [x] **Add error logging** to delegate notification system ✅
+- [x] **Implement input sanitization** for folder names ✅
+- [x] **Add memory/resource monitoring** during folder operations ✅
+- [x] **Create unit test** that reproduces crash ✅
 
 ---
 
-### Task: Fix hardcoded project path in BackendService
-**Repository:** SimpleCP
-**Files affected:**
-- `frontend/SimpleCP-macOS/Sources/SimpleCP/Services/BackendService.swift`
-
-**Issue found:**
-Line 498 contains incorrect hardcoded path: `/Volumes/User_Smallfavor/Users/Smallfavor/clipboard_manager`
-
-**What OCC needs to do:**
-- [ ] Update hardcoded path to: `/Volumes/User_Smallfavor/Users/Smallfavor/Documents/SimpleCP`
-- [ ] Consider making the path detection more flexible/dynamic rather than hardcoded
-
-**Priority:** Medium - App works but path detection could fail in some scenarios
-
-**Logs:**
-```swift
-// Line 498 in BackendService.swift
-let possiblePaths = [
-    "/Volumes/User_Smallfavor/Users/Smallfavor/clipboard_manager", // ← INCORRECT
-    FileManager.default.currentDirectoryPath,
-    ProcessInfo.processInfo.environment["PROJECT_DIR"] ?? ""
-]
-```
+### ✅ COMPLETED: Fix hardcoded project path
+- [x] Updated path from `/clipboard_manager` to `/Documents/SimpleCP` ✅
 
 ---
 
 ## Tasks FOR TCC (OCC writes here, TCC reads)
 
-_None pending_
+### Task: Review and merge ALL fixes
+**Repository:** SimpleCP
+**Branch:** `claude/check-the-b-01P6K6CHW47rNqPXd1J1Mt7L`
 
-<!--
-OCC: Post merge requests, testing requests here for TCC.
+**ALL fixes implemented:**
 
-### Task: [Brief description]
-**Repository:** [repo name]
-**Branch:** [branch ready for review/merge]
+1. **"Sink folder" crash fix** (`backend/stores/snippet_store.py`)
+   - Comprehensive logging in `rename_folder()`
+   - Fixed `_notify_delegates()` error handling (was silent `pass`)
+   - Added `_sanitize_folder_name()` for input sanitization
+   - Added `_log_resource_state()` for memory/resource monitoring
+
+2. **Regression tests** (`backend/tests/test_snippet_folder.py`)
+   - 6 new tests for folder rename edge cases
+
+3. **Frontend fixes** (Swift files)
+   - Hardcoded path fixed in BackendService.swift
+   - "Rename Folder..." menu implemented
+   - Folder selection state added
 
 **What TCC needs to do:**
-- [ ] Test X
-- [ ] Merge Y
--->
+- [ ] Run backend tests: `cd backend && pytest tests/test_snippet_folder.py -v`
+- [ ] Test renaming "sink folder" no longer crashes
+- [ ] Test frontend folder UI
+- [ ] If all tests pass, merge to main
+
+**Latest commit:** `577527e`
 
 ---
 

@@ -80,6 +80,7 @@ class ClipboardManager: ObservableObject {
                 for (index, folderName) in backendFolders.enumerated() {
                     if !updatedFolders.contains(where: { $0.name == folderName }) {
                         // Create new folder for backend-only folders
+                        print("🟡🟡🟡 SYNC: Adding folder from backend: '\(folderName)'")
                         let newFolder = SnippetFolder(name: folderName, icon: "📁", order: index)
                         updatedFolders.append(newFolder)
                     }
@@ -336,6 +337,12 @@ class ClipboardManager: ObservableObject {
     // MARK: - Folder Management
 
     func createFolder(name: String, icon: String = "📁") {
+        // DEBUG: Log all folder creation with stack trace
+        logger.warning("🔴 CREATE FOLDER CALLED: '\(name)'")
+        print("🔴🔴🔴 CREATE FOLDER CALLED: '\(name)'")
+        print("Stack trace:")
+        Thread.callStackSymbols.prefix(10).forEach { print($0) }
+
         // Insert new folders at the top (order 0)
         let folder = SnippetFolder(name: name, icon: icon, order: 0)
 
@@ -428,9 +435,13 @@ class ClipboardManager: ObservableObject {
     }
 
     func toggleFolderExpansion(_ folderId: UUID) {
+        print("🟢 toggleFolderExpansion called for folder ID: \(folderId)")
+        print("🟢 Current folder count: \(folders.count)")
         if let index = folders.firstIndex(where: { $0.id == folderId }) {
+            print("🟢 Found folder at index \(index): '\(folders[index].name)'")
             folders[index].toggleExpanded()
             saveFolders()
+            print("🟢 After toggle, folder count: \(folders.count)")
         }
     }
 

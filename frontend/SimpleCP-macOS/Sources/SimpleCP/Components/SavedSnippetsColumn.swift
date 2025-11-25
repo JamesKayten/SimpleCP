@@ -10,6 +10,7 @@ import SwiftUI
 struct SavedSnippetsColumn: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
     let searchText: String
+    @Binding var selectedFolderId: UUID?
 
     @State private var hoveredSnippetId: UUID?
     @State private var editingSnippetId: UUID?
@@ -54,11 +55,15 @@ struct SavedSnippetsColumn: View {
                             folder: folder,
                             snippets: getSnippets(for: folder.id),
                             searchText: searchText,
+                            isSelected: selectedFolderId == folder.id,
                             hoveredSnippetId: $hoveredSnippetId,
                             editingSnippetId: $editingSnippetId,
                             editingSnippet: $editingSnippet,
                             renamingFolder: $renamingFolder,
-                            newFolderName: $newFolderName
+                            newFolderName: $newFolderName,
+                            onSelect: {
+                                selectedFolderId = folder.id
+                            }
                         )
                     }
                 }
@@ -93,6 +98,7 @@ struct FolderView: View {
     let folder: SnippetFolder
     let snippets: [Snippet]
     let searchText: String
+    let isSelected: Bool
 
     @Binding var hoveredSnippetId: UUID?
     @Binding var editingSnippetId: UUID?
@@ -100,17 +106,26 @@ struct FolderView: View {
     @Binding var renamingFolder: SnippetFolder?
     @Binding var newFolderName: String
 
+    let onSelect: () -> Void
+
     @State private var isHovered = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Folder Header
             HStack(spacing: 6) {
+                // Selection indicator
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.accentColor)
+                        .frame(width: 3)
+                }
+
                 Text(folder.icon)
                     .font(.system(size: 14))
 
                 Text(folder.name)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
 
                 Spacer()
 
@@ -127,9 +142,15 @@ struct FolderView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(isHovered ? Color(NSColor.controlBackgroundColor) : Color.clear)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(isSelected ? Color.accentColor.opacity(0.15) : (isHovered ? Color(NSColor.controlBackgroundColor) : Color.clear))
+            )
             .contentShape(Rectangle())
             .onTapGesture {
+                // Single click: select folder and toggle expansion
+                print("🔵 FOLDER CLICKED: '\(folder.name)' (ID: \(folder.id))")
+                onSelect()
                 clipboardManager.toggleFolderExpansion(folder.id)
             }
             .onHover { hovering in
@@ -469,7 +490,7 @@ struct RenameFolderDialog: View {
 // MARK: - Preview
 
 #Preview {
-    SavedSnippetsColumn(searchText: "")
+    SavedSnippetsColumn(searchText: "", selectedFolderId: .constant(nil))
         .environmentObject(ClipboardManager())
         .frame(width: 300, height: 400)
 }
