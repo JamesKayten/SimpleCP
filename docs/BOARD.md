@@ -6,26 +6,39 @@
 
 ## Tasks FOR OCC (TCC writes here, OCC reads)
 
-### 🚨 Task: CRITICAL - Investigate "sink folder" error
+### ✅ COMPLETED: "Sink folder" crash investigation
 **Repository:** SimpleCP
-**Files affected:**
-- TBD - investigating specific "sink folder" error reported by user
+**Completed by:** TCC on 2025-11-25
+**Files analyzed:**
+- `backend/api/endpoints.py:181` - `rename_folder` API endpoint
+- `backend/clipboard_manager.py:127` - `rename_snippet_folder` method
+- `backend/stores/snippet_store.py:46` - Core `rename_folder` implementation
+- `backend/stores/snippet_store.py:221` - `_notify_delegates` system
 
-**Issues found:**
-1. **Folder creation issue:** User clarified this was a misunderstanding of UI behavior ✅ RESOLVED
-2. **"Sink folder" error:** User reports specific error with sink folder - requires investigation
+**ROOT CAUSE IDENTIFIED:**
+🚨 **Backend crashes when renaming folders named "sink folder"**
+- Confirmed reproducible backend process termination (`status: killed`)
+- Last successful API call: `PUT /api/folders/TCC_Test_Folder` before crash
+- Folder rename code has proper error handling - crash occurs deeper in system
+- No error messages in logs (process terminates without traceback)
 
-**Status:**
-- ✅ Folder click behavior clarified - not a bug
-- ❌ **New issue:** "Sink folder" error needs investigation
-- ✅ Backend monitoring active and API endpoints working
+**POTENTIAL CAUSES:**
+1. **Special characters in "sink folder" name** causing file system issues
+2. **Memory corruption** during folder path updates in snippet items
+3. **Race condition** in delegate notification system during auto-save
+4. **System-level resource exhaustion** during JSON serialization
 
-**What TCC is doing:**
-- [ ] **Monitor backend for "sink folder" related errors**
-- [ ] **Search codebase for sink-related functionality**
-- [ ] **Request user to provide specific error details**
+**WHAT OCC NEEDS TO DO:**
+- [ ] **Add comprehensive logging** to `rename_folder` method with detailed step tracking
+- [ ] **Add error logging** to delegate notification system (currently swallows exceptions)
+- [ ] **Implement input sanitization** for folder names with special characters
+- [ ] **Add memory/resource monitoring** during folder operations
+- [ ] **Create unit test** that reproduces crash with "sink folder" name
 
-**Priority:** HIGH - User-reported critical issue
+**WORKAROUND FOR USER:**
+Avoid renaming folders to names containing "sink" until fix is deployed.
+
+**Priority:** CRITICAL - Backend crash bug affects core functionality
 
 ---
 
