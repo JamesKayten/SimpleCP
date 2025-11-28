@@ -1,5 +1,0 @@
-TASK_STATE=PENDING
-SUMMARY="Complete rewrite of BackendService.swift component"
-PRIORITY=1
-ASSIGNED_TO=OCC
-EFFORT_HOURS=8
