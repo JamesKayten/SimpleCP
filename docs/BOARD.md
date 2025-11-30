@@ -138,6 +138,29 @@ INFO: PUT /api/folders/TCC_Test_Folder HTTP/1.1 200 OK  ← CORRECT ENDPOINT WOR
 
 ---
 
+## 🚨 **FILE SIZE COMPLIANCE VIOLATIONS (2025-11-30)**
+
+### **Branch**: `claude/session-restore-documentation-014CJUcRqwetMNMYrzwPMSwe`
+**Status**: ❌ **MERGE BLOCKED** - File size violations detected
+**Reporter**: TCC (Testing/Coordination Claude)
+**Date**: 2025-11-30
+
+### **Violations Found**:
+1. **setup-ai-collaboration.sh** - 657 lines (exceeds 200 line limit for shell scripts)
+2. **ClipboardManager.swift** - 556 lines (exceeds 300 line limit for Swift files)
+3. **health.py** - 270 lines (exceeds 250 line limit for Python files)
+4. **prepare_signing.sh** - 219 lines (exceeds 200 line limit for shell scripts)
+
+### **Required Actions for OCC**:
+- [ ] **Split setup-ai-collaboration.sh** into smaller modules (< 200 lines each)
+- [ ] **Refactor ClipboardManager.swift** into separate classes/files (< 300 lines each)
+- [ ] **Refactor health.py** into smaller modules (< 250 lines each)
+- [ ] **Split prepare_signing.sh** into smaller scripts (< 200 lines each)
+
+**Branch will remain unmerged until all file size violations are resolved.**
+
+---
+
 ## 📋 **URGENT OCC TASK ASSIGNMENTS**
 
 ### **PRIORITY 1: Fix Frontend API Endpoint (CRITICAL)**
