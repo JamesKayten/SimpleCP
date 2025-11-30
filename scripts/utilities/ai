@@ -4,17 +4,37 @@
 
 FRAMEWORK_DIR="/Volumes/User_Smallfavor/Users/Smallfavor/Documents/AI-Collaboration-Management"
 
+# Repository validation function - ensures Claude is in the proper repo
+validate_repository() {
+    # Check if we're in a git repository
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        echo "❌ Error: Not in a git repository"
+        echo "💡 Navigate to your SimpleCP project directory first"
+        return 1
+    fi
+
+    # Check if this is the SimpleCP repository by looking for key files
+    if [ ! -f "docs/CLAUDE.md" ] || [ ! -f "Makefile" ]; then
+        echo "❌ Error: Not in the SimpleCP repository"
+        echo "💡 Navigate to your SimpleCP project directory"
+        echo "   Expected files: docs/CLAUDE.md, Makefile"
+        return 1
+    fi
+
+    return 0
+}
+
 case "$1" in
     "setup"|"init")
         # AI Collaboration Setup
         shift
-        exec "$FRAMEWORK_DIR/setup-ai-collaboration.sh" "$@"
+        validate_repository && exec "$FRAMEWORK_DIR/setup-ai-collaboration.sh" "$@"
         ;;
 
     "restore"|"start")
         # Session Recovery - Start
         if [ -f "./restore_session.sh" ]; then
-            exec ./restore_session.sh
+            validate_repository && exec ./restore_session.sh
         else
             echo "❌ No session recovery in this project"
             echo "💡 Run: ~/ai setup --preset python"
@@ -24,7 +44,7 @@ case "$1" in
     "snapshot"|"save"|"end")
         # Session Recovery - End
         if [ -f "./create_session_snapshot.sh" ]; then
-            exec ./create_session_snapshot.sh
+            validate_repository && exec ./create_session_snapshot.sh
         else
             echo "❌ No session recovery in this project"
             echo "💡 Run: ~/ai setup --preset python"
@@ -34,7 +54,7 @@ case "$1" in
     "rules")
         # Rules Management
         shift
-        exec "$FRAMEWORK_DIR/update-claude-rules.sh" "$@"
+        validate_repository && exec "$FRAMEWORK_DIR/update-claude-rules.sh" "$@"
         ;;
 
     "status")
@@ -72,7 +92,7 @@ case "$1" in
     *)
         # Auto-restore if in project with session recovery
         if [ -f "./restore_session.sh" ]; then
-            exec ./restore_session.sh
+            validate_repository && exec ./restore_session.sh
         else
             echo "🤖 AI COLLABORATION MASTER COMMAND"
             echo "=================================="

@@ -30,16 +30,11 @@ SimpleCP/
 │   ├── USER_GUIDE.md
 │   └── ...                  # Additional guides
 │
-├── tools/                   # Development & Build Tools
-│   ├── scripts/             # Build automation
-│   ├── ai_collaboration_framework/
-│   ├── create_session_snapshot.sh
-│   └── restore_session.sh
-│
-└── .ai-framework/           # AI Development Framework
-    ├── branch-monitor.sh    # Multi-branch monitoring
-    ├── enhanced-monitor.sh  # Real-time activity tracking
-    └── ...
+└── tools/                   # Development & Build Tools
+    ├── scripts/             # Build automation
+    ├── monitoring/          # System monitoring tools
+    ├── create_session_snapshot.sh
+    └── restore_session.sh
 ```
 
 ## 🚀 Quick Start
@@ -91,14 +86,13 @@ cd tools
 - [API Documentation](docs/API.md)
 - [UI/UX Specification](docs/UI_UX_SPECIFICATION_v3.md)
 - [User Guide](docs/USER_GUIDE.md)
-- [Development Framework](docs/AI_COLLABORATION_FRAMEWORK.md)
 
 ## 🛠️ Development
 
 This project uses:
 - **Python 3.11+** with FastAPI
 - **Swift 5.9+** with SwiftUI
-- **AI Collaboration Framework** for development management
+- **Modern development tools** for build automation
 
 ## ✅ Current Status
 
@@ -106,7 +100,7 @@ This project uses:
 - Python backend with REST API
 - Swift MenuBar frontend
 - Complete testing infrastructure
-- AI development framework
+- Development tools and monitoring
 - Clean project structure
 
 **🔧 Ready for:**

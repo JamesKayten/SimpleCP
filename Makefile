@@ -1,7 +1,7 @@
 # SimpleCP Makefile
 # Convenient commands for development and deployment
 
-.PHONY: help install install-dev test lint format clean run daemon docker-build docker-run
+.PHONY: help install install-dev test lint format clean run daemon claude docker-build docker-run
 
 # Default target
 help:
@@ -14,6 +14,7 @@ help:
 	@echo "Development:"
 	@echo "  make run           Run the application"
 	@echo "  make daemon        Run the daemon service"
+	@echo "  make claude        Launch Claude AI assistant"
 	@echo "  make test          Run tests with coverage"
 	@echo "  make lint          Run linters"
 	@echo "  make format        Format code with black and isort"
@@ -39,6 +40,9 @@ run:
 
 daemon:
 	python daemon.py
+
+claude:
+	./claude
 
 # Testing
 test:
