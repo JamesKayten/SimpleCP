@@ -1,0 +1,19 @@
+#!/bin/bash
+# Claude launcher script for SimpleCP repository
+# Usage: ./claude [args...]
+
+# Change to the repository root directory
+cd "$(dirname "$0")"
+
+# Set up environment if needed
+export PROJECT_ROOT="$(pwd)"
+export PROJECT_NAME="SimpleCP"
+
+# Launch Claude in interactive mode with repository context
+if [ $# -eq 0 ]; then
+    # No arguments provided, start interactive session
+    exec claude
+else
+    # Arguments provided, pass them through
+    exec claude "$@"
+fi

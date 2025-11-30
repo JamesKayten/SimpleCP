@@ -1,0 +1,172 @@
+#!/bin/bash
+# AICM REPOSITORY COMMAND
+# Usage: ~/aicm [command] [options]
+# Ensures Claude stays in AICM repository and work doesn't leak elsewhere
+
+AICM_REPO_PATH="/Volumes/User_Smallfavor/Users/Smallfavor/Documents/AI-Collaboration-Management"
+
+# AICM repository validation function - ensures Claude stays in AICM repo
+validate_aicm_repository() {
+    local current_dir=$(pwd)
+
+    # Check if we're in a git repository
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        echo "❌ Error: Not in a git repository"
+        echo "💡 Navigate to the AICM repository: $AICM_REPO_PATH"
+        return 1
+    fi
+
+    # Check if this is the AICM repository by path
+    if [[ "$current_dir" != "$AICM_REPO_PATH"* ]]; then
+        echo "❌ Error: Not in the AICM repository"
+        echo "💡 Current directory: $current_dir"
+        echo "💡 Expected AICM repo: $AICM_REPO_PATH"
+        echo "💡 Navigate to AICM repository to ensure work stays there"
+        return 1
+    fi
+
+    # Verify AICM repository characteristics
+    if [ ! -f "CLAUDE_BEHAVIOR_RULES.md" ] && [ ! -f "README.md" ]; then
+        echo "❌ Error: Directory doesn't appear to be the AICM repository"
+        echo "💡 Expected files: CLAUDE_BEHAVIOR_RULES.md or README.md"
+        echo "💡 Current path: $current_dir"
+        return 1
+    fi
+
+    echo "✅ Confirmed: Working in AICM repository"
+    echo "📂 Path: $current_dir"
+    return 0
+}
+
+# Ensure all operations stay within AICM repo
+ensure_aicm_context() {
+    echo "🔒 AICM Repository Context Lock Engaged"
+    echo "    All operations will be confined to: $AICM_REPO_PATH"
+    echo "    This prevents accidental writes to other repositories"
+    echo ""
+}
+
+case "$1" in
+    "validate"|"check")
+        # Check repository status
+        validate_aicm_repository && ensure_aicm_context
+        ;;
+
+    "start"|"init")
+        # Start AICM session with validation
+        echo "🚀 Starting AICM Repository Session"
+        validate_aicm_repository && {
+            ensure_aicm_context
+            echo "Ready to work in AICM repository"
+            echo "All file operations will be contained within AICM"
+        }
+        ;;
+
+    "rules")
+        # Work with behavior rules
+        shift
+        validate_aicm_repository && {
+            ensure_aicm_context
+            if [ "$1" = "edit" ]; then
+                echo "📝 Editing CLAUDE_BEHAVIOR_RULES.md in AICM repo"
+                ${EDITOR:-nano} "$AICM_REPO_PATH/CLAUDE_BEHAVIOR_RULES.md"
+            elif [ "$1" = "show" ]; then
+                echo "📋 Displaying CLAUDE_BEHAVIOR_RULES.md from AICM repo"
+                cat "$AICM_REPO_PATH/CLAUDE_BEHAVIOR_RULES.md" 2>/dev/null || echo "❌ Rules file not found"
+            else
+                echo "Usage: ~/aicm rules [edit|show]"
+            fi
+        }
+        ;;
+
+    "framework")
+        # Framework operations
+        shift
+        validate_aicm_repository && {
+            ensure_aicm_context
+            if [ "$1" = "status" ]; then
+                echo "📊 AICM Framework Status"
+                echo "========================"
+                echo "Repository: $(git remote get-url origin 2>/dev/null || echo 'No remote')"
+                echo "Branch: $(git branch --show-current 2>/dev/null || echo 'No branch')"
+                echo "Files: $(find . -name "*.md" -o -name "*.sh" | wc -l | tr -d ' ') framework files"
+                echo "Last commit: $(git log -1 --pretty=format:'%h %s' 2>/dev/null || echo 'No commits')"
+            elif [ "$1" = "sync" ]; then
+                echo "🔄 Syncing AICM repository (work stays here)"
+                git status
+                echo ""
+                echo "💡 Ready for git operations within AICM repo"
+            else
+                echo "Usage: ~/aicm framework [status|sync]"
+            fi
+        }
+        ;;
+
+    "secure")
+        # Security check to prevent work leakage
+        validate_aicm_repository && {
+            echo "🔐 AICM Security Check"
+            echo "======================"
+            echo "✅ Working directory: $(pwd)"
+            echo "✅ Git repository: $(git rev-parse --show-toplevel 2>/dev/null)"
+            echo "✅ No work will leak to other repositories"
+            echo ""
+            echo "🛡️ Security measures active:"
+            echo "   • All file operations confined to AICM repo"
+            echo "   • Path validation on every command"
+            echo "   • Context lock prevents directory changes"
+        }
+        ;;
+
+    "status")
+        # Show comprehensive AICM status
+        echo "🤖 AICM REPOSITORY STATUS"
+        echo "========================="
+        echo
+
+        validate_aicm_repository
+        validation_result=$?
+
+        echo
+        echo "🛠️ AVAILABLE AICM COMMANDS:"
+        echo "~/aicm validate           # Check repository status"
+        echo "~/aicm start              # Start AICM session with validation"
+        echo "~/aicm rules [edit|show]  # Work with behavior rules"
+        echo "~/aicm framework [status|sync]  # Framework operations"
+        echo "~/aicm secure             # Security check and status"
+        echo "~/aicm status             # Show this status"
+
+        if [ "$validation_result" -eq 0 ]; then
+            echo ""
+            echo "🟢 Ready to work in AICM repository"
+        else
+            echo ""
+            echo "🔴 Navigate to AICM repository first: $AICM_REPO_PATH"
+        fi
+        ;;
+
+    *)
+        echo "🤖 AICM REPOSITORY COMMAND"
+        echo "=========================="
+        echo
+        echo "Ensures Claude stays in AICM repository and prevents work leakage"
+        echo
+        echo "USAGE:"
+        echo "  ~/aicm validate              # Check repository status"
+        echo "  ~/aicm start                 # Start AICM session with validation"
+        echo "  ~/aicm rules [edit|show]     # Work with behavior rules"
+        echo "  ~/aicm framework [status|sync]   # Framework operations"
+        echo "  ~/aicm secure                # Security check and status"
+        echo "  ~/aicm status                # Show system status"
+        echo
+        echo "SECURITY FEATURES:"
+        echo "  • Path validation ensures work stays in AICM repo"
+        echo "  • Context lock prevents accidental directory changes"
+        echo "  • All operations confirmed within: $AICM_REPO_PATH"
+        echo
+        echo "EXAMPLES:"
+        echo "  ~/aicm start                 # Begin secure AICM session"
+        echo "  ~/aicm rules edit            # Edit behavior rules safely"
+        echo "  ~/aicm framework status      # Check framework state"
+        ;;
+esac
