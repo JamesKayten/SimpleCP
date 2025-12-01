@@ -75,3 +75,6 @@ Flycut/SESSION_EXIT_SNAPSHOT.md
 # Docker
 *.pid
 .dockerignore
+
+# Claude Code local settings (machine-specific)
+.claude/settings.json
