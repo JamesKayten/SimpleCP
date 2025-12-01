@@ -1,13 +1,5 @@
-"""
-ClipboardManager - Core backend service.
-
-Backend-only clipboard management using Flycut's multi-store pattern.
-No UI code - designed to be consumed by REST API and future Swift frontend.
-"""
-
-import pyperclip
-import json
-import os
+"""ClipboardManager - Core backend service for clipboard management."""
+import pyperclip, json, os
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from stores.clipboard_item import ClipboardItem
@@ -16,22 +8,10 @@ from stores.snippet_store import SnippetStore
 
 
 class ClipboardManager:
-    """
-    Core clipboard manager backend.
-    Based on Flycut's FlycutOperator pattern with multi-store architecture.
-    Provides multi-store management, clipboard monitoring, persistence, and search.
-    """
+    """Core clipboard manager with multi-store architecture."""
 
-    def __init__(
-        self,
-        data_dir: Optional[str] = None,
-        max_history: int = 50,
-        display_count: int = 10,
-    ):
-        """Initialize ClipboardManager with multi-store pattern."""
-        self.history_store = HistoryStore(
-            max_items=max_history, display_count=display_count
-        )
+    def __init__(self, data_dir: Optional[str] = None, max_history: int = 50, display_count: int = 10):
+        self.history_store = HistoryStore(max_items=max_history, display_count=display_count)
         self.snippet_store = SnippetStore()
         self._current_clipboard = ""
         self.data_dir = data_dir or os.path.join(os.path.dirname(__file__), "data")
@@ -155,45 +135,26 @@ class ClipboardManager:
         """Get all snippets organized by folder."""
         return self.snippet_store.get_all_snippets()
 
-    def add_snippet_direct(
-        self, content: str, name: str, folder: str, tags: Optional[List[str]] = None
-    ) -> ClipboardItem:
-        """Create and add snippet directly."""
+    def add_snippet_direct(self, content: str, name: str, folder: str, tags: Optional[List[str]] = None) -> ClipboardItem:
         snippet = ClipboardItem(content=content)
         snippet.make_snippet(name, folder, tags)
         self.snippet_store.add_snippet(folder, snippet)
-        if self.auto_save_enabled:
-            self.save_stores()
+        if self.auto_save_enabled: self.save_stores()
         return snippet
 
-    def update_snippet(
-        self,
-        folder_name: str,
-        clip_id: str,
-        new_content: Optional[str] = None,
-        new_name: Optional[str] = None,
-        new_tags: Optional[List[str]] = None,
-    ) -> bool:
-        """Update snippet properties."""
-        result = self.snippet_store.update_snippet(
-            folder_name, clip_id, new_content, new_name, new_tags
-        )
-        if result and self.auto_save_enabled:
-            self.save_stores()
+    def update_snippet(self, folder_name: str, clip_id: str, new_content: Optional[str] = None, new_name: Optional[str] = None, new_tags: Optional[List[str]] = None) -> bool:
+        result = self.snippet_store.update_snippet(folder_name, clip_id, new_content, new_name, new_tags)
+        if result and self.auto_save_enabled: self.save_stores()
         return result
 
     def delete_snippet(self, folder_name: str, clip_id: str) -> bool:
-        """Delete specific snippet."""
         result = self.snippet_store.delete_snippet(folder_name, clip_id)
-        if result and self.auto_save_enabled:
-            self.save_stores()
+        if result and self.auto_save_enabled: self.save_stores()
         return result
 
     def move_snippet(self, from_folder: str, to_folder: str, clip_id: str) -> bool:
-        """Move snippet between folders."""
         result = self.snippet_store.move_snippet(from_folder, to_folder, clip_id)
-        if result and self.auto_save_enabled:
-            self.save_stores()
+        if result and self.auto_save_enabled: self.save_stores()
         return result
 
     # Search operations

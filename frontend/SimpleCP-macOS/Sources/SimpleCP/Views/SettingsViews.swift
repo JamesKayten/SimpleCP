@@ -1,14 +1,7 @@
-//
-//  SettingsViews.swift
-//  SimpleCP
-//
-//  Settings tab view components
-//
-
+//  SettingsViews.swift - Settings tab view components
 import SwiftUI
 
 // MARK: - General Settings View
-
 struct GeneralSettingsView: View {
     @Binding var launchAtLogin: Bool
     @Binding var startMinimized: Bool
