@@ -7,30 +7,10 @@ Based on Flycut's favorites store pattern with folder organization.
 
 import logging
 import re
-import sys
-import traceback
 from typing import Dict, List, Optional, Callable
 from stores.clipboard_item import ClipboardItem
 
-# Configure logger for this module
 logger = logging.getLogger(__name__)
-
-
-def _log_resource_state(operation: str, context: dict = None):
-    """Log memory and resource state for debugging crashes."""
-    try:
-        import resource
-        usage = resource.getrusage(resource.RUSAGE_SELF)
-        mem_mb = usage.ru_maxrss / 1024 / 1024  # Convert to MB (macOS reports bytes)
-        logger.debug(f"[RESOURCE] {operation}: max_rss={mem_mb:.2f}MB, user_time={usage.ru_utime:.3f}s")
-    except ImportError:
-        pass  # resource module not available on all platforms
-
-    # Log Python memory info
-    logger.debug(f"[RESOURCE] {operation}: ref_count={len(sys.modules)} modules loaded")
-
-    if context:
-        logger.debug(f"[RESOURCE] {operation}: context={context}")
 
 
 class SnippetStore:
@@ -49,13 +29,8 @@ class SnippetStore:
 
     def __init__(self):
         """Initialize SnippetStore."""
-        # Folder structure: folder_name -> list of ClipboardItem
         self.folders: Dict[str, List[ClipboardItem]] = {}
-
-        # Dirty flag for persistence
         self.modified = False
-
-        # Delegate callbacks for UI updates
         self._delegates: List[Callable] = []
 
     def create_folder(self, folder_name: str) -> bool:
@@ -71,110 +46,49 @@ class SnippetStore:
         """Sanitize folder name to prevent issues with special characters."""
         if not name:
             return name
-        # Strip whitespace
         name = name.strip()
-        # Remove control characters
         name = re.sub(r'[\x00-\x1f\x7f]', '', name)
-        # Replace problematic characters for filesystem/API
         name = re.sub(r'[<>:"/\\|?*]', '_', name)
         return name
 
     def rename_folder(self, old_name: str, new_name: str) -> dict:
         """Rename folder. Returns success status and specific error details."""
-        logger.info(f"rename_folder called: '{old_name}' -> '{new_name}'")
-        logger.debug(f"  old_name repr: {repr(old_name)}")
-        logger.debug(f"  new_name repr: {repr(new_name)}")
+        logger.info(f"rename_folder: '{old_name}' -> '{new_name}'")
 
-        # Log resource state at start
-        _log_resource_state("rename_folder:START", {
-            "old_name": old_name,
-            "new_name": new_name,
-            "folder_count": len(self.folders),
-            "total_snippets": len(self)
-        })
-
-        # Validate input
         if not old_name or not old_name.strip():
-            logger.warning("rename_folder failed: SOURCE_EMPTY")
             return {"success": False, "error": "SOURCE_EMPTY", "message": "Source folder name cannot be empty"}
 
         if not new_name or not new_name.strip():
-            logger.warning("rename_folder failed: TARGET_EMPTY")
             return {"success": False, "error": "TARGET_EMPTY", "message": "New folder name cannot be empty"}
 
-        # Sanitize names
         old_name = self._sanitize_folder_name(old_name)
         new_name = self._sanitize_folder_name(new_name)
-        logger.debug(f"  After sanitization: '{old_name}' -> '{new_name}'")
 
-        # Check if source folder exists
         if old_name not in self.folders:
-            logger.warning(f"rename_folder failed: SOURCE_NOT_FOUND - '{old_name}'")
-            logger.debug(f"  Available folders: {list(self.folders.keys())}")
-            return {
-                "success": False,
-                "error": "SOURCE_NOT_FOUND",
-                "message": f"Folder '{old_name}' does not exist"
-            }
+            logger.warning(f"rename_folder: SOURCE_NOT_FOUND - '{old_name}'")
+            return {"success": False, "error": "SOURCE_NOT_FOUND", "message": f"Folder '{old_name}' does not exist"}
 
-        # Check if target name is the same as source
         if old_name == new_name:
-            logger.info(f"rename_folder: SAME_NAME - no change needed")
-            return {
-                "success": False,
-                "error": "SAME_NAME",
-                "message": "New folder name must be different from the current name"
-            }
+            return {"success": False, "error": "SAME_NAME", "message": "New folder name must be different"}
 
-        # Check if target folder already exists
         if new_name in self.folders:
-            logger.warning(f"rename_folder failed: TARGET_EXISTS - '{new_name}'")
-            return {
-                "success": False,
-                "error": "TARGET_EXISTS",
-                "message": f"A folder named '{new_name}' already exists"
-            }
+            return {"success": False, "error": "TARGET_EXISTS", "message": f"Folder '{new_name}' already exists"}
 
-        # Perform the rename
         try:
-            logger.info(f"rename_folder: performing rename '{old_name}' -> '{new_name}'")
-            _log_resource_state("rename_folder:BEFORE_POP")
-
             self.folders[new_name] = self.folders.pop(old_name)
-            _log_resource_state("rename_folder:AFTER_POP")
-
-            snippet_count = len(self.folders[new_name])
-            for i, item in enumerate(self.folders[new_name]):
+            for item in self.folders[new_name]:
                 item.folder_path = new_name
-                if i % 100 == 0 and snippet_count > 100:
-                    _log_resource_state(f"rename_folder:UPDATE_ITEM_{i}/{snippet_count}")
-
             self.modified = True
-            _log_resource_state("rename_folder:BEFORE_NOTIFY")
             self._notify_delegates("folder_renamed", old_name, new_name)
-            _log_resource_state("rename_folder:AFTER_NOTIFY")
-
             logger.info(f"rename_folder: SUCCESS - '{old_name}' -> '{new_name}'")
-            return {
-                "success": True,
-                "message": f"Folder renamed from '{old_name}' to '{new_name}' successfully"
-            }
+            return {"success": True, "message": f"Folder renamed from '{old_name}' to '{new_name}'"}
         except Exception as e:
-            _log_resource_state("rename_folder:EXCEPTION", {
-                "exception_type": type(e).__name__,
-                "exception_msg": str(e)
-            })
-            logger.error(f"rename_folder EXCEPTION: {type(e).__name__}: {str(e)}", exc_info=True)
-            return {
-                "success": False,
-                "error": "RENAME_FAILED",
-                "message": f"Failed to rename folder: {str(e)}"
-            }
+            logger.error(f"rename_folder EXCEPTION: {e}", exc_info=True)
+            return {"success": False, "error": "RENAME_FAILED", "message": f"Failed to rename: {e}"}
 
     def rename_folder_legacy(self, old_name: str, new_name: str) -> bool:
         """Legacy rename method for backward compatibility."""
-        result = self.rename_folder(old_name, new_name)
-        return result["success"]
+        return self.rename_folder(old_name, new_name)["success"]
 
     def delete_folder(self, folder_name: str) -> bool:
         """Delete folder and all its snippets."""
@@ -190,10 +104,7 @@ class SnippetStore:
         if folder_name not in self.folders:
             self.create_folder(folder_name)
         if not item.has_name:
-            item.make_snippet(
-                name=item.snippet_name or item.display_string,
-                folder=folder_name,
-            )
+            item.make_snippet(name=item.snippet_name or item.display_string, folder=folder_name)
         item.folder_path = folder_name
         self.folders[folder_name].append(item)
         self.modified = True
@@ -213,9 +124,7 @@ class SnippetStore:
         return False
 
     def update_snippet(
-        self,
-        folder_name: str,
-        clip_id: str,
+        self, folder_name: str, clip_id: str,
         new_content: Optional[str] = None,
         new_name: Optional[str] = None,
         new_tags: Optional[List[str]] = None,
@@ -292,17 +201,11 @@ class SnippetStore:
 
     def _notify_delegates(self, event: str, *args):
         """Notify all delegates of an event."""
-        logger.debug(f"_notify_delegates: event='{event}', args={args}, delegates={len(self._delegates)}")
         for delegate in self._delegates:
             try:
                 delegate(event, *args)
             except Exception as e:
-                # Log delegate errors instead of silently ignoring them
-                logger.error(
-                    f"Delegate error during '{event}' event: {type(e).__name__}: {str(e)}",
-                    exc_info=True
-                )
-                # Continue notifying other delegates, but don't silently fail
+                logger.error(f"Delegate error during '{event}': {e}", exc_info=True)
 
     def __len__(self) -> int:
         """Return total number of snippets across all folders."""
