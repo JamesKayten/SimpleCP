@@ -46,18 +46,9 @@ data/*.json
 *.log
 logs/
 
-# Environment
+# Environment and secrets
 .env
-.env.local
-.env.*.local
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-coverage.xml
-.tox/
-.hypothesis/
+!.env.example
 
 # Build artifacts
 *.app
@@ -70,11 +61,12 @@ coverage.xml
 
 # Reference repositories
 Flycut/
-Flycut/SESSION_EXIT_SNAPSHOT.md
 
-# Docker
-*.pid
-.dockerignore
-
-# Claude Code local settings (machine-specific)
-.claude/settings.json
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+*.cover
+.hypothesis/
