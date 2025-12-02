@@ -18,10 +18,10 @@ WATCHER_LOG="/tmp/aim-watcher-${REPO_NAME}.log"
 
 cd "$REPO_ROOT" || exit 1
 
-echo "" >&2
-echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${RESET}" >&2
-echo -e "${BOLD}${CYAN}    AIM DEPLOYED REPOSITORY: $REPO_NAME${RESET}" >&2
-echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${RESET}" >&2
+echo ""
+echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${RESET}"
+echo -e "${BOLD}${CYAN}    AIM DEPLOYED REPOSITORY: $REPO_NAME${RESET}"
+echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${RESET}"
 
 # Quick sync check
 git fetch origin --quiet 2>/dev/null || true
@@ -31,34 +31,31 @@ OCC_BRANCHES=$(git branch -r 2>/dev/null | grep 'origin/claude/' | wc -l | xargs
 
 # Show branch status
 if [ "$OCC_BRANCHES" -gt 0 ]; then
-    echo -e "${YELLOW}📋 $OCC_BRANCHES OCC branch(es) found - use 'wr' to process${RESET}" >&2
+    echo -e "${YELLOW}📋 $OCC_BRANCHES OCC branch(es) found - use 'wr' to process${RESET}"
     echo "SessionStart:startup hook success: FOUND_BRANCHES"
     echo "Status: $OCC_BRANCHES OCC branch(es) found"
     echo "Action: Use 'wr' or '/works-ready' to process"
 else
-    echo -e "${GREEN}✓ No pending OCC branches${RESET}" >&2
+    echo -e "${GREEN}✓ No pending OCC branches${RESET}"
     echo "SessionStart:startup hook success: NO_BRANCHES"
     echo "Status: No pending OCC branches"
     echo "Action: Standing by"
 fi
 
-# Watcher management - check if watcher is already running
+# Watcher management - detect by process name (more reliable than PID files)
 WATCHER_RUNNING=false
-WATCHER_PID=""
 
-if [ -f "$UNIFIED_PID_FILE" ]; then
-    STORED_PID=$(cat "$UNIFIED_PID_FILE" 2>/dev/null)
-    if [ -n "$STORED_PID" ] && ps -p "$STORED_PID" > /dev/null 2>&1; then
-        WATCHER_RUNNING=true
-        WATCHER_PID="$STORED_PID"
-        echo -e "📡 AIM watcher ${GREEN}running${RESET} (background PID: $WATCHER_PID)" >&2
-        echo "Watcher: RUNNING (PID: $WATCHER_PID)"
-    fi
+# Check if watch-all.sh is already running (by process name)
+if pgrep -f "watch-all.sh" > /dev/null 2>&1; then
+    WATCHER_RUNNING=true
+    echo -e "📡 AIM watcher ${GREEN}already running${RESET}"
+    echo "Watcher: ALREADY RUNNING"
 fi
 
 # Start watcher if not running and script exists
 if [ "$WATCHER_RUNNING" = false ]; then
-    if [ -f "$UNIFIED_WATCHER" ] && [ -x "$UNIFIED_WATCHER" ]; then
+    if [ -f "$UNIFIED_WATCHER" ]; then
+        [ ! -x "$UNIFIED_WATCHER" ] && chmod +x "$UNIFIED_WATCHER"
         # Start watcher in background, fully detached
         nohup "$UNIFIED_WATCHER" > "$WATCHER_LOG" 2>&1 &
         NEW_PID=$!
@@ -67,27 +64,19 @@ if [ "$WATCHER_RUNNING" = false ]; then
         # Verify it actually started
         sleep 0.5
         if ps -p "$NEW_PID" > /dev/null 2>&1; then
-            echo -e "📡 AIM watcher ${GREEN}started${RESET} (background PID: $NEW_PID)" >&2
+            echo -e "📡 AIM watcher ${GREEN}started${RESET} (background PID: $NEW_PID)"
             echo "Watcher: STARTED (PID: $NEW_PID)"
             echo "Logs: $WATCHER_LOG"
         else
-            echo -e "${RED}⚠️  Watcher failed to start - check $WATCHER_LOG${RESET}" >&2
+            echo -e "${RED}⚠️  Watcher failed to start - check $WATCHER_LOG${RESET}"
             echo "Watcher: FAILED TO START - check $WATCHER_LOG"
         fi
-    elif [ -f "$UNIFIED_WATCHER" ]; then
-        # Script exists but not executable
-        chmod +x "$UNIFIED_WATCHER"
-        nohup "$UNIFIED_WATCHER" > "$WATCHER_LOG" 2>&1 &
-        NEW_PID=$!
-        echo "$NEW_PID" > "$UNIFIED_PID_FILE"
-        echo -e "📡 AIM watcher ${GREEN}started${RESET} (fixed permissions, PID: $NEW_PID)" >&2
-        echo "Watcher: STARTED (fixed permissions, PID: $NEW_PID)"
     else
-        echo -e "${YELLOW}⚠️  No watcher script at: $UNIFIED_WATCHER${RESET}" >&2
+        echo -e "${YELLOW}⚠️  No watcher script at: $UNIFIED_WATCHER${RESET}"
         echo "Watcher: NOT FOUND at $UNIFIED_WATCHER"
         echo "Fix: Run 'aim init --force' from AIM repo"
     fi
 fi
 
-echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${RESET}" >&2
-echo "" >&2
+echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${RESET}"
+echo ""
