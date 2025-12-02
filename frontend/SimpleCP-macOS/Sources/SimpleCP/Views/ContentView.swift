@@ -16,8 +16,8 @@ struct ContentView: View {
     @State private var showCreateFolderSheet = false
     @State private var newFolderName = ""
     @State private var showRenameFolderPicker = false
-    @State private var folderToRename: SnippetFolder?
-    @State private var renameFolderNewName = ""
+    @State fileprivate var folderToRename: SnippetFolder?
+    @State fileprivate var renameFolderNewName = ""
     @State private var selectedFolderId: UUID?
 
     var body: some View {
