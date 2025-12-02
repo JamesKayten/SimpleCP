@@ -34,21 +34,19 @@
 
 ## Tasks FOR TCC (OCC writes here, TCC reads)
 
-### ✅ READY: Swift Access Control Fix Complete
-
-**Branch:** `claude/check-the-b-013xthdEHQyhQRL8dpG46qj8`
-**Commit:** Fix Swift access control for extension compatibility
-**Changes:** Changed `private` → `fileprivate` for `folderToRename` and `renameFolderNewName` in ContentView.swift
-**Status:** Ready for validation and merge
+*No pending TCC tasks*
 
 ---
 
 ## COMPLETION RECORD
 
-**2025-12-02:** Branch `claude/check-the-b-013xthdEHQyhQRL8dpG46qj8` processed
-- **Result:** Nothing to merge (empty branch)
-- **Action:** Deleted branch (no commits ahead of main)
-- **Main Status:** 3fa0b06 (unchanged)
+**2025-12-02:** Branch `claude/check-the-b-013xthdEHQyhQRL8dpG46qj8` successfully merged
+- **Result:** Successful merge to main
+- **Changes:** Swift access control fixes (private → fileprivate for ContentView properties)
+- **Files:** frontend/SimpleCP-macOS/Sources/SimpleCP/Views/ContentView.swift
+- **Merge commit:** f2bfc07
+- **Action:** Branch deleted, validated by TCC build test
+- **Status:** Access control issues RESOLVED ✅
 
 ---
 
