@@ -55,7 +55,7 @@ declare -A SIZE_LIMITS=(
 )
 
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}🔍 TCC FILE SIZE COMPLIANCE CHECK${NC}"
+echo -e "${CYAN}🔍 TCC COMPLIANCE CHECK (Size + Patterns)${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 echo -e "${BLUE}📋 Current Branch:${NC} $CURRENT_BRANCH"
@@ -64,6 +64,56 @@ echo -e "${BLUE}📅 Check Time:${NC} $(date)"
 
 # Create reports directory if it doesn't exist
 mkdir -p reports
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PATTERN PROPAGATION CHECK (MANDATORY)
+# ═══════════════════════════════════════════════════════════════════════════════
+echo ""
+echo -e "${YELLOW}🔍 Checking for hardcoded patterns...${NC}"
+
+PATTERN_VIOLATIONS=0
+PATTERN_REPORT="/tmp/pattern_violations_${TIMESTAMP}.txt"
+> "$PATTERN_REPORT"
+
+# Patterns to check (add more as needed)
+FORBIDDEN_PATTERNS=(
+    "/Users/"
+    "/home/user"
+    "/Volumes/"
+    "SimpleCP"
+)
+
+for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
+    # Search in code files (exclude .git, reports, logs)
+    matches=$(grep -rn "$pattern" --include="*.sh" --include="*.py" --include="*.swift" --include="*.js" --include="*.ts" --include="*.go" . 2>/dev/null | grep -v "\.git" | grep -v "reports/" | grep -v "PATTERN" | head -20)
+
+    if [[ -n "$matches" ]]; then
+        count=$(echo "$matches" | wc -l)
+        echo -e "${RED}⚠️  Found '$pattern' in $count location(s):${NC}"
+        echo "$matches" | while read -r line; do
+            echo -e "   ${YELLOW}$line${NC}"
+            echo "$line" >> "$PATTERN_REPORT"
+        done
+        ((PATTERN_VIOLATIONS += count))
+    fi
+done
+
+if [[ $PATTERN_VIOLATIONS -gt 0 ]]; then
+    echo ""
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}❌ PATTERN CHECK: FAILED ($PATTERN_VIOLATIONS hardcoded patterns)${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "${YELLOW}Use /fix-pattern command to fix ALL instances systematically.${NC}"
+    echo -e "${YELLOW}RULE: Fix the pattern completely or don't fix it at all.${NC}"
+    echo ""
+    rm -f "$PATTERN_REPORT"
+    exit 1
+else
+    echo -e "${GREEN}✅ Pattern check: PASSED (no hardcoded paths/names)${NC}"
+fi
+
+rm -f "$PATTERN_REPORT"
 
 echo ""
 echo -e "${YELLOW}🔍 Scanning files for size violations...${NC}"
