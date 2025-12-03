@@ -55,6 +55,13 @@ logs/
 *.dmg
 *.pkg
 
+# Swift/Xcode
+.build/
+.swiftpm/
+DerivedData/
+*.xcworkspace/
+xcuserdata/
+
 # Temporary files
 *.tmp
 *.temp
