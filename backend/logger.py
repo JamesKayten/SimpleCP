@@ -1,186 +1,168 @@
 """
-Comprehensive logging system for SimpleCP.
+Structured logging configuration for SimpleCP.
 
-Provides structured logging with file output, console output,
-and log rotation for debugging and monitoring.
+Provides consistent logging across the application with support for:
+- File rotation
+- JSON formatting for production
+- Different log levels
+- Contextual information
 """
-
 import logging
-import logging.handlers
-import os
+import sys
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
 
+from pythonjsonlogger import jsonlogger
 
-class SimpleCPLogger:
+from settings import settings
+
+
+class ContextFilter(logging.Filter):
+    """Add contextual information to log records."""
+
+    def __init__(self, app_name: str, version: str):
+        super().__init__()
+        self.app_name = app_name
+        self.version = version
+
+    def filter(self, record):
+        record.app_name = self.app_name
+        record.app_version = self.version
+        return True
+
+
+def setup_logging(name: Optional[str] = None) -> logging.Logger:
     """
-    Centralized logging system for SimpleCP.
+    Set up logging with file rotation and optional JSON formatting.
 
-    Features:
-    - Multiple log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    - File-based logging with rotation
-    - Console output
-    - Structured formatting
-    - Per-module loggers
+    Args:
+        name: Logger name (defaults to 'simplecp')
+
+    Returns:
+        Configured logger instance
     """
+    logger_name = name or "simplecp"
+    logger = logging.getLogger(logger_name)
 
-    def __init__(
-        self,
-        log_dir: Optional[str] = None,
-        log_level: str = "INFO",
-        max_file_size: int = 10 * 1024 * 1024,  # 10MB
-        backup_count: int = 5,
-    ):
-        """
-        Initialize logging system.
+    # Avoid duplicate handlers
+    if logger.handlers:
+        return logger
 
-        Args:
-            log_dir: Directory for log files (default: ./logs)
-            log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-            max_file_size: Maximum size of each log file before rotation
-            backup_count: Number of backup log files to keep
-        """
-        self.log_dir = log_dir or os.path.join(os.path.dirname(__file__), "logs")
-        Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+    logger.setLevel(getattr(logging, settings.log_level.upper()))
 
-        self.log_level = getattr(logging, log_level.upper(), logging.INFO)
-        self.max_file_size = max_file_size
-        self.backup_count = backup_count
+    # Console handler (always enabled)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)
 
-        # Create main logger
-        self.logger = logging.getLogger("SimpleCP")
-        self.logger.setLevel(self.log_level)
-
-        # Clear existing handlers
-        self.logger.handlers.clear()
-
-        # Set up handlers
-        self._setup_file_handler()
-        self._setup_console_handler()
-        self._setup_error_handler()
-
-    def _setup_file_handler(self):
-        """Set up rotating file handler for general logs."""
-        log_file = os.path.join(self.log_dir, "simplecp.log")
-        file_handler = logging.handlers.RotatingFileHandler(
-            log_file,
-            maxBytes=self.max_file_size,
-            backupCount=self.backup_count,
+    if settings.log_json_format:
+        # JSON format for production
+        json_formatter = jsonlogger.JsonFormatter(
+            "%(timestamp)s %(level)s %(name)s %(message)s %(pathname)s %(lineno)d",
+            rename_fields={
+                "levelname": "level",
+                "asctime": "timestamp",
+            },
         )
-        file_handler.setLevel(self.log_level)
-
-        format_str = (
-            "%(asctime)s - %(name)s - %(levelname)s - "
-            "%(module)s:%(lineno)d - %(message)s"
-        )
-        formatter = logging.Formatter(format_str, datefmt="%Y-%m-%d %H:%M:%S")
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-
-    def _setup_console_handler(self):
-        """Set up console handler for real-time output."""
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.WARNING)  # Only warnings+ to console
-
-        formatter = logging.Formatter(
-            "%(levelname)s: %(message)s",
-        )
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
-
-    def _setup_error_handler(self):
-        """Set up separate handler for errors."""
-        error_log = os.path.join(self.log_dir, "errors.log")
-        error_handler = logging.handlers.RotatingFileHandler(
-            error_log,
-            maxBytes=self.max_file_size,
-            backupCount=self.backup_count,
-        )
-        error_handler.setLevel(logging.ERROR)
-
-        formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(module)s:%(lineno)d\n"
-            "%(message)s\n"
-            "%(exc_info)s\n",
+        console_handler.setFormatter(json_formatter)
+    else:
+        # Human-readable format for development
+        console_formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-        error_handler.setFormatter(formatter)
-        self.logger.addHandler(error_handler)
+        console_handler.setFormatter(console_formatter)
 
-    def get_logger(self, module_name: Optional[str] = None) -> logging.Logger:
-        """
-        Get logger for a specific module.
+    logger.addHandler(console_handler)
 
-        Args:
-            module_name: Name of the module (e.g., 'api.endpoints')
+    # File handler with rotation (if enabled)
+    if settings.log_to_file:
+        log_path = Path(settings.log_file_path)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
 
-        Returns:
-            Logger instance
-        """
-        if module_name:
-            return logging.getLogger(f"SimpleCP.{module_name}")
-        return self.logger
+        file_handler = RotatingFileHandler(
+            filename=str(log_path),
+            maxBytes=settings.log_max_bytes,
+            backupCount=settings.log_backup_count,
+            encoding="utf-8",
+        )
+        file_handler.setLevel(logging.DEBUG)
 
-    def debug(self, message: str, **kwargs):
-        """Log debug message."""
-        self.logger.debug(message, **kwargs)
+        if settings.log_json_format:
+            file_handler.setFormatter(json_formatter)
+        else:
+            file_formatter = logging.Formatter(
+                "%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+            )
+            file_handler.setFormatter(file_formatter)
 
-    def info(self, message: str, **kwargs):
-        """Log info message."""
-        self.logger.info(message, **kwargs)
+        logger.addHandler(file_handler)
 
-    def warning(self, message: str, **kwargs):
-        """Log warning message."""
-        self.logger.warning(message, **kwargs)
+    # Add context filter
+    context_filter = ContextFilter(settings.app_name, settings.app_version)
+    logger.addFilter(context_filter)
 
-    def error(self, message: str, exc_info=False, **kwargs):
-        """Log error message."""
-        self.logger.error(message, exc_info=exc_info, **kwargs)
+    # Prevent propagation to root logger
+    logger.propagate = False
 
-    def critical(self, message: str, exc_info=True, **kwargs):
-        """Log critical message."""
-        self.logger.critical(message, exc_info=exc_info, **kwargs)
-
-    def log_api_request(self, method: str, endpoint: str, status_code: int):
-        """Log API request."""
-        self.logger.info(f"API {method} {endpoint} - Status: {status_code}")
-
-    def log_clipboard_event(self, event_type: str, details: str = ""):
-        """Log clipboard-related events."""
-        self.logger.debug(f"Clipboard: {event_type} - {details}")
-
-    def log_performance(self, operation: str, duration_ms: float):
-        """Log performance metrics."""
-        self.logger.info(f"Performance: {operation} took {duration_ms:.2f}ms")
+    return logger
 
 
 # Global logger instance
-_global_logger: Optional[SimpleCPLogger] = None
+logger = setup_logging()
 
 
-def get_logger(module_name: Optional[str] = None) -> logging.Logger:
-    """
-    Get global logger instance.
+# Convenience functions for common operations
+def log_api_request(method: str, path: str, status_code: int, duration_ms: float):
+    """Log API request with structured data."""
+    logger.info(
+        "API Request",
+        extra={
+            "http_method": method,
+            "http_path": path,
+            "http_status": status_code,
+            "duration_ms": duration_ms,
+            "event_type": "api_request",
+        },
+    )
 
-    Args:
-        module_name: Optional module name for scoped logger
 
-    Returns:
-        Logger instance
-    """
-    global _global_logger
-    if _global_logger is None:
-        _global_logger = SimpleCPLogger()
-    return _global_logger.get_logger(module_name)
+def log_clipboard_event(event_type: str, item_id: Optional[str] = None, **kwargs):
+    """Log clipboard event with structured data."""
+    logger.info(
+        f"Clipboard Event: {event_type}",
+        extra={
+            "event_type": "clipboard_event",
+            "clipboard_event_type": event_type,
+            "item_id": item_id,
+            **kwargs,
+        },
+    )
 
 
-def initialize_logging(log_dir: Optional[str] = None, log_level: str = "INFO"):
-    """
-    Initialize global logging system.
+def log_error(error: Exception, context: Optional[dict] = None):
+    """Log error with context and stack trace."""
+    logger.error(
+        f"Error: {str(error)}",
+        exc_info=True,
+        extra={
+            "event_type": "error",
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            **(context or {}),
+        },
+    )
 
-    Args:
-        log_dir: Directory for log files
-        log_level: Logging level
-    """
-    global _global_logger
-    _global_logger = SimpleCPLogger(log_dir=log_dir, log_level=log_level)
+
+def log_performance(operation: str, duration_ms: float, **kwargs):
+    """Log performance metrics."""
+    logger.info(
+        f"Performance: {operation}",
+        extra={
+            "event_type": "performance",
+            "operation": operation,
+            "duration_ms": duration_ms,
+            **kwargs,
+        },
+    )
