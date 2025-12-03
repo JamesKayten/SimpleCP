@@ -376,12 +376,6 @@ python daemon.py
 systemctl start simplecp
 ```
 
-### Docker
-
-```bash
-docker-compose up
-```
-
 ## Monitoring
 
 ### Metrics Collected

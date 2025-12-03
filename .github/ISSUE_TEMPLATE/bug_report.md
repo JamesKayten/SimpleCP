@@ -35,7 +35,7 @@ If applicable, add screenshots to help explain your problem.
 - OS: [e.g. macOS 13.0]
 - Python Version: [e.g. 3.11]
 - SimpleCP Version: [e.g. 1.0.0]
-- Installation Method: [pip/docker/source]
+- Installation Method: [pip/source]
 
 ## Logs
 

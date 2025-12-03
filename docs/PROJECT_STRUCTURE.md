@@ -28,8 +28,6 @@ SimpleCP/
 │   └── logging_config.py        # Logging configuration
 │
 ├── deployment/                   # Deployment configurations
-│   ├── docker/                  # Docker documentation
-│   │   └── README.md
 │   └── systemd/                 # Systemd service
 │       ├── simplecp.service
 │       └── README.md
@@ -93,12 +91,9 @@ SimpleCP/
 │
 ├── logs/                         # Application logs (gitignored)
 │
-├── .dockerignore                 # Docker ignore patterns
 ├── .env.example                  # Environment variables example
 ├── .gitignore                    # Git ignore patterns
 ├── .pre-commit-config.yaml       # Pre-commit hooks configuration
-├── Dockerfile                    # Docker image definition
-├── docker-compose.yml            # Docker Compose configuration
 ├── LICENSE                       # MIT License
 ├── Makefile                      # Development commands
 ├── MANIFEST.in                   # Package manifest
@@ -173,10 +168,7 @@ SimpleCP/
 
 | File/Directory | Purpose |
 |----------------|---------|
-| `Dockerfile` | Docker image definition |
-| `docker-compose.yml` | Docker Compose configuration |
 | `deployment/systemd/` | Systemd service configuration |
-| `.dockerignore` | Docker build ignore patterns |
 
 ### CI/CD
 
@@ -236,8 +228,6 @@ SimpleCP/
 - Makefile for common tasks
 
 ### 4. Deployment Ready
-- Docker support
-- Docker Compose
 - Systemd service
 - Health checks
 - Backup/restore scripts

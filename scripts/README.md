@@ -71,7 +71,6 @@ These scripts can be integrated into:
 
 - **Cron jobs** for automated backups
 - **CI/CD pipelines** for automated testing
-- **Docker health checks** for container monitoring
 - **Systemd services** for service management
 
 ## Examples
