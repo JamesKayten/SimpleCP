@@ -13,6 +13,20 @@
       "snippet_name": "- Create GitHub Pull Request to merge to main",
       "folder_path": "GIT updating_Management",
       "tags": []
+    },
+    {
+      "content": "cd /Volumes/User_Smallfavor/Users/Smallfavor/Code/ACTIVE/simple-cp-test && ./ai-tag-release.sh",
+      "timestamp": "2025-12-04T13:56:17.667172",
+      "clip_id": "c481793deb5611a3",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "cd /Volumes/User_Smallfavor/Users/Smallfavor/Co...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "Git version update",
+      "folder_path": "GIT updating_Management",
+      "tags": []
     }
   ]
 }
