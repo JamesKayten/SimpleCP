@@ -80,24 +80,6 @@ extension ContentView {
             .help("Clear all clipboard history")
 
             Spacer()
-
-            Button(action: {
-                exportSnippets()
-            }) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 11))
-            }
-            .buttonStyle(.bordered)
-            .help("Export snippets")
-
-            Button(action: {
-                importSnippets()
-            }) {
-                Image(systemName: "square.and.arrow.down")
-                    .font(.system(size: 11))
-            }
-            .buttonStyle(.bordered)
-            .help("Import snippets")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)

@@ -272,6 +272,29 @@ struct FolderView: View {
     }
     
     private func pasteToActiveApp() {
+        // Check if we have accessibility permissions
+        let trusted = AXIsProcessTrusted()
+        
+        if !trusted {
+            // Show alert and open System Settings
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
+                alert.addButton(withTitle: "Open Settings")
+                alert.addButton(withTitle: "Cancel")
+                alert.alertStyle = .informational
+                
+                if alert.runModal() == .alertFirstButtonReturn {
+                    // Open System Settings to Accessibility
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
+            return
+        }
+        
         // Create a paste event (Cmd+V)
         let source = CGEventSource(stateID: .hidSystemState)
         
@@ -379,6 +402,29 @@ struct FolderSnippetsFlyout: View {
     }
     
     private func pasteToActiveApp() {
+        // Check if we have accessibility permissions
+        let trusted = AXIsProcessTrusted()
+        
+        if !trusted {
+            // Show alert and open System Settings
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
+                alert.addButton(withTitle: "Open Settings")
+                alert.addButton(withTitle: "Cancel")
+                alert.alertStyle = .informational
+                
+                if alert.runModal() == .alertFirstButtonReturn {
+                    // Open System Settings to Accessibility
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
+            return
+        }
+        
         let source = CGEventSource(stateID: .hidSystemState)
         let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
         keyVDown?.flags = .maskCommand

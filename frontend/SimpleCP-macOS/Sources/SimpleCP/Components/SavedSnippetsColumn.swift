@@ -14,6 +14,7 @@ struct SavedSnippetsColumn: View {
 
     @State private var hoveredSnippetId: UUID?
     @State private var editingSnippetId: UUID?
+    @Environment(\.fontPreferences) private var fontPrefs
 
     private var filteredSnippets: [Snippet] {
         if searchText.isEmpty {
@@ -34,13 +35,31 @@ struct SavedSnippetsColumn: View {
                 Image(systemName: "folder.fill")
                     .foregroundColor(.secondary)
                 Text("SAVED SNIPPETS")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(fontPrefs.interfaceFont(weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
+            .contextMenu {
+                Button(action: {
+                    exportSnippets()
+                }) {
+                    Label("Export Snippets...", systemImage: "square.and.arrow.up")
+                }
+                
+                Button(action: {
+                    importSnippets()
+                }) {
+                    Label("Import Snippets...", systemImage: "square.and.arrow.down")
+                }
+                
+                Divider()
+                
+                Text("\(clipboardManager.snippets.count) snippets in \(clipboardManager.folders.count) folders")
+                    .foregroundColor(.secondary)
+            }
 
             Divider()
 
@@ -75,6 +94,99 @@ struct SavedSnippetsColumn: View {
             filteredSnippets.contains(where: { $0.id == snippet.id })
         }
     }
+    
+    // MARK: - Export/Import Functions
+    
+    private func exportSnippets() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "SimpleCP-Snippets-\(Date().formatted(date: .abbreviated, time: .omitted)).json"
+        panel.message = "Export all snippets and folders to a JSON file"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            let data = ExportData(
+                snippets: clipboardManager.snippets,
+                folders: clipboardManager.folders
+            )
+
+            do {
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = .prettyPrinted
+                let encoded = try encoder.encode(data)
+                try encoded.write(to: url)
+                print("✅ Exported \(clipboardManager.snippets.count) snippets to \(url.lastPathComponent)")
+            } catch {
+                print("❌ Export failed: \(error.localizedDescription)")
+                showExportError(error)
+            }
+        }
+    }
+    
+    private func importSnippets() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        panel.message = "Import snippets and folders from a JSON file"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                let data = try Data(contentsOf: url)
+                let decoded = try JSONDecoder().decode(ExportData.self, from: data)
+                
+                var foldersAdded = 0
+                var snippetsAdded = 0
+                
+                // Merge imported folders
+                for folder in decoded.folders {
+                    if !clipboardManager.folders.contains(where: { $0.id == folder.id }) {
+                        clipboardManager.folders.append(folder)
+                        foldersAdded += 1
+                    }
+                }
+                
+                // Merge imported snippets
+                for snippet in decoded.snippets {
+                    if !clipboardManager.snippets.contains(where: { $0.id == snippet.id }) {
+                        clipboardManager.snippets.append(snippet)
+                        snippetsAdded += 1
+                    }
+                }
+                
+                print("✅ Imported \(snippetsAdded) snippets and \(foldersAdded) folders")
+                showImportSuccess(snippetsAdded: snippetsAdded, foldersAdded: foldersAdded)
+            } catch {
+                print("❌ Import failed: \(error.localizedDescription)")
+                showImportError(error)
+            }
+        }
+    }
+    
+    private func showExportError(_ error: Error) {
+        let alert = NSAlert()
+        alert.messageText = "Export Failed"
+        alert.informativeText = "Could not export snippets: \(error.localizedDescription)"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+    
+    private func showImportError(_ error: Error) {
+        let alert = NSAlert()
+        alert.messageText = "Import Failed"
+        alert.informativeText = "Could not import snippets: \(error.localizedDescription)"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+    
+    private func showImportSuccess(snippetsAdded: Int, foldersAdded: Int) {
+        let alert = NSAlert()
+        alert.messageText = "Import Successful"
+        alert.informativeText = "Added \(snippetsAdded) snippets and \(foldersAdded) folders"
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
 }
 
 // MARK: - Snippet Item Row
@@ -89,26 +201,28 @@ struct SnippetItemRow: View {
     @State private var showPopover = false
     @State private var hoverTimer: Timer?
     @State private var localHover = false
+    @Environment(\.fontPreferences) private var fontPrefs
+    @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
 
     var body: some View {
         HStack(spacing: 8) {
             // Favorite indicator
             if snippet.isFavorite {
                 Image(systemName: "star.fill")
-                    .font(.system(size: 10))
+                    .font(fontPrefs.interfaceFont())
                     .foregroundColor(.yellow)
             }
 
             // Snippet name
             VStack(alignment: .leading, spacing: 2) {
                 Text(snippet.name)
-                    .font(.system(size: 12))
+                    .font(fontPrefs.clipContentFont())
                     .foregroundColor(.primary)
                     .lineLimit(1)
 
                 if !snippet.tags.isEmpty {
                     Text(snippet.tags.map { "#\($0)" }.joined(separator: " "))
-                        .font(.system(size: 9))
+                        .font(fontPrefs.interfaceFont())
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
@@ -121,14 +235,14 @@ struct SnippetItemRow: View {
                 HStack(spacing: 4) {
                     Button(action: onEdit) {
                         Image(systemName: "pencil")
-                            .font(.system(size: 10))
+                            .font(fontPrefs.interfaceFont())
                     }
                     .buttonStyle(.plain)
                     .help("Edit")
 
                     Button(action: onDelete) {
                         Image(systemName: "trash")
-                            .font(.system(size: 10))
+                            .font(fontPrefs.interfaceFont())
                     }
                     .buttonStyle(.plain)
                     .help("Delete")
@@ -157,9 +271,11 @@ struct SnippetItemRow: View {
             switch phase {
             case .active(_):
                 localHover = true
-                // Show popover after a delay
-                hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: false) { _ in
-                    showPopover = true
+                // Show popover after a delay if enabled
+                if showSnippetPreviews {
+                    hoverTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+                        showPopover = true
+                    }
                 }
             case .ended:
                 localHover = false
@@ -176,6 +292,7 @@ struct SnippetItemRow: View {
 
 struct SnippetContentPopover: View {
     let snippet: Snippet
+    @Environment(\.fontPreferences) private var fontPrefs
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -184,14 +301,14 @@ struct SnippetContentPopover: View {
                 if snippet.isFavorite {
                     Image(systemName: "star.fill")
                         .foregroundColor(.yellow)
-                        .font(.system(size: 11))
+                        .font(fontPrefs.interfaceFont())
                 }
                 Text(snippet.name)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(fontPrefs.interfaceFont(weight: .semibold))
                     .foregroundColor(.primary)
                 Spacer()
                 Text(snippet.modifiedAt.formatted(date: .abbreviated, time: .shortened))
-                    .font(.system(size: 10))
+                    .font(fontPrefs.interfaceFont())
                     .foregroundColor(.secondary)
             }
             
@@ -200,7 +317,7 @@ struct SnippetContentPopover: View {
                 HStack(spacing: 4) {
                     ForEach(snippet.tags, id: \.self) { tag in
                         Text("#\(tag)")
-                            .font(.system(size: 9))
+                            .font(fontPrefs.interfaceFont())
                             .foregroundColor(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -215,7 +332,7 @@ struct SnippetContentPopover: View {
             // Full content
             ScrollView {
                 Text(snippet.content)
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(fontPrefs.clipContentFont())
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -224,12 +341,12 @@ struct SnippetContentPopover: View {
             // Footer with character count
             HStack {
                 Text("\(snippet.content.count) characters")
-                    .font(.system(size: 10))
+                    .font(fontPrefs.interfaceFont())
                     .foregroundColor(.secondary)
                 Spacer()
                 if snippet.content.components(separatedBy: .newlines).count > 1 {
                     Text("\(snippet.content.components(separatedBy: .newlines).count) lines")
-                        .font(.system(size: 10))
+                        .font(fontPrefs.interfaceFont())
                         .foregroundColor(.secondary)
                 }
             }

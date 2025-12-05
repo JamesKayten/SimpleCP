@@ -15,6 +15,7 @@ struct RecentClipsColumn: View {
     @State private var hoveredClipId: UUID?
     @State private var selectedClipId: UUID?
     @State private var expandedGroups: Set<String> = []
+    @Environment(\.fontPreferences) private var fontPrefs
 
     private var filteredClips: [ClipItem] {
         if searchText.isEmpty {
@@ -35,7 +36,7 @@ struct RecentClipsColumn: View {
                 Image(systemName: "doc.on.clipboard")
                     .foregroundColor(.secondary)
                 Text("RECENT CLIPS")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(fontPrefs.interfaceFont(weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
             }
@@ -145,24 +146,26 @@ struct ClipItemRow: View {
     
     @State private var showPopover = false
     @State private var hoverTimer: Timer?
+    @Environment(\.fontPreferences) private var fontPrefs
+    @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
 
     var body: some View {
         HStack(spacing: 8) {
             // Index
             Text("\(index).")
-                .font(.system(size: 11, weight: .medium))
+                .font(fontPrefs.interfaceFont(weight: .medium))
                 .foregroundColor(.secondary)
                 .frame(width: 20, alignment: .trailing)
 
             // Content preview
             VStack(alignment: .leading, spacing: 2) {
                 Text(clip.preview)
-                    .font(.system(size: 12))
+                    .font(fontPrefs.clipContentFont())
                     .lineLimit(2)
                     .foregroundColor(.primary)
 
                 Text(clip.displayTime)
-                    .font(.system(size: 10))
+                    .font(fontPrefs.interfaceFont(weight: .regular))
                     .foregroundColor(.secondary)
             }
 
@@ -171,16 +174,9 @@ struct ClipItemRow: View {
             // Actions (shown on hover)
             if isHovered {
                 HStack(spacing: 4) {
-                    Button(action: onSave) {
-                        Image(systemName: "square.and.arrow.down")
-                            .font(.system(size: 10))
-                    }
-                    .buttonStyle(.plain)
-                    .help("Save as snippet")
-
                     Button(action: onDelete) {
                         Image(systemName: "trash")
-                            .font(.system(size: 10))
+                            .font(fontPrefs.interfaceFont())
                     }
                     .buttonStyle(.plain)
                     .help("Remove")
@@ -199,9 +195,9 @@ struct ClipItemRow: View {
             ClipContentPopover(clip: clip)
         }
         .onHover { hovering in
-            if hovering {
-                // Show popover after a short delay
-                hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: false) { _ in
+            if hovering && showSnippetPreviews {
+                // Show popover after a delay (1.5 seconds)
+                hoverTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
                     showPopover = true
                 }
             } else {
@@ -218,6 +214,7 @@ struct ClipItemRow: View {
 
 struct ClipContentPopover: View {
     let clip: ClipItem
+    @Environment(\.fontPreferences) private var fontPrefs
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -226,11 +223,11 @@ struct ClipContentPopover: View {
                 Image(systemName: contentTypeIcon)
                     .foregroundColor(.secondary)
                 Text(contentTypeLabel)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(fontPrefs.interfaceFont(weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
                 Text(clip.displayTime)
-                    .font(.system(size: 10))
+                    .font(fontPrefs.interfaceFont())
                     .foregroundColor(.secondary)
             }
             
@@ -239,7 +236,7 @@ struct ClipContentPopover: View {
             // Full content
             ScrollView {
                 Text(clip.content)
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(fontPrefs.clipContentFont())
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -248,12 +245,12 @@ struct ClipContentPopover: View {
             // Footer with character count
             HStack {
                 Text("\(clip.content.count) characters")
-                    .font(.system(size: 10))
+                    .font(fontPrefs.interfaceFont())
                     .foregroundColor(.secondary)
                 Spacer()
                 if clip.content.components(separatedBy: .newlines).count > 1 {
                     Text("\(clip.content.components(separatedBy: .newlines).count) lines")
-                        .font(.system(size: 10))
+                        .font(fontPrefs.interfaceFont())
                         .foregroundColor(.secondary)
                 }
             }
@@ -538,6 +535,29 @@ struct ClipGroupFlyout: View {
     }
     
     private func pasteToActiveApp() {
+        // Check if we have accessibility permissions
+        let trusted = AXIsProcessTrusted()
+        
+        if !trusted {
+            // Show alert and open System Settings
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
+                alert.addButton(withTitle: "Open Settings")
+                alert.addButton(withTitle: "Cancel")
+                alert.alertStyle = .informational
+                
+                if alert.runModal() == .alertFirstButtonReturn {
+                    // Open System Settings to Accessibility
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
+            return
+        }
+        
         let source = CGEventSource(stateID: .hidSystemState)
         let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
         keyVDown?.flags = .maskCommand

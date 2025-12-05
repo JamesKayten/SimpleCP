@@ -33,28 +33,37 @@ class ClipboardManager: ObservableObject {
     init() {
         loadData()
         startMonitoring()
-        // Delay initial sync to allow backend to fully start
-        // Backend needs time to: start (0.3s) + process launch (1s) + warmup (~1-2s)
+        
+        // Sync with backend using exponential backoff
         Task {
-            // Wait for backend to be ready (up to 5 seconds)
-            for attempt in 1...10 {
-                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-                
-                // Try a quick health check
-                if let url = URL(string: "http://localhost:8000/health"),
-                   let (_, response) = try? await URLSession.shared.data(from: url),
-                   let httpResponse = response as? HTTPURLResponse,
-                   httpResponse.statusCode == 200 {
-                    logger.info("🟢 Backend ready after \(Double(attempt) * 0.5)s, starting sync...")
-                    await syncWithBackendAsync()
-                    return
-                }
-            }
-            
-            // If we couldn't connect after 5 seconds, sync anyway (will retry with exponential backoff)
-            logger.warning("⚠️ Backend not responding after 5s, syncing anyway (will retry)...")
-            await syncWithBackendAsync()
+            await waitForBackendAndSync()
         }
+    }
+    
+    // MARK: - Backend Connection with Exponential Backoff
+    
+    /// Waits for backend to be ready and then syncs, using exponential backoff
+    private func waitForBackendAndSync() async {
+        logger.info("🔄 Waiting for backend to be ready before initial sync...")
+        
+        for attempt in 0..<10 {
+            let delay = min(0.5 * pow(1.5, Double(attempt)), 5.0) // Max 5 seconds per attempt
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            
+            // Try a quick health check
+            if let url = URL(string: "http://localhost:8000/health"),
+               let (_, response) = try? await URLSession.shared.data(from: url),
+               let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                logger.info("🟢 Backend ready after \(String(format: "%.1f", delay))s on attempt \(attempt + 1), starting sync...")
+                await syncWithBackendAsync()
+                return
+            }
+        }
+        
+        // If we couldn't connect after max attempts, sync anyway (will use local data)
+        logger.warning("⚠️ Backend not responding after multiple attempts, using local data only")
+        // Don't sync with backend - just use local folders
     }
 
     // MARK: - Clipboard Monitoring
@@ -154,9 +163,18 @@ class ClipboardManager: ObservableObject {
         }
 
         if let content = pasteboard.string(forType: .string), !content.isEmpty {
+            // Check if content should be stored (basic validation)
+            guard shouldStoreContent(content) else {
+                logger.info("📋 Skipped storing sensitive or invalid clipboard content")
+                return
+            }
+            
             currentClipboard = content
             addToHistory(content: content)
-            logger.debug("📋 New clipboard item detected: \(content.prefix(50))...")
+            
+            // Use sanitized version for logging
+            let sanitized = sanitizeForLogging(content)
+            logger.debug("📋 New clipboard item: \(sanitized)")
         }
     }
 
@@ -224,5 +242,43 @@ class ClipboardManager: ObservableObject {
 
     deinit {
         stopMonitoring()
+    }
+    
+    // MARK: - Basic Security Helpers
+    
+    /// Basic content validation (use SecurityManager when available)
+    private func shouldStoreContent(_ content: String) -> Bool {
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Don't store if too short
+        if trimmed.count < 3 {
+            return false
+        }
+        
+        // Don't store if just whitespace
+        if trimmed.isEmpty {
+            return false
+        }
+        
+        // Basic sensitive pattern detection
+        let lowercased = content.lowercased()
+        let sensitiveKeywords = ["password:", "api_key", "bearer ", "-----begin private key-----"]
+        
+        for keyword in sensitiveKeywords {
+            if lowercased.contains(keyword) {
+                logger.warning("🔒 Detected potentially sensitive content")
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    /// Sanitize content for logging
+    private func sanitizeForLogging(_ content: String) -> String {
+        if content.count > 50 {
+            return "\(content.prefix(50))..."
+        }
+        return content
     }
 }

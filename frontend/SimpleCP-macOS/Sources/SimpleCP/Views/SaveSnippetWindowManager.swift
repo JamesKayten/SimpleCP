@@ -199,33 +199,47 @@ struct SaveSnippetDialogContent: View {
                 .frame(height: 80)
                 .background(Color(NSColor.controlBackgroundColor))
                 .cornerRadius(4)
+                .id(clipboardManager.folders.count) // Force refresh when folder count changes
             }
             
             // New Folder Toggle
             Button(action: {
                 createNewFolder.toggle()
+                print("🔵 Create new folder toggled: \(createNewFolder)")
             }) {
-                HStack {
-                    Image(systemName: createNewFolder ? "checkmark.square" : "square")
+                HStack(spacing: 6) {
+                    Image(systemName: createNewFolder ? "checkmark.square.fill" : "square")
+                        .foregroundColor(createNewFolder ? .blue : .secondary)
                     Text("Create new folder")
                         .font(.caption)
+                        .foregroundColor(createNewFolder ? .blue : .primary)
                 }
             }
             .buttonStyle(.plain)
+            .help(createNewFolder ? "Hide folder creation" : "Show folder creation")
             
             // New Folder Input
             if createNewFolder {
-                HStack {
+                HStack(spacing: 8) {
                     AppKitTextField(text: $newFolderName, placeholder: "Folder name", onCommit: createFolder)
                         .frame(height: 22)
                     
-                    Button(action: createFolder) {
+                    Button(action: {
+                        print("➕ Create folder button tapped. Folder name: '\(newFolderName)'")
+                        createFolder()
+                    }) {
                         Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 20))
                             .foregroundColor(newFolderName.isEmpty ? .gray : .blue)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(newFolderName.isEmpty)
+                    .help(newFolderName.isEmpty ? "Enter a folder name" : "Create folder '\(newFolderName)'")
                 }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+                .cornerRadius(4)
             }
             
             // Tags
@@ -287,11 +301,27 @@ struct SaveSnippetDialogContent: View {
     }
     
     private func createFolder() {
-        guard !newFolderName.isEmpty else { return }
-        let newFolderID = clipboardManager.createFolder(name: newFolderName)
+        print("🔵 createFolder() called")
+        print("🔵 newFolderName: '\(newFolderName)'")
+        
+        guard !newFolderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("🔵 Folder name is empty, returning")
+            return
+        }
+        
+        let trimmedName = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("🔵 Creating folder with name: '\(trimmedName)'")
+        
+        let newFolderID = clipboardManager.createFolder(name: trimmedName)
+        print("🔵 Folder created with ID: \(newFolderID)")
+        print("🔵 Total folders now: \(clipboardManager.folders.count)")
+        
+        // Update UI state
         selectedFolderId = newFolderID
         createNewFolder = false
         newFolderName = ""
+        
+        print("🔵 Folder creation complete, UI state updated")
     }
     
     private func saveSnippet() {

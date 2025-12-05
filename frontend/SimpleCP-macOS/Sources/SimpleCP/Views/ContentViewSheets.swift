@@ -7,13 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Export Data Model
-
-struct ExportData: Codable {
-    let snippets: [Snippet]
-    let folders: [SnippetFolder]
-}
-
 // MARK: - Create Folder Sheet
 
 struct CreateFolderSheet: View {

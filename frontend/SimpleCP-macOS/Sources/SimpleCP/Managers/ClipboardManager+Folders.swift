@@ -27,6 +27,10 @@ extension ClipboardManager {
 
         // Insert new folder at the beginning
         folders.insert(folder, at: 0)
+        
+        // Explicitly notify observers that the folders array changed
+        objectWillChange.send()
+        
         saveFolders()
 
         // Sync with backend

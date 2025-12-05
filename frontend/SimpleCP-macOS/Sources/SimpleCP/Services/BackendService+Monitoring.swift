@@ -21,11 +21,13 @@ extension BackendService {
                     self.consecutiveFailures = 0
                     self.backendError = nil
                     self.isReady = true  // Backend is now ready for API calls
+                    self.connectionState = .connected
                 }
             } else {
                 logger.warning("Backend health check returned unexpected response")
                 await MainActor.run {
                     self.isReady = false
+                    self.connectionState = .error("Unexpected response")
                 }
                 handleHealthCheckFailure()
             }
@@ -33,6 +35,7 @@ extension BackendService {
             logger.error("Backend health check failed: \(error.localizedDescription)")
             await MainActor.run {
                 self.isReady = false
+                self.connectionState = .error("Health check failed")
             }
             handleHealthCheckFailure()
         }

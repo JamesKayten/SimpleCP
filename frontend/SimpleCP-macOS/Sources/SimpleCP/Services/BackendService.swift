@@ -7,6 +7,7 @@
 
 import Foundation
 import os.log
+import SwiftUI
 
 struct BackendStartupConfig {
     let projectRoot: URL
@@ -15,18 +16,52 @@ struct BackendStartupConfig {
     let python3Path: String
 }
 
+enum BackendConnectionState: Equatable {
+    case disconnected
+    case connecting
+    case connected
+    case error(String)
+    
+    var displayText: String {
+        switch self {
+        case .disconnected: return "Disconnected"
+        case .connecting: return "Connecting..."
+        case .connected: return "Connected"
+        case .error(let msg): return "Error: \(msg)"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .disconnected: return .gray
+        case .connecting: return .orange
+        case .connected: return .green
+        case .error: return .red
+        }
+    }
+}
+
 @MainActor
 class BackendService: ObservableObject {
     @Published var isRunning: Bool = false
-    @Published var isReady: Bool = false  // New: Tracks if backend is ready for API calls
+    @Published var isReady: Bool = false  // Tracks if backend is ready for API calls
+    @Published var connectionState: BackendConnectionState = .disconnected
     @Published var backendError: String?
     @Published var restartCount: Int = 0
     @Published var isMonitoring: Bool = false
+    
+    // Make port configurable via UserDefaults
+    @AppStorage("backendPort") var port: Int = 8000
 
     var backendProcess: Process?
     let logger = Logger(subsystem: "com.simplecp.app", category: "backend")
-    let port: Int = 8000
-    let pidFilePath = "/tmp/simplecp_backend.pid"
+    
+    // Use app-specific temporary directory instead of /tmp
+    var pidFilePath: String {
+        FileManager.default.temporaryDirectory
+            .appendingPathComponent("com.simplecp.backend.pid")
+            .path
+    }
 
     // Monitoring and auto-restart configuration
     var monitoringTimer: Timer?
@@ -44,14 +79,37 @@ class BackendService: ObservableObject {
         logger.info("BackendService initialized with monitoring capabilities")
         startMonitoring()
 
-        // Auto-start backend on initialization
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
-            if !self.isRunning {
-                self.logger.info("Auto-starting backend on init...")
-                self.startBackend()
+        // Auto-start backend on initialization with proper state management
+        Task { @MainActor in
+            await startBackendWithExponentialBackoff()
+        }
+    }
+    
+    // MARK: - Exponential Backoff Startup
+    
+    /// Starts backend with exponential backoff retry logic
+    func startBackendWithExponentialBackoff() async {
+        for attempt in 0..<5 {
+            let delay = min(0.1 * pow(2.0, Double(attempt)), 2.0) // Max 2 seconds
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            
+            if !isRunning {
+                startBackend()
+                
+                // Wait to verify startup
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                
+                if isRunning {
+                    logger.info("✅ Backend started successfully on attempt \(attempt + 1)")
+                    return
+                }
+            } else {
+                return
             }
         }
+        
+        logger.error("❌ Failed to start backend after 5 attempts")
+        connectionState = .error("Failed to start after multiple attempts")
     }
 
     // MARK: - Port Management
@@ -113,12 +171,15 @@ class BackendService: ObservableObject {
             return
         }
         
+        connectionState = .connecting
+        
         if isPortInUse(port) {
             handlePortOccupied()
             return
         }
 
         guard let startupConfig = validateStartupEnvironment() else {
+            connectionState = .error(backendError ?? "Validation failed")
             return
         }
         
@@ -127,6 +188,7 @@ class BackendService: ObservableObject {
 
     func handlePortOccupied() {
         logger.warning("Port \(self.port) is already in use.")
+        connectionState = .connecting
         
         // Try to connect to the existing backend
         Task {
@@ -138,6 +200,7 @@ class BackendService: ObservableObject {
                         logger.info("✅ Existing backend on port \(self.port) is healthy, using it")
                         isRunning = true
                         isReady = true
+                        connectionState = .connected
                         backendError = nil
                         startHealthChecks()
                     }
@@ -150,6 +213,7 @@ class BackendService: ObservableObject {
             await MainActor.run {
                 backendError = "Backend port \(self.port) is occupied by unresponsive process. " +
                     "Please kill the process manually: lsof -ti:\(self.port) | xargs kill -9"
+                connectionState = .error("Port \(self.port) occupied")
             }
         }
     }
@@ -208,6 +272,7 @@ class BackendService: ObservableObject {
                 if self.backendProcess === terminatedProcess {
                     self.isRunning = false
                     self.isReady = false
+                    self.connectionState = .disconnected
                     self.backendProcess = nil
                     self.logger.info("Backend process terminated (exit code: \(terminatedProcess.terminationStatus))")
                 } else {
@@ -232,10 +297,12 @@ class BackendService: ObservableObject {
             }
 
             isRunning = true
+            connectionState = .connecting // Will be updated to .connected after health check
             backendError = nil
             logger.info("Backend started successfully (PID: \(pid))")
         } catch {
             backendError = "Failed to start backend: \(error.localizedDescription)"
+            connectionState = .error("Failed to start")
             logger.error("Failed to launch backend process: \(error.localizedDescription)")
         }
     }
@@ -266,11 +333,13 @@ class BackendService: ObservableObject {
             logger.info("Backend not running")
             isRunning = false
             isReady = false
+            connectionState = .disconnected
             return
         }
 
         logger.info("Stopping backend...")
         isReady = false  // Backend is no longer ready
+        connectionState = .disconnected
         process.terminate()
 
         let deadline = Date().addingTimeInterval(2.0)
@@ -312,13 +381,18 @@ class BackendService: ObservableObject {
 
     nonisolated deinit {
         // Note: Cannot call main actor-isolated methods from deinit
-        // Cleanup is handled by stopBackend() which should be called before deallocation
+        // Cleanup should be called explicitly before deallocation via stopMonitoring()
         // If process is still running, force terminate it
         if let process = backendProcess, process.isRunning {
             process.terminate()
         }
-        
-        // Invalidate timers on their creation thread
-        // Timers should be invalidated before the service is deallocated
+    }
+    
+    // MARK: - Cleanup
+    
+    /// Explicitly cleanup resources - call this before the service is deallocated
+    func cleanup() {
+        stopMonitoring()
+        stopBackend()
     }
 }

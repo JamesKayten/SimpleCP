@@ -27,6 +27,78 @@
       "snippet_name": "Git version update",
       "folder_path": "GIT updating_Management",
       "tags": []
+    },
+    {
+      "content": "swift package generate-xcodeproj",
+      "timestamp": "2025-12-05T09:37:42.391066",
+      "clip_id": "e26cde076132d0e1",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "swift package generate-xcodeproj",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "swift package generate-xcodeproj",
+      "folder_path": "GIT updating_Management",
+      "tags": []
+    },
+    {
+      "content": "// Use user defaults or make configurable\n@AppStorage(\"backendPort\") private var port: Int = 8000\n\n// Use app-specific directory\nlet pidFilePath = FileManager.default\n    .temporaryDirectory\n    .appendingPathComponent(\"com.simplecp.backend.pid\")\n    .path",
+      "timestamp": "2025-12-05T09:38:19.283168",
+      "clip_id": "5ee5ff3d2eb93b77",
+      "content_type": "code",
+      "display_length": 50,
+      "display_string": "// Use user defaults or make configurable @AppS...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "// Use user defaults or make configurable",
+      "folder_path": "GIT updating_Management",
+      "tags": []
+    },
+    {
+      "content": "swift package generate-xcodeproj",
+      "timestamp": "2025-12-05T09:55:13.634371",
+      "clip_id": "fa8d8d4eff18b34c",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "swift package generate-xcodeproj",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "swift package generate-xcodeproj",
+      "folder_path": "GIT updating_Management",
+      "tags": []
+    }
+  ],
+  "zzz": [
+    {
+      "content": "// Use user defaults or make configurable\n@AppStorage(\"backendPort\") private var port: Int = 8000\n\n// Use app-specific directory\nlet pidFilePath = FileManager.default\n    .temporaryDirectory\n    .appendingPathComponent(\"com.simplecp.backend.pid\")\n    .path",
+      "timestamp": "2025-12-05T09:42:26.949409",
+      "clip_id": "6b783d276fd3614e",
+      "content_type": "code",
+      "display_length": 50,
+      "display_string": "// Use user defaults or make configurable @AppS...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "// Use user defaults or make configurable",
+      "folder_path": "zzz",
+      "tags": []
+    },
+    {
+      "content": "// Use user defaults or make configurable\n@AppStorage(\"backendPort\") private var port: Int = 8000\n\n// Use app-specific directory\nlet pidFilePath = FileManager.default\n    .temporaryDirectory\n    .appendingPathComponent(\"com.simplecp.backend.pid\")\n    .path",
+      "timestamp": "2025-12-05T09:47:50.465466",
+      "clip_id": "2e7115d214319acd",
+      "content_type": "code",
+      "display_length": 50,
+      "display_string": "// Use user defaults or make configurable @AppS...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "// Use user defaults or make configurable",
+      "folder_path": "zzz",
+      "tags": []
     }
   ]
 }

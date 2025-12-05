@@ -13,6 +13,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // Shared reference to backend service for cleanup
     static weak var sharedBackendService: BackendService?
+    
+    // Observe window size changes
+    private var windowSizeObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         logger.info("🚀 Application finished launching")
@@ -32,20 +35,72 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         logger.info("Activation policy: \(showInDock ? "regular (show in Dock)" : "accessory (menu bar only)")")
 
-        // Start backend immediately on app launch
-        // This ensures backend is ready before any UI appears
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            if let backendService = AppDelegate.sharedBackendService {
-                if !backendService.isRunning {
-                    self.logger.info("🚀 Starting backend from AppDelegate...")
-                    backendService.startBackend()
-                }
-            }
+        // Backend will be started by BackendService init with proper exponential backoff
+        // No need for additional delays here
+        
+        // Observe window size preference changes
+        setupWindowSizeObserver()
+    }
+    
+    // MARK: - Window Size Management
+    
+    private func setupWindowSizeObserver() {
+        windowSizeObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.applyWindowSize()
+        }
+        
+        // Apply initial size
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.applyWindowSize()
+        }
+    }
+    
+    private func applyWindowSize() {
+        let windowSize = UserDefaults.standard.string(forKey: "windowSize") ?? "normal"
+        let dimensions = windowDimensions(for: windowSize)
+        
+        // Find the MenuBarExtra window (it typically doesn't have a title)
+        if let window = NSApp.windows.first(where: { window in
+            // MenuBarExtra windows are usually NSPanel instances without titles
+            return window is NSPanel && (window.title.isEmpty || window.title == "")
+        }) {
+            let currentFrame = window.frame
+            let newFrame = NSRect(
+                x: currentFrame.origin.x,
+                y: currentFrame.origin.y + currentFrame.height - dimensions.height,
+                width: dimensions.width,
+                height: dimensions.height
+            )
+            
+            logger.info("🔵 Applying window size: \(windowSize) (\(dimensions.width)x\(dimensions.height))")
+            window.setFrame(newFrame, display: true, animate: true)
+        }
+    }
+    
+    private func windowDimensions(for size: String) -> (width: CGFloat, height: CGFloat) {
+        switch size {
+        case "compact":
+            return (500, 350)
+        case "normal":
+            return (600, 400)
+        case "large":
+            return (800, 550)
+        default:
+            return (600, 400)
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         logger.info("🛑 Application will terminate - cleaning up backend...")
+
+        // Remove observer
+        if let observer = windowSizeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
 
         // Stop the backend process
         if let backendService = AppDelegate.sharedBackendService {

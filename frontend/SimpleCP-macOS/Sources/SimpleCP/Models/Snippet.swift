@@ -67,3 +67,19 @@ struct Snippet: Identifiable, Codable, Hashable {
         modifiedAt = Date()
     }
 }
+
+// MARK: - Export Data Structure
+
+struct ExportData: Codable {
+    let snippets: [Snippet]
+    let folders: [SnippetFolder]
+    let exportedAt: Date
+    let version: String
+    
+    init(snippets: [Snippet], folders: [SnippetFolder]) {
+        self.snippets = snippets
+        self.folders = folders
+        self.exportedAt = Date()
+        self.version = "1.0"
+    }
+}

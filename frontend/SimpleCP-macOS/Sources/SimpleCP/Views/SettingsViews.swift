@@ -62,6 +62,10 @@ struct GeneralSettingsView: View {
                         }
                         .pickerStyle(.radioGroup)
                     }
+                    
+                    Text("Size changes apply when you reopen the SimpleCP window")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .padding(.vertical, 8)
             }
@@ -74,6 +78,7 @@ struct GeneralSettingsView: View {
                         TextField("localhost", text: $apiHost)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 150)
+                            .disabled(true) // Localhost only for now
                     }
 
                     HStack {
@@ -81,9 +86,13 @@ struct GeneralSettingsView: View {
                         TextField("8000", value: $apiPort, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 100)
+                        
+                        Text("(Changes require restart)")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
                     }
 
-                    Text("Restart required after changes")
+                    Text("⚠️ Backend must be manually reconfigured to use a different port")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -213,6 +222,10 @@ struct AppearanceSettingsView: View {
                         }
                         .frame(width: 70)
                     }
+                    
+                    Text("Interface font affects labels and UI elements. Clip font affects clipboard content display.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .padding(.vertical, 8)
             }
@@ -223,6 +236,10 @@ struct AppearanceSettingsView: View {
                     Toggle("Show folder icons", isOn: $showFolderIcons)
                     Toggle("Animate folder expand/collapse", isOn: $animateFolderExpand)
                     Toggle("Show snippet previews on hover", isOn: $showSnippetPreviews)
+                    
+                    Text("Previews appear after hovering for 1.5 seconds")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .padding(.vertical, 8)
             }
