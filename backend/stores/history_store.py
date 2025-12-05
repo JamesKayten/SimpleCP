@@ -3,7 +3,6 @@ HistoryStore for SimpleCP.
 
 Manages recent clipboard history with automatic deduplication,
 size limits, and auto-generated folder ranges.
-Based on Flycut's FlycutStore pattern.
 """
 
 from typing import List, Optional, Callable, Dict, Any
@@ -13,7 +12,6 @@ from stores.clipboard_item import ClipboardItem
 class HistoryStore:
     """
     Manages clipboard history items.
-    Based on Flycut's FlycutStore architecture with enhancements.
 
     Features:
     - Automatic deduplication (moves duplicates to top)
@@ -33,11 +31,10 @@ class HistoryStore:
         Initialize HistoryStore.
 
         Args:
-            max_items: Maximum items to remember (Flycut's jcRememberNum)
-            display_count: How many to display directly (Flycut's jcDisplayNum)
-            display_length: Character limit for display (Flycut's jcDisplayLen)
+            max_items: Maximum items to store
+            display_count: How many to display directly
+            display_length: Character limit for display
         """
-        # Flycut's core settings
         self.max_items = max_items
         self.display_count = display_count
         self.display_length = display_length
@@ -45,15 +42,15 @@ class HistoryStore:
         # Storage
         self.items: List[ClipboardItem] = []
 
-        # Dirty flag for persistence (Flycut's modifiedSinceLastSaveStore)
+        # Dirty flag for persistence
         self.modified = False
 
-        # Delegate callbacks for UI updates (Flycut's delegate pattern)
+        # Delegate callbacks for UI updates
         self._delegates: List[Callable] = []
 
     def insert(self, item: ClipboardItem, index: int = 0) -> bool:
         """Insert item with duplicate handling. Returns True if inserted."""
-        # Check for duplicates (Flycut's removeDuplicates)
+        # Check for duplicates
         duplicate_index = self.find_duplicate(item)
         if duplicate_index >= 0:
             self.move_to_top(duplicate_index)

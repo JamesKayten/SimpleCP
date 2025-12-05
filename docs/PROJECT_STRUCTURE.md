@@ -11,287 +11,223 @@ SimpleCP/
 │   │   ├── ci.yml               # Main CI pipeline
 │   │   ├── release.yml          # Release automation
 │   │   └── dependency-update.yml # Automated dependency updates
-│   ├── ISSUE_TEMPLATE/          # Issue templates
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   └── PULL_REQUEST_TEMPLATE.md # PR template
+│   └── ISSUE_TEMPLATE/          # Issue templates
 │
-├── api/                          # REST API implementation
-│   ├── __init__.py              # Package initialization
-│   ├── models.py                # Pydantic data models
-│   ├── endpoints.py             # API route handlers
-│   └── server.py                # FastAPI application
+├── backend/                      # Python Backend
+│   ├── api/                     # REST API implementation
+│   │   ├── __init__.py
+│   │   ├── models.py            # Pydantic data models
+│   │   ├── endpoints.py         # API route handlers
+│   │   └── server.py            # FastAPI application
+│   ├── config/                  # Configuration files
+│   │   └── config.json          # Runtime configuration
+│   ├── data/                    # Data storage
+│   │   ├── snippets.json        # Saved snippets
+│   │   └── example_*.json       # Example files (committed)
+│   ├── logs/                    # Application logs (gitignored)
+│   ├── monitoring/              # Monitoring and metrics
+│   │   ├── __init__.py
+│   │   ├── metrics.py           # Metrics collection
+│   │   └── health.py            # Health checks
+│   ├── stores/                  # Data stores
+│   │   ├── __init__.py
+│   │   ├── clipboard_item.py    # Data model
+│   │   ├── history_store.py     # History management
+│   │   └── snippet_store.py     # Snippet management
+│   ├── tests/                   # Backend-specific tests
+│   ├── ui/                      # UI components (minimal)
+│   │   └── menu_builder.py
+│   ├── clipboard_manager.py     # Core clipboard logic
+│   ├── config.py                # Configuration module
+│   ├── daemon.py                # Background daemon service
+│   ├── keyboard_shortcuts.py    # Keyboard handling
+│   ├── logging_config.py        # Logging configuration
+│   ├── logger.py                # Logger setup
+│   ├── main.py                  # Main entry point
+│   ├── monitoring.py            # Monitoring module
+│   ├── settings.py              # Settings module
+│   ├── version.py               # Version info
+│   ├── requirements.txt         # Backend dependencies
+│   └── requirements-dev.txt     # Dev dependencies
 │
-├── config/                       # Configuration management
-│   ├── __init__.py
-│   ├── settings.py              # Centralized settings
-│   └── logging_config.py        # Logging configuration
+├── frontend/                     # Swift macOS Frontend
+│   └── SimpleCP-App/            # Xcode project
+│       ├── SimpleCP.xcodeproj/  # Xcode project file
+│       └── SimpleCP/            # Swift source code
+│           ├── SimpleCPApp.swift      # App entry point
+│           ├── AppDelegate.swift      # App delegate
+│           ├── Components/            # UI components
+│           │   ├── FolderView.swift
+│           │   ├── RecentClipsColumn.swift
+│           │   ├── SavedSnippetsColumn.swift
+│           │   └── ...
+│           ├── Managers/              # State managers
+│           │   ├── ClipboardManager.swift
+│           │   └── ...
+│           ├── Models/                # Data models
+│           │   ├── ClipItem.swift
+│           │   ├── Snippet.swift
+│           │   └── ...
+│           ├── Services/              # Backend communication
+│           │   ├── APIClient.swift
+│           │   ├── BackendService.swift
+│           │   └── ...
+│           ├── Views/                 # SwiftUI views
+│           │   ├── ContentView.swift
+│           │   ├── SettingsWindow.swift
+│           │   └── ...
+│           ├── Utils/                 # Utilities
+│           ├── Info.plist             # App configuration
+│           └── SimpleCP.entitlements  # App permissions
+│
+├── scripts/                      # Utility scripts
+│   ├── install.sh               # Installation script
+│   ├── setup_dev.sh             # Development setup
+│   ├── build.sh                 # Build script
+│   ├── build_python.sh          # Python build
+│   ├── build_swift.sh           # Swift build
+│   ├── backup.sh                # Backup utility
+│   ├── restore.sh               # Restore utility
+│   ├── healthcheck.sh           # Health check
+│   ├── clean.sh                 # Cleanup script
+│   ├── run_tests.sh             # Test runner
+│   ├── release.sh               # Release script
+│   ├── ai-tag-release.sh        # AI-assisted releases
+│   ├── watch-build.sh           # Build watcher
+│   ├── watch-branches.sh        # Git branch watcher
+│   ├── watch-board.sh           # BOARD.md watcher
+│   ├── watch-all.sh             # Combined watcher
+│   ├── aim-launcher.sh          # AIM launcher
+│   ├── tcc-file-compliance.sh   # TCC compliance
+│   ├── tcc-validate-branch.sh   # Branch validation
+│   ├── utilities/               # Helper scripts
+│   ├── validation/              # Validation scripts
+│   └── README.md                # Scripts documentation
+│
+├── tests/                        # Test suite
+│   ├── unit/                    # Unit tests
+│   ├── integration/             # Integration tests
+│   └── performance/             # Performance tests
+│
+├── docs/                         # Documentation
+│   ├── API.md                   # API reference
+│   ├── BOARD.md                 # AIM task board
+│   ├── AI_COLLABORATION_GUIDE.md # AI workflow guide
+│   ├── MONITORING.md            # Monitoring docs
+│   ├── TESTING.md               # Testing guide
+│   ├── TROUBLESHOOTING.md       # Troubleshooting
+│   ├── USER_GUIDE.md            # User documentation
+│   ├── PROJECT_STRUCTURE.md     # This file
+│   ├── archive/                 # Archived docs
+│   ├── development/             # Development guides
+│   └── occ_communication/       # OCC docs
 │
 ├── deployment/                   # Deployment configurations
 │   └── systemd/                 # Systemd service
 │       ├── simplecp.service
 │       └── README.md
 │
-├── docs/                         # Documentation
-│   ├── api/                     # API documentation
-│   │   └── API_REFERENCE.md
-│   ├── development/             # Development guides
-│   │   └── ARCHITECTURE.md
-│   ├── deployment/              # Deployment guides
-│   ├── ai_communication/        # AI collaboration docs
-│   ├── occ_communication/       # OCC docs
-│   ├── CONTRIBUTING.md          # Contribution guidelines
-│   ├── CHANGELOG.md             # Version history
-│   └── PROJECT_STRUCTURE.md     # This file
+├── design/                       # Design assets
 │
-├── monitoring/                   # Monitoring and metrics
-│   ├── __init__.py
-│   ├── metrics.py               # Metrics collection
-│   └── health.py                # Health checks
+├── .claude/                      # Claude Code configuration
+│   ├── commands/                # Custom slash commands
+│   └── hooks/                   # Workflow hooks
 │
-├── scripts/                      # Utility scripts
-│   ├── install.sh               # Installation script
-│   ├── setup_dev.sh             # Development setup
-│   ├── backup.sh                # Backup utility
-│   ├── restore.sh               # Restore utility
-│   ├── healthcheck.sh           # Health check
-│   ├── clean.sh                 # Cleanup script
-│   └── README.md                # Scripts documentation
-│
-├── stores/                       # Data stores and models
-│   ├── __init__.py
-│   ├── clipboard_item.py        # Data model
-│   ├── history_store.py         # History management
-│   └── snippet_store.py         # Snippet management
-│
-├── tests/                        # Test suite
-│   ├── __init__.py
-│   ├── conftest.py              # Pytest configuration
-│   ├── unit/                    # Unit tests
-│   │   ├── __init__.py
-│   │   ├── test_clipboard_item.py
-│   │   ├── test_history_store.py
-│   │   └── test_snippet_store.py
-│   └── integration/             # Integration tests
-│       ├── __init__.py
-│       └── test_api.py
-│
-├── ui/                           # UI components (minimal)
-│   ├── __init__.py
-│   └── menu_builder.py
-│
-├── ai_collaboration_framework/   # AI collaboration tools
-│   ├── templates/
-│   └── scripts/
-│
-├── data/                         # Data storage (gitignored)
-│   ├── history.json
-│   ├── snippets.json
-│   └── example_*.json           # Example files (committed)
-│
-├── logs/                         # Application logs (gitignored)
-│
-├── .env.example                  # Environment variables example
+├── .env.example                  # Environment variables template
 ├── .gitignore                    # Git ignore patterns
-├── .pre-commit-config.yaml       # Pre-commit hooks configuration
+├── .pre-commit-config.yaml       # Pre-commit hooks
+├── CHANGELOG.md                  # Version history
+├── CLAUDE.md                     # AI workflow instructions
+├── CONTRIBUTING.md               # Contribution guidelines
 ├── LICENSE                       # MIT License
-├── Makefile                      # Development commands
 ├── MANIFEST.in                   # Package manifest
-├── pyproject.toml                # Modern Python project config
+├── Makefile                      # Development commands
+├── pyproject.toml                # Python project config
 ├── pytest.ini                    # Pytest configuration
 ├── README.md                     # Project README
-├── requirements.txt              # Production dependencies
-├── requirements-dev.txt          # Development dependencies
-├── setup.py                      # Package setup script
-│
-├── __init__.py                   # Root package initialization
-├── clipboard_manager.py          # Core business logic
-├── daemon.py                     # Background daemon service
-├── main.py                       # Main entry point
-└── settings.py                   # Legacy settings (deprecated)
+├── requirements.txt              # Root dependencies
+└── setup.py                      # Package setup
 ```
 
 ## Component Overview
 
-### Core Application
+### Backend (Python)
 
-| File/Directory | Purpose |
-|----------------|---------|
-| `clipboard_manager.py` | Core business logic and clipboard monitoring |
-| `daemon.py` | Background daemon service with API server |
-| `main.py` | Main application entry point |
-| `settings.py` | Legacy settings (deprecated, use `config/`) |
+| Component | Purpose |
+|-----------|---------|
+| `api/` | FastAPI REST API implementation |
+| `stores/` | Data persistence and models |
+| `monitoring/` | Health checks and metrics |
+| `clipboard_manager.py` | Core clipboard monitoring logic |
+| `daemon.py` | Background service with API server |
 
-### API Layer
+### Frontend (Swift/macOS)
 
-| File | Purpose |
-|------|---------|
-| `api/models.py` | Pydantic models for request/response validation |
-| `api/endpoints.py` | REST API route handlers |
-| `api/server.py` | FastAPI application setup |
+| Component | Purpose |
+|-----------|---------|
+| `SimpleCPApp.swift` | SwiftUI app entry point (MenuBarExtra) |
+| `Components/` | Reusable UI components |
+| `Services/` | Backend communication layer |
+| `Managers/` | State management |
+| `Views/` | Main application views |
 
-### Data Layer
+### Scripts
 
-| File | Purpose |
-|------|---------|
-| `stores/clipboard_item.py` | Data model for clipboard items |
-| `stores/history_store.py` | Clipboard history management |
-| `stores/snippet_store.py` | Snippet organization and management |
-
-### Configuration
-
-| File | Purpose |
-|------|---------|
-| `config/settings.py` | Centralized configuration with environment variables |
-| `config/logging_config.py` | Logging setup and configuration |
-| `.env.example` | Environment variables template |
-
-### Testing
-
-| File/Directory | Purpose |
-|----------------|---------|
-| `tests/unit/` | Unit tests for individual components |
-| `tests/integration/` | Integration tests for API |
-| `tests/conftest.py` | Shared test fixtures |
-| `pytest.ini` | Pytest configuration |
-
-### Development Tools
-
-| File | Purpose |
-|------|---------|
-| `.pre-commit-config.yaml` | Pre-commit hooks for code quality |
-| `pyproject.toml` | Modern Python project configuration |
-| `Makefile` | Development commands |
-| `requirements-dev.txt` | Development dependencies |
-
-### Deployment
-
-| File/Directory | Purpose |
-|----------------|---------|
-| `deployment/systemd/` | Systemd service configuration |
-
-### CI/CD
-
-| File | Purpose |
-|------|---------|
-| `.github/workflows/ci.yml` | Main CI pipeline |
-| `.github/workflows/release.yml` | Release automation |
-| `.github/workflows/dependency-update.yml` | Dependency updates |
+| Category | Scripts |
+|----------|---------|
+| **Build** | `build.sh`, `build_python.sh`, `build_swift.sh` |
+| **Development** | `setup_dev.sh`, `install.sh` |
+| **Testing** | `run_tests.sh`, `healthcheck.sh` |
+| **AIM Workflow** | `aim-launcher.sh`, `watch-*.sh`, `tcc-*.sh` |
+| **Release** | `release.sh`, `ai-tag-release.sh` |
 
 ### Documentation
 
-| File | Purpose |
-|------|---------|
-| `docs/CONTRIBUTING.md` | Contribution guidelines |
-| `docs/CHANGELOG.md` | Version history |
-| `docs/api/API_REFERENCE.md` | Complete API reference |
-| `docs/development/ARCHITECTURE.md` | Architecture documentation |
-| `README.md` | Main project documentation |
-
-### Utilities
-
-| File | Purpose |
-|------|---------|
-| `scripts/install.sh` | Installation automation |
-| `scripts/setup_dev.sh` | Development environment setup |
-| `scripts/backup.sh` | Data backup utility |
-| `scripts/restore.sh` | Data restore utility |
-| `scripts/healthcheck.sh` | Health monitoring |
-| `scripts/clean.sh` | Cleanup script |
-
-### Monitoring
-
-| File | Purpose |
-|------|---------|
-| `monitoring/metrics.py` | Metrics collection and reporting |
-| `monitoring/health.py` | Health checks and system monitoring |
+| Document | Purpose |
+|----------|---------|
+| `README.md` | Project overview and quick start |
+| `QUICKSTART.md` | Fast setup guide |
+| `docs/API.md` | Complete API reference |
+| `docs/USER_GUIDE.md` | End-user documentation |
+| `CONTRIBUTING.md` | Contribution guidelines |
+| `CLAUDE.md` | AI collaboration workflow |
 
 ## Key Features
 
-### 1. Professional Structure
-- Clear separation of concerns
-- Modular design
-- Proper package organization
+### 1. Monorepo Structure
+- Backend and frontend in single repository
+- Shared scripts and configuration
+- Unified versioning and releases
 
-### 2. Complete Testing
-- Unit tests for all components
-- Integration tests for API
-- Pytest configuration
-- Test fixtures and helpers
-- Coverage reporting
+### 2. Professional Python Backend
+- FastAPI with async support
+- Pydantic models for validation
+- Comprehensive test suite
+- Metrics and monitoring
 
-### 3. Development Tools
-- Code formatting (Black, isort)
-- Linting (flake8, mypy)
-- Security scanning (bandit)
-- Pre-commit hooks
+### 3. Native macOS Frontend
+- SwiftUI menu bar application
+- Clean architecture (MVVM-ish)
+- Backend service integration
+- System permissions handling
+
+### 4. Development Tooling
+- Pre-commit hooks for quality
 - Makefile for common tasks
+- Comprehensive .gitignore
+- pytest configuration
 
-### 4. Deployment Ready
-- Systemd service
-- Health checks
-- Backup/restore scripts
+### 5. AI Collaboration (AIM)
+- TCC/OCC workflow support
+- Custom Claude commands
+- Branch validation scripts
+- Task board integration
 
-### 5. CI/CD Pipeline
+### 6. CI/CD Ready
+- GitHub Actions workflows
 - Automated testing
-- Code quality checks
-- Security scanning
-- Automated releases
-- Dependency updates
-
-### 6. Configuration Management
-- Environment variables
-- Centralized settings
-- Example configurations
-- Multiple environment support
-
-### 7. Comprehensive Documentation
-- Architecture documentation
-- API reference
-- Contributing guidelines
-- Deployment guides
-- Change log
-
-### 8. Monitoring & Observability
-- Metrics collection
-- Health checks
-- Logging configuration
-- System monitoring
-
-## File Count Summary
-
-- **Python Files**: 30+
-- **Configuration Files**: 10+
-- **Documentation Files**: 15+
-- **Shell Scripts**: 6
-- **Test Files**: 5+
-- **Total Files**: 70+
-
-## Lines of Code
-
-- **Production Code**: ~2,500 lines
-- **Test Code**: ~500 lines
-- **Documentation**: ~3,000 lines
-- **Configuration**: ~500 lines
-- **Total**: ~6,500 lines
-
-## Dependencies
-
-### Production
-- fastapi
-- uvicorn
-- pydantic
-- pyperclip
-
-### Development
-- pytest
-- pytest-cov
-- black
-- isort
-- flake8
-- mypy
-- bandit
-- pre-commit
+- Release automation
+- Dependency management
 
 ## Getting Started
 
@@ -302,17 +238,23 @@ SimpleCP/
 git clone https://github.com/JamesKayten/SimpleCP.git
 cd SimpleCP
 
-# Run installation script
-./scripts/install.sh
-
-# Start daemon
+# Start backend
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 python daemon.py
+
+# Build frontend (separate terminal)
+cd frontend/SimpleCP-App
+open SimpleCP.xcodeproj
+# Build and run in Xcode
 ```
 
 ### Development Setup
 
 ```bash
-# Run development setup
+# Full development setup
 ./scripts/setup_dev.sh
 
 # Run tests
@@ -329,8 +271,8 @@ make lint
 
 ### Regular Tasks
 
-1. **Update dependencies**: `make install-dev`
-2. **Run tests**: `make test`
+1. **Update dependencies**: Check `requirements.txt` and Swift packages
+2. **Run tests**: `./scripts/run_tests.sh`
 3. **Backup data**: `./scripts/backup.sh`
 4. **Check health**: `./scripts/healthcheck.sh`
 5. **Clean artifacts**: `./scripts/clean.sh`
@@ -338,18 +280,7 @@ make lint
 ### Code Quality
 
 All changes should:
-- Pass all tests
+- Pass all tests (Python and Swift)
 - Pass linting checks
-- Maintain code coverage
 - Follow style guidelines
-- Include documentation
-
-## Future Enhancements
-
-Planned additions to the structure:
-- Database migrations directory
-- API versioning structure
-- Plugin system directory
-- Internationalization files
-- Performance benchmarks
-- Security audit reports
+- Include documentation updates

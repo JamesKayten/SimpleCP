@@ -22,7 +22,7 @@ Complete guide to using SimpleCP, the intelligent clipboard manager for macOS.
 
 ### What is SimpleCP?
 
-SimpleCP is a powerful clipboard manager inspired by Flycut that helps you:
+SimpleCP is a powerful clipboard manager for macOS that helps you:
 - **Never lose clipboard data** - Keeps up to 50 recent items
 - **Organize snippets** - Save frequently used text for quick access
 - **Search instantly** - Find any copied item in seconds

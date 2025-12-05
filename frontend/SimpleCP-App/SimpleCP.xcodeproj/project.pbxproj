@@ -1,0 +1,516 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F0000001230001 /* SimpleCPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000001230000 /* SimpleCPApp.swift */; };
+		F0000002230001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000002230000 /* AppDelegate.swift */; };
+		F0000003230001 /* FolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000003230000 /* FolderView.swift */; };
+		F0000004230001 /* RecentClipsColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000004230000 /* RecentClipsColumn.swift */; };
+		F0000005230001 /* SaveSnippetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000005230000 /* SaveSnippetDialog.swift */; };
+		F0000006230001 /* SavedSnippetsColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000006230000 /* SavedSnippetsColumn.swift */; };
+		F0000007230001 /* SnippetDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000007230000 /* SnippetDialogs.swift */; };
+		F0000008230001 /* ClipboardManager+Folders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000008230000 /* ClipboardManager+Folders.swift */; };
+		F0000009230001 /* ClipboardManager+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000009230000 /* ClipboardManager+Persistence.swift */; };
+		F0000010230001 /* ClipboardManager+Snippets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000010230000 /* ClipboardManager+Snippets.swift */; };
+		F0000011230001 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000011230000 /* ClipboardManager.swift */; };
+		F0000012230001 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000012230000 /* AppError.swift */; };
+		F0000013230001 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000013230000 /* AppState.swift */; };
+		F0000014230001 /* ClipItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000014230000 /* ClipItem.swift */; };
+		F0000015230001 /* Snippet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000015230000 /* Snippet.swift */; };
+		F0000016230001 /* SnippetFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000016230000 /* SnippetFolder.swift */; };
+		F0000017230001 /* APIClient+Folders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000017230000 /* APIClient+Folders.swift */; };
+		F0000018230001 /* APIClient+Snippets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000018230000 /* APIClient+Snippets.swift */; };
+		F0000019230001 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000019230000 /* APIClient.swift */; };
+		F0000020230001 /* BackendService+Monitoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000020230000 /* BackendService+Monitoring.swift */; };
+		F0000021230001 /* BackendService+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000021230000 /* BackendService+Utilities.swift */; };
+		F0000022230001 /* BackendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000022230000 /* BackendService.swift */; };
+		F0000023230001 /* CreateFolderWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000023230000 /* CreateFolderWindowManager.swift */; };
+		F0000024230001 /* EditSnippetWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000024230000 /* EditSnippetWindowManager.swift */; };
+		F0000025230001 /* RenameFolderWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000025230000 /* RenameFolderWindowManager.swift */; };
+		F0000026230001 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000026230000 /* Constants.swift */; };
+		F0000027230001 /* DateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000027230000 /* DateUtils.swift */; };
+		F0000028230001 /* StringUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000028230000 /* StringUtils.swift */; };
+		F0000029230001 /* ContentView+ConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000029230000 /* ContentView+ConnectionStatus.swift */; };
+		F0000030230001 /* ContentView+ControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000030230000 /* ContentView+ControlBar.swift */; };
+		F0000031230001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000031230000 /* ContentView.swift */; };
+		F0000032230001 /* ContentViewSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000032230000 /* ContentViewSheets.swift */; };
+		F0000033230001 /* FontPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000033230000 /* FontPreferences.swift */; };
+		F0000034230001 /* SaveSnippetWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000034230000 /* SaveSnippetWindowManager.swift */; };
+		F0000035230001 /* SettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000035230000 /* SettingsViews.swift */; };
+		F0000036230001 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000036230000 /* SettingsWindow.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F0000000100000 /* SimpleCP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleCP.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0000001230000 /* SimpleCPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCPApp.swift; sourceTree = "<group>"; };
+		F0000002230000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		F0000003230000 /* FolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderView.swift; sourceTree = "<group>"; };
+		F0000004230000 /* RecentClipsColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentClipsColumn.swift; sourceTree = "<group>"; };
+		F0000005230000 /* SaveSnippetDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSnippetDialog.swift; sourceTree = "<group>"; };
+		F0000006230000 /* SavedSnippetsColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSnippetsColumn.swift; sourceTree = "<group>"; };
+		F0000007230000 /* SnippetDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetDialogs.swift; sourceTree = "<group>"; };
+		F0000008230000 /* ClipboardManager+Folders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Folders.swift"; sourceTree = "<group>"; };
+		F0000009230000 /* ClipboardManager+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Persistence.swift"; sourceTree = "<group>"; };
+		F0000010230000 /* ClipboardManager+Snippets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Snippets.swift"; sourceTree = "<group>"; };
+		F0000011230000 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
+		F0000012230000 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
+		F0000013230000 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		F0000014230000 /* ClipItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipItem.swift; sourceTree = "<group>"; };
+		F0000015230000 /* Snippet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snippet.swift; sourceTree = "<group>"; };
+		F0000016230000 /* SnippetFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetFolder.swift; sourceTree = "<group>"; };
+		F0000017230000 /* APIClient+Folders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Folders.swift"; sourceTree = "<group>"; };
+		F0000018230000 /* APIClient+Snippets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Snippets.swift"; sourceTree = "<group>"; };
+		F0000019230000 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		F0000020230000 /* BackendService+Monitoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+Monitoring.swift"; sourceTree = "<group>"; };
+		F0000021230000 /* BackendService+Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+Utilities.swift"; sourceTree = "<group>"; };
+		F0000022230000 /* BackendService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendService.swift; sourceTree = "<group>"; };
+		F0000023230000 /* CreateFolderWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderWindowManager.swift; sourceTree = "<group>"; };
+		F0000024230000 /* EditSnippetWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSnippetWindowManager.swift; sourceTree = "<group>"; };
+		F0000025230000 /* RenameFolderWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameFolderWindowManager.swift; sourceTree = "<group>"; };
+		F0000026230000 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		F0000027230000 /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; sourceTree = "<group>"; };
+		F0000028230000 /* StringUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringUtils.swift; sourceTree = "<group>"; };
+		F0000029230000 /* ContentView+ConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+ConnectionStatus.swift"; sourceTree = "<group>"; };
+		F0000030230000 /* ContentView+ControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+ControlBar.swift"; sourceTree = "<group>"; };
+		F0000031230000 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F0000032230000 /* ContentViewSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewSheets.swift; sourceTree = "<group>"; };
+		F0000033230000 /* FontPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontPreferences.swift; sourceTree = "<group>"; };
+		F0000034230000 /* SaveSnippetWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSnippetWindowManager.swift; sourceTree = "<group>"; };
+		F0000035230000 /* SettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViews.swift; sourceTree = "<group>"; };
+		F0000036230000 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
+		F0000037230000 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F0000038230000 /* SimpleCP.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SimpleCP.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F0000000200000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F0000000000000 = {
+			isa = PBXGroup;
+			children = (
+				F0000000300000 /* SimpleCP */,
+				F0000000400000 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F0000000300000 /* SimpleCP */ = {
+			isa = PBXGroup;
+			children = (
+				F0000001230000 /* SimpleCPApp.swift */,
+				F0000002230000 /* AppDelegate.swift */,
+				F0000000310000 /* Components */,
+				F0000000320000 /* Managers */,
+				F0000000330000 /* Models */,
+				F0000000340000 /* Services */,
+				F0000000350000 /* Utils */,
+				F0000000360000 /* Views */,
+				F0000037230000 /* Info.plist */,
+				F0000038230000 /* SimpleCP.entitlements */,
+			);
+			path = SimpleCP;
+			sourceTree = "<group>";
+		};
+		F0000000310000 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F0000003230000 /* FolderView.swift */,
+				F0000004230000 /* RecentClipsColumn.swift */,
+				F0000005230000 /* SaveSnippetDialog.swift */,
+				F0000006230000 /* SavedSnippetsColumn.swift */,
+				F0000007230000 /* SnippetDialogs.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		F0000000320000 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				F0000008230000 /* ClipboardManager+Folders.swift */,
+				F0000009230000 /* ClipboardManager+Persistence.swift */,
+				F0000010230000 /* ClipboardManager+Snippets.swift */,
+				F0000011230000 /* ClipboardManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		F0000000330000 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F0000012230000 /* AppError.swift */,
+				F0000013230000 /* AppState.swift */,
+				F0000014230000 /* ClipItem.swift */,
+				F0000015230000 /* Snippet.swift */,
+				F0000016230000 /* SnippetFolder.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F0000000340000 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F0000017230000 /* APIClient+Folders.swift */,
+				F0000018230000 /* APIClient+Snippets.swift */,
+				F0000019230000 /* APIClient.swift */,
+				F0000020230000 /* BackendService+Monitoring.swift */,
+				F0000021230000 /* BackendService+Utilities.swift */,
+				F0000022230000 /* BackendService.swift */,
+				F0000023230000 /* CreateFolderWindowManager.swift */,
+				F0000024230000 /* EditSnippetWindowManager.swift */,
+				F0000025230000 /* RenameFolderWindowManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		F0000000350000 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				F0000026230000 /* Constants.swift */,
+				F0000027230000 /* DateUtils.swift */,
+				F0000028230000 /* StringUtils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		F0000000360000 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F0000029230000 /* ContentView+ConnectionStatus.swift */,
+				F0000030230000 /* ContentView+ControlBar.swift */,
+				F0000031230000 /* ContentView.swift */,
+				F0000032230000 /* ContentViewSheets.swift */,
+				F0000033230000 /* FontPreferences.swift */,
+				F0000034230000 /* SaveSnippetWindowManager.swift */,
+				F0000035230000 /* SettingsViews.swift */,
+				F0000036230000 /* SettingsWindow.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F0000000400000 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F0000000100000 /* SimpleCP.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F0000000500000 /* SimpleCP */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0000000800000 /* Build configuration list for PBXNativeTarget "SimpleCP" */;
+			buildPhases = (
+				F0000000600000 /* Sources */,
+				F0000000200000 /* Frameworks */,
+				F0000000700000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SimpleCP;
+			productName = SimpleCP;
+			productReference = F0000000100000 /* SimpleCP.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F0000000900000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F0000000500000 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = F0000001000000 /* Build configuration list for PBXProject "SimpleCP" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F0000000000000;
+			productRefGroup = F0000000400000 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F0000000500000 /* SimpleCP */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F0000000700000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F0000000600000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0000001230001 /* SimpleCPApp.swift in Sources */,
+				F0000002230001 /* AppDelegate.swift in Sources */,
+				F0000003230001 /* FolderView.swift in Sources */,
+				F0000004230001 /* RecentClipsColumn.swift in Sources */,
+				F0000005230001 /* SaveSnippetDialog.swift in Sources */,
+				F0000006230001 /* SavedSnippetsColumn.swift in Sources */,
+				F0000007230001 /* SnippetDialogs.swift in Sources */,
+				F0000008230001 /* ClipboardManager+Folders.swift in Sources */,
+				F0000009230001 /* ClipboardManager+Persistence.swift in Sources */,
+				F0000010230001 /* ClipboardManager+Snippets.swift in Sources */,
+				F0000011230001 /* ClipboardManager.swift in Sources */,
+				F0000012230001 /* AppError.swift in Sources */,
+				F0000013230001 /* AppState.swift in Sources */,
+				F0000014230001 /* ClipItem.swift in Sources */,
+				F0000015230001 /* Snippet.swift in Sources */,
+				F0000016230001 /* SnippetFolder.swift in Sources */,
+				F0000017230001 /* APIClient+Folders.swift in Sources */,
+				F0000018230001 /* APIClient+Snippets.swift in Sources */,
+				F0000019230001 /* APIClient.swift in Sources */,
+				F0000020230001 /* BackendService+Monitoring.swift in Sources */,
+				F0000021230001 /* BackendService+Utilities.swift in Sources */,
+				F0000022230001 /* BackendService.swift in Sources */,
+				F0000023230001 /* CreateFolderWindowManager.swift in Sources */,
+				F0000024230001 /* EditSnippetWindowManager.swift in Sources */,
+				F0000025230001 /* RenameFolderWindowManager.swift in Sources */,
+				F0000026230001 /* Constants.swift in Sources */,
+				F0000027230001 /* DateUtils.swift in Sources */,
+				F0000028230001 /* StringUtils.swift in Sources */,
+				F0000029230001 /* ContentView+ConnectionStatus.swift in Sources */,
+				F0000030230001 /* ContentView+ControlBar.swift in Sources */,
+				F0000031230001 /* ContentView.swift in Sources */,
+				F0000032230001 /* ContentViewSheets.swift in Sources */,
+				F0000033230001 /* FontPreferences.swift in Sources */,
+				F0000034230001 /* SaveSnippetWindowManager.swift in Sources */,
+				F0000035230001 /* SettingsViews.swift in Sources */,
+				F0000036230001 /* SettingsWindow.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F0000001100000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F0000001200000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		F0000001300000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SimpleCP/SimpleCP.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SimpleCP/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright 2025 SimpleCP. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.simplecp.SimpleCP;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F0000001400000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SimpleCP/SimpleCP.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SimpleCP/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright 2025 SimpleCP. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.simplecp.SimpleCP;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F0000000800000 /* Build configuration list for PBXNativeTarget "SimpleCP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0000001300000 /* Debug */,
+				F0000001400000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0000001000000 /* Build configuration list for PBXProject "SimpleCP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0000001100000 /* Debug */,
+				F0000001200000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F0000000900000 /* Project object */;
+}

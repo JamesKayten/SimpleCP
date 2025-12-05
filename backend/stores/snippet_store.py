@@ -2,7 +2,6 @@
 SnippetStore for SimpleCP.
 
 Manages organized snippet folders for reusable text clips.
-Based on Flycut's favorites store pattern with folder organization.
 """
 
 import logging
@@ -16,7 +15,6 @@ logger = logging.getLogger(__name__)
 class SnippetStore:
     """
     Manages snippet folders and items.
-    Based on Flycut's favoritesStore with folder organization.
 
     Features:
     - Folder-based organization

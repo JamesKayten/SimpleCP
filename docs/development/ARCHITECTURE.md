@@ -122,7 +122,7 @@ def get_settings() -> Settings:
 
 ### 3. Delegate Pattern
 
-Event-driven updates (inspired by Flycut):
+Event-driven updates:
 
 ```python
 class ClipboardManager:

@@ -58,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Core Features**
 - Multi-store clipboard management (history + snippets)
 - Background clipboard monitoring with daemon
-- Automatic deduplication (Flycut pattern)
+- Automatic deduplication
 - Content type detection (text, URL, code, JSON)
 - Full-text search across all stores
 - Auto-generated history folders (11-20, 21-30, etc.)

@@ -1,104 +1,91 @@
 """
-Settings management for SimpleCP.
+Centralized settings management using pydantic.
 
-Handles configuration, preferences, and data persistence.
-Environment variables can be set in .env file or system environment.
+Loads configuration from:
+1. Environment variables
+2. .env file
+3. Default values
 """
+
 import os
 from pathlib import Path
 from typing import Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings, Field
 
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
 
     # Application Info
-    app_name: str = "SimpleCP"
-    app_version: str = "1.0.0"
-    environment: str = "development"  # development, staging, production
+    app_name: str = Field(default="SimpleCP", env="APP_NAME")
+    app_version: str = Field(default="1.0.0", env="APP_VERSION")
+    debug: bool = Field(default=False, env="DEBUG")
 
-    # API Server Configuration
-    api_host: str = "127.0.0.1"
-    api_port: int = 8000
-    api_reload: bool = False  # Auto-reload for development
+    # Server Configuration
+    api_host: str = Field(default="127.0.0.1", env="API_HOST")
+    api_port: int = Field(default=8000, env="API_PORT")
+    api_workers: int = Field(default=1, env="API_WORKERS")
+    reload: bool = Field(default=False, env="API_RELOAD")
+
+    # Storage Configuration
+    data_dir: Path = Field(default=Path("data"), env="DATA_DIR")
+    history_file: str = Field(default="data/history.json", env="HISTORY_FILE")
+    snippets_file: str = Field(default="data/snippets.json", env="SNIPPETS_FILE")
 
     # Clipboard Configuration
-    clipboard_check_interval: int = 1  # seconds
-    max_history_items: int = 50
-    display_count: int = 10
-    display_length: int = 50
-
-    # Data Storage
-    data_dir: str = "./data"
-
-    # Monitoring & Error Tracking
-    sentry_dsn: Optional[str] = None  # Set via SENTRY_DSN env var
-    sentry_traces_sample_rate: float = 1.0  # 100% in dev, lower in prod
-    sentry_profiles_sample_rate: float = 1.0
-    sentry_environment: Optional[str] = None  # Auto-set from environment
-    enable_sentry: bool = False  # Explicitly enable Sentry
+    check_interval: float = Field(default=1.0, env="CHECK_INTERVAL")
+    max_history_size: int = Field(default=100, env="MAX_HISTORY_SIZE")
+    max_content_length: int = Field(default=10000, env="MAX_CONTENT_LENGTH")
 
     # Logging Configuration
-    log_level: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-    log_to_file: bool = True
-    log_file_path: str = "./logs/simplecp.log"
-    log_max_bytes: int = 10 * 1024 * 1024  # 10MB
-    log_backup_count: int = 5
-    log_json_format: bool = False  # JSON logs for production
-
-    # Performance Monitoring
-    enable_performance_tracking: bool = True
-    enable_usage_analytics: bool = True
-
-    # Health Check
-    health_check_enabled: bool = True
-
-    # CORS Settings
-    cors_origins: list[str] = ["*"]  # Allow all origins by default
-
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
+    log_level: str = Field(default="INFO", env="LOG_LEVEL")
+    log_file: Optional[str] = Field(default="logs/simplecp.log", env="LOG_FILE")
+    log_format: str = Field(
+        default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        env="LOG_FORMAT"
     )
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Auto-set Sentry environment if not specified
-        if self.sentry_environment is None:
-            self.sentry_environment = self.environment
-        # Ensure data and log directories exist
-        Path(self.data_dir).mkdir(parents=True, exist_ok=True)
-        if self.log_to_file:
-            Path(self.log_file_path).parent.mkdir(parents=True, exist_ok=True)
+    # Security Configuration
+    cors_origins: list = Field(
+        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        env="CORS_ORIGINS"
+    )
+    api_key: Optional[str] = Field(default=None, env="API_KEY")
 
-    @property
-    def is_production(self) -> bool:
-        """Check if running in production environment."""
-        return self.environment.lower() == "production"
+    # Feature Flags
+    enable_monitoring: bool = Field(default=True, env="ENABLE_MONITORING")
+    enable_api: bool = Field(default=True, env="ENABLE_API")
 
-    @property
-    def is_development(self) -> bool:
-        """Check if running in development environment."""
-        return self.environment.lower() == "development"
+    class Config:
+        """Pydantic config."""
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
 
-    def get_sentry_config(self) -> dict:
-        """Get Sentry configuration dictionary."""
-        if not self.enable_sentry or not self.sentry_dsn:
-            return {}
+    def ensure_directories(self):
+        """Ensure all required directories exist."""
+        self.data_dir.mkdir(parents=True, exist_ok=True)
 
-        return {
-            "dsn": self.sentry_dsn,
-            "environment": self.sentry_environment,
-            "traces_sample_rate": self.sentry_traces_sample_rate,
-            "profiles_sample_rate": self.sentry_profiles_sample_rate,
-            "send_default_pii": False,  # Don't send PII
-            "attach_stacktrace": True,
-            "max_breadcrumbs": 50,
-        }
+        if self.log_file:
+            log_dir = Path(self.log_file).parent
+            log_dir.mkdir(parents=True, exist_ok=True)
 
 
 # Global settings instance
-settings = Settings()
+_settings: Optional[Settings] = None
+
+
+def get_settings() -> Settings:
+    """Get the global settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+        _settings.ensure_directories()
+    return _settings
+
+
+def reload_settings():
+    """Reload settings from environment/file."""
+    global _settings
+    _settings = None
+    return get_settings()

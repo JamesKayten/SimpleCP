@@ -2,7 +2,6 @@
 ClipboardItem data model for SimpleCP.
 
 Represents individual clipboard items with metadata.
-Enhanced with Flycut patterns for robust clipboard management.
 """
 
 from datetime import datetime
@@ -14,7 +13,6 @@ import re
 class ClipboardItem:
     """
     Represents a single clipboard item with metadata.
-    Based on Flycut's FlycutClipping pattern with enhancements.
 
     Attributes:
         content: The text content of the clipboard item
@@ -48,7 +46,7 @@ class ClipboardItem:
         self.source_app = source_app
         self.item_type = item_type
 
-        # Display properties (from Flycut)
+        # Display properties
         self.display_length = display_length
         self.content_type = content_type or self._detect_content_type()
         self.display_string = self._create_display_string()
@@ -56,7 +54,7 @@ class ClipboardItem:
         # Unique ID for tracking
         self.clip_id = clip_id or self._generate_id()
 
-        # Snippet properties (from Flycut's clipHasName pattern)
+        # Snippet properties
         self.has_name = False
         self.snippet_name: Optional[str] = None
         self.folder_path: Optional[str] = None
@@ -128,10 +126,7 @@ class ClipboardItem:
         return hashlib.md5(data.encode()).hexdigest()[:16]
 
     def _create_display_string(self) -> str:
-        """
-        Create display string for UI.
-        Flycut's display string logic adapted for Python.
-        """
+        """Create display string for UI."""
         clean_text = self.content.replace("\n", " ").replace("\t", " ").strip()
 
         if len(clean_text) <= self.display_length:
@@ -144,7 +139,6 @@ class ClipboardItem:
     ) -> "ClipboardItem":
         """
         Convert history item to named snippet.
-        Based on Flycut's clipHasName pattern.
 
         Args:
             name: Name for the snippet

@@ -23,7 +23,7 @@ SimpleCP is a **production-ready clipboard manager** with a powerful Python back
 ✨ **Smart Clipboard Management**
 - Automatic history tracking (up to 50 items)
 - Intelligent content type detection
-- Duplicate prevention with Flycut-inspired patterns
+- Smart duplicate prevention
 
 📁 **Snippet Organization**
 - Folder-based snippet management
@@ -57,7 +57,7 @@ SimpleCP is a **production-ready clipboard manager** with a powerful Python back
 - Automatic clipboard monitoring
 - Configurable history limit (default: 50 items)
 - Content type detection (text, code, URLs, JSON)
-- Auto-deduplication (Flycut pattern)
+- Auto-deduplication
 - Recent items quick access
 
 **Snippet Management**
@@ -224,8 +224,7 @@ Open in browser:
 
 ### Architecture Documentation
 
-- 📐 **[Architecture](docs/HYBRID_ARCHITECTURE_UPDATE.md)** - System architecture overview
-- 🎯 **[Flycut Adaptation](docs/FLYCUT_ARCHITECTURE_ADAPTATION.md)** - Inspiration and patterns
+- 📐 **[Architecture](docs/development/ARCHITECTURE.md)** - System architecture overview
 
 ---
 
@@ -538,8 +537,6 @@ SimpleCP follows a **hybrid architecture** with clear separation:
 - ✅ Testability (API-driven)
 - ✅ Flexibility (any frontend can integrate)
 
-**Inspired by**: [Flycut](https://github.com/TermiT/Flycut) architecture patterns
-
 ---
 
 ## Contributing
@@ -574,7 +571,6 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- **Flycut**: Inspiration for multi-store architecture patterns
 - **FastAPI**: Excellent Python web framework
 - **Sentry**: Production-grade monitoring platform
 
