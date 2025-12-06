@@ -51,7 +51,7 @@ enum AppError: LocalizedError {
         case .encodingFailure, .decodingFailure:
             return "This might be a temporary issue. Try again or restart the app."
         case .apiError:
-            return "Make sure the backend server is running on localhost:8000. Try restarting the backend."
+            return "Make sure the backend server is running on localhost:49917. Try restarting the backend."
         }
     }
 

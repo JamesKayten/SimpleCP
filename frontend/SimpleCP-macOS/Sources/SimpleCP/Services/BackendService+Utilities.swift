@@ -12,7 +12,7 @@ extension BackendService {
 
     func findProjectRoot() -> URL? {
         // Priority 1: Hardcoded path for development (most reliable for Xcode)
-        let devPath = "/Volumes/User_Smallfavor/Users/Smallfavor/Code/ACTIVE/simple-cp-test"
+        let devPath = "/Volumes/User_Smallfavor/Users/Smallfavor/Code/ACTIVE/SimpleCP"
         let devURL = URL(fileURLWithPath: devPath)
         let devBackend = devURL.appendingPathComponent("backend")
         if FileManager.default.fileExists(atPath: devBackend.path) {

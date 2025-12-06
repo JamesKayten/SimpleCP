@@ -83,7 +83,7 @@ struct GeneralSettingsView: View {
 
                     HStack {
                         Text("Port:")
-                        TextField("8000", value: $apiPort, format: .number)
+                        TextField("49917", value: $apiPort, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 100)
                         

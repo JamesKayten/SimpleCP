@@ -24,7 +24,7 @@ struct SettingsWindow: View {
     @AppStorage("animateFolderExpand") private var animateFolderExpand = true
     @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
     @AppStorage("apiHost") private var apiHost = "localhost"
-    @AppStorage("apiPort") private var apiPort = 8000
+    @AppStorage("apiPort") private var apiPort = 49917
 
     enum Tab {
         case general, appearance, clips, snippets
