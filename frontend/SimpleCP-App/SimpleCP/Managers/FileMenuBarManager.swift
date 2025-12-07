@@ -56,23 +56,13 @@ class MenuBarManager: NSObject, NSWindowDelegate {
     
     private func showPanel() {
         guard let button = statusItem?.button else { return }
-        
+
         // Create window if it doesn't exist
         if menuBarWindow == nil {
-            // Get the window size from UserDefaults to match SimpleCPApp settings
-            let windowSizePreference = UserDefaults.standard.string(forKey: "windowSize") ?? "compact"
-            let windowDimensions: (width: CGFloat, height: CGFloat)
-            switch windowSizePreference {
-            case "compact":
-                windowDimensions = (400, 450)
-            case "normal":
-                windowDimensions = (450, 500)
-            case "large":
-                windowDimensions = (550, 650)
-            default:
-                windowDimensions = (450, 500)
-            }
-            
+            // Get the window size from UserDefaults using WindowSizeConfig (single source of truth)
+            let sizeConfig = currentWindowSizeConfig
+            let windowDimensions = sizeConfig.dimensions
+
             let panel = NSPanel(
                 contentRect: NSRect(x: 0, y: 0, width: windowDimensions.width, height: windowDimensions.height),
                 styleMask: [.borderless, .nonactivatingPanel],
@@ -211,46 +201,59 @@ class MenuBarManager: NSObject, NSWindowDelegate {
     }
     
     func updateWindowSize() {
-        guard let window = menuBarWindow else { return }
-        guard let button = statusItem?.button else { return }
-        
-        // Get new window dimensions
-        let windowSizePreference = UserDefaults.standard.string(forKey: "windowSize") ?? "compact"
-        let windowDimensions: (width: CGFloat, height: CGFloat)
-        switch windowSizePreference {
-        case "compact":
-            windowDimensions = (400, 450)
-        case "normal":
-            windowDimensions = (450, 500)
-        case "large":
-            windowDimensions = (550, 650)
-        default:
-            windowDimensions = (450, 500)
+        // Get new window dimensions using WindowSizeConfig (single source of truth)
+        let sizeConfig = currentWindowSizeConfig
+        let windowDimensions = sizeConfig.dimensions
+
+        print("🔵 updateWindowSize called: config=\(sizeConfig.rawValue), dimensions=\(windowDimensions)")
+
+        // If window doesn't exist yet, just log - it will use correct size when created
+        guard let window = menuBarWindow else {
+            print("🔵 Window not yet created, will use new size on next show")
+            return
         }
-        
+        guard let button = statusItem?.button else {
+            print("⚠️ No status bar button found")
+            return
+        }
+
         // Calculate new position (centered under menu bar icon)
         if let buttonWindow = button.window {
             let buttonFrame = button.convert(button.bounds, to: nil)
             let screenFrame = buttonWindow.convertToScreen(buttonFrame)
-            
+
             let xPos = screenFrame.midX - (windowDimensions.width / 2)
             let yPos = screenFrame.minY - windowDimensions.height - 8
-            
+
             let newFrame = NSRect(x: xPos, y: yPos, width: windowDimensions.width, height: windowDimensions.height)
-            
+
+            print("🔵 Resizing window to: \(newFrame)")
+
             // Resize the window (with animation if visible)
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.3
                 context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 window.animator().setFrame(newFrame, display: true)
             }
-            
+
             // Force the hosting controller to update its size
             if let hostingController = window.contentViewController as? NSHostingController<AnyView> {
                 hostingController.sizingOptions = [.intrinsicContentSize]
                 hostingController.view.needsLayout = true
                 hostingController.view.layoutSubtreeIfNeeded()
             }
+
+            print("✅ Window resized successfully")
+        } else {
+            print("⚠️ Button window not available for positioning")
         }
+    }
+
+    // MARK: - Private Helpers
+
+    /// Current window size configuration from UserDefaults
+    private var currentWindowSizeConfig: WindowSizeConfig {
+        let preference = UserDefaults.standard.string(forKey: "windowSize") ?? "compact"
+        return WindowSizeConfig.from(preference)
     }
 }

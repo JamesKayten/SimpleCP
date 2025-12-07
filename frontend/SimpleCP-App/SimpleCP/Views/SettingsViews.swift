@@ -61,8 +61,14 @@ struct GeneralSettingsView: View {
                             Text("Large").tag("large")
                         }
                         .pickerStyle(.radioGroup)
+                        .onChange(of: windowSize) { newValue in
+                            // Immediately update the menu bar window size
+                            DispatchQueue.main.async {
+                                MenuBarManager.shared.updateWindowSize()
+                            }
+                        }
                     }
-                    
+
                     Text("Size changes apply immediately")
                         .font(.caption)
                         .foregroundColor(.secondary)

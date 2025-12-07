@@ -8,20 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2809343A2EE3961E007FFA9E /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280934392EE3961E007FFA9E /* WindowManager.swift */; };
-		28494E662EE3A5AE00CA89AE /* ClipboardManager+Folders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28494E652EE3A5AE00CA89AE /* ClipboardManager+Folders.swift */; };
-		287378EF2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */; };
-		287378F12EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */; };
-		287378F32EE4ACA5003DC457 /* check_backend_structure.sh in Resources */ = {isa = PBXBuildFile; fileRef = 287378F22EE4ACA5003DC457 /* check_backend_structure.sh */; };
-		287378F52EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378F42EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md */; };
-		28862C7C2EE4A1F500DD250B /* install_dependencies.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28862C7B2EE4A1F500DD250B /* install_dependencies.sh */; };
-		28862C7E2EE4A53400DD250B /* backend_requirements.txt in Resources */ = {isa = PBXBuildFile; fileRef = 28862C7D2EE4A53400DD250B /* backend_requirements.txt */; };
-		28B7BC7C2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC7B2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md */; };
-		28B7BC7E2EE4B644007A1982 /* CHANGELOG_DEC6.md in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC7D2EE4B644007A1982 /* CHANGELOG_DEC6.md */; };
-		28B7BC802EE4B732007A1982 /* kill_backend.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC7F2EE4B732007A1982 /* kill_backend.sh */; };
-		28B7BC822EE4B757007A1982 /* PORT_CONFLICT_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC812EE4B757007A1982 /* PORT_CONFLICT_FIX.md */; };
 		28E7E5702EE39C0B006728EC /* FileMenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E7E56F2EE39C0B006728EC /* FileMenuBarManager.swift */; };
-		28F1D7842EE48FFA0088E267 /* diagnose_backend.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */; };
-		28F1D7862EE491210088E267 /* clear_sandbox.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28F1D7852EE491210088E267 /* clear_sandbox.sh */; };
 		F0000001230001 /* SimpleCPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000001230000 /* SimpleCPApp.swift */; };
 		F0000002230001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000002230000 /* AppDelegate.swift */; };
 		F0000003230001 /* FolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000003230000 /* FolderView.swift */; };
@@ -29,6 +16,7 @@
 		F0000005230001 /* SaveSnippetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000005230000 /* SaveSnippetDialog.swift */; };
 		F0000006230001 /* SavedSnippetsColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000006230000 /* SavedSnippetsColumn.swift */; };
 		F0000007230001 /* SnippetDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000007230000 /* SnippetDialogs.swift */; };
+		F0000008230001 /* ClipboardManager+Folders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000008230000 /* ClipboardManager+Folders.swift */; };
 		F0000009230001 /* ClipboardManager+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000009230000 /* ClipboardManager+Persistence.swift */; };
 		F0000010230001 /* ClipboardManager+Snippets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000010230000 /* ClipboardManager+Snippets.swift */; };
 		F0000011230001 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000011230000 /* ClipboardManager.swift */; };
@@ -61,20 +49,7 @@
 
 /* Begin PBXFileReference section */
 		280934392EE3961E007FFA9E /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
-		28494E652EE3A5AE00CA89AE /* ClipboardManager+Folders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Folders.swift"; sourceTree = "<group>"; };
-		287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_STARTUP_FIX.md; sourceTree = "<group>"; };
-		287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_STATUS_REPORT.md; sourceTree = "<group>"; };
-		287378F22EE4ACA5003DC457 /* check_backend_structure.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_backend_structure.sh; sourceTree = "<group>"; };
-		287378F42EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_IMPORT_ERROR_FIX.md; sourceTree = "<group>"; };
-		28862C7B2EE4A1F500DD250B /* install_dependencies.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_dependencies.sh; sourceTree = "<group>"; };
-		28862C7D2EE4A53400DD250B /* backend_requirements.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = backend_requirements.txt; sourceTree = "<group>"; };
-		28B7BC7B2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = STARTUP_FIX_DEC6_FINAL.md; sourceTree = "<group>"; };
-		28B7BC7D2EE4B644007A1982 /* CHANGELOG_DEC6.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG_DEC6.md; sourceTree = "<group>"; };
-		28B7BC7F2EE4B732007A1982 /* kill_backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = kill_backend.sh; sourceTree = "<group>"; };
-		28B7BC812EE4B757007A1982 /* PORT_CONFLICT_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PORT_CONFLICT_FIX.md; sourceTree = "<group>"; };
 		28E7E56F2EE39C0B006728EC /* FileMenuBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMenuBarManager.swift; sourceTree = "<group>"; };
-		28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = diagnose_backend.sh; sourceTree = "<group>"; };
-		28F1D7852EE491210088E267 /* clear_sandbox.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clear_sandbox.sh; sourceTree = "<group>"; };
 		F0000000100000 /* SimpleCP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleCP.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0000001230000 /* SimpleCPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCPApp.swift; sourceTree = "<group>"; };
 		F0000002230000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -83,6 +58,7 @@
 		F0000005230000 /* SaveSnippetDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSnippetDialog.swift; sourceTree = "<group>"; };
 		F0000006230000 /* SavedSnippetsColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSnippetsColumn.swift; sourceTree = "<group>"; };
 		F0000007230000 /* SnippetDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetDialogs.swift; sourceTree = "<group>"; };
+		F0000008230000 /* ClipboardManager+Folders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Folders.swift"; sourceTree = "<group>"; };
 		F0000009230000 /* ClipboardManager+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Persistence.swift"; sourceTree = "<group>"; };
 		F0000010230000 /* ClipboardManager+Snippets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Snippets.swift"; sourceTree = "<group>"; };
 		F0000011230000 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
@@ -137,7 +113,6 @@
 		F0000000300000 /* SimpleCP */ = {
 			isa = PBXGroup;
 			children = (
-				28494E652EE3A5AE00CA89AE /* ClipboardManager+Folders.swift */,
 				F0000001230000 /* SimpleCPApp.swift */,
 				F0000002230000 /* AppDelegate.swift */,
 				F0000000310000 /* Components */,
@@ -149,18 +124,6 @@
 				F0000037230000 /* Info.plist */,
 				F0000038230000 /* SimpleCP.entitlements */,
 				280934392EE3961E007FFA9E /* WindowManager.swift */,
-				28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */,
-				28F1D7852EE491210088E267 /* clear_sandbox.sh */,
-				28862C7B2EE4A1F500DD250B /* install_dependencies.sh */,
-				28862C7D2EE4A53400DD250B /* backend_requirements.txt */,
-				287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */,
-				287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */,
-				287378F22EE4ACA5003DC457 /* check_backend_structure.sh */,
-				287378F42EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md */,
-				28B7BC7B2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md */,
-				28B7BC7D2EE4B644007A1982 /* CHANGELOG_DEC6.md */,
-				28B7BC7F2EE4B732007A1982 /* kill_backend.sh */,
-				28B7BC812EE4B757007A1982 /* PORT_CONFLICT_FIX.md */,
 			);
 			path = SimpleCP;
 			sourceTree = "<group>";
@@ -182,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				28E7E56F2EE39C0B006728EC /* FileMenuBarManager.swift */,
+				F0000008230000 /* ClipboardManager+Folders.swift */,
 				F0000009230000 /* ClipboardManager+Persistence.swift */,
 				F0000010230000 /* ClipboardManager+Snippets.swift */,
 				F0000011230000 /* ClipboardManager.swift */,
@@ -308,18 +272,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				287378F12EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md in Resources */,
-				28B7BC7E2EE4B644007A1982 /* CHANGELOG_DEC6.md in Resources */,
-				28B7BC802EE4B732007A1982 /* kill_backend.sh in Resources */,
-				28862C7C2EE4A1F500DD250B /* install_dependencies.sh in Resources */,
-				287378EF2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md in Resources */,
-				287378F52EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md in Resources */,
-				28862C7E2EE4A53400DD250B /* backend_requirements.txt in Resources */,
-				28B7BC822EE4B757007A1982 /* PORT_CONFLICT_FIX.md in Resources */,
-				28B7BC7C2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md in Resources */,
-				28F1D7862EE491210088E267 /* clear_sandbox.sh in Resources */,
-				28F1D7842EE48FFA0088E267 /* diagnose_backend.sh in Resources */,
-				287378F32EE4ACA5003DC457 /* check_backend_structure.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,9 +296,9 @@
 				F0000013230001 /* AppState.swift in Sources */,
 				F0000014230001 /* ClipItem.swift in Sources */,
 				28E7E5702EE39C0B006728EC /* FileMenuBarManager.swift in Sources */,
+				F0000008230001 /* ClipboardManager+Folders.swift in Sources */,
 				F0000015230001 /* Snippet.swift in Sources */,
 				F0000016230001 /* SnippetFolder.swift in Sources */,
-				28494E662EE3A5AE00CA89AE /* ClipboardManager+Folders.swift in Sources */,
 				2809343A2EE3961E007FFA9E /* WindowManager.swift in Sources */,
 				F0000017230001 /* APIClient+Folders.swift in Sources */,
 				F0000018230001 /* APIClient+Snippets.swift in Sources */,

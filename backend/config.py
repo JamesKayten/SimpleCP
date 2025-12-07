@@ -20,7 +20,7 @@ class ServerConfig:
     """Server configuration."""
 
     host: str = "127.0.0.1"
-    port: int = 8080
+    port: int = 49917  # Port derived from "SimpleCP" hash (private port range 49152-65535)
     cors_origins: list = None
 
     def __post_init__(self):

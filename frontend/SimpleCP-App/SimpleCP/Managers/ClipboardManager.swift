@@ -249,28 +249,46 @@ class ClipboardManager: ObservableObject {
     /// Basic content validation (use SecurityManager when available)
     private func shouldStoreContent(_ content: String) -> Bool {
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         // Don't store if too short
         if trimmed.count < 3 {
             return false
         }
-        
+
         // Don't store if just whitespace
         if trimmed.isEmpty {
             return false
         }
-        
+
+        // Filter out debug/log output patterns (likely copied from console)
+        let debugPrefixes = ["📋", "🔄", "✅", "❌", "⚠️", "🚀", "💾", "🗑️", "📡", "🔍", "🔵", "🎨", "🟢", "🟡", "🔴", "🔒"]
+        for prefix in debugPrefixes {
+            if trimmed.hasPrefix(prefix) {
+                logger.debug("📋 Skipped debug/log output")
+                return false
+            }
+        }
+
+        // Filter common log patterns
+        let logPatterns = ["SIMPLECP STARTUP", "Backend Port:", "FILE SYSTEM CHECKS:", "SANDBOX STATUS:"]
+        for pattern in logPatterns {
+            if trimmed.contains(pattern) {
+                logger.debug("📋 Skipped log output")
+                return false
+            }
+        }
+
         // Basic sensitive pattern detection
         let lowercased = content.lowercased()
         let sensitiveKeywords = ["password:", "api_key", "bearer ", "-----begin private key-----"]
-        
+
         for keyword in sensitiveKeywords {
             if lowercased.contains(keyword) {
                 logger.warning("🔒 Detected potentially sensitive content")
                 return false
             }
         }
-        
+
         return true
     }
     

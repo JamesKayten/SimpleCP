@@ -25,7 +25,7 @@ def test_root_endpoint(client):
     response = test_client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data["name"] == "SimpleCP API"
+    assert data["name"] == "SimpleCP"
     assert data["status"] == "running"
 
 
@@ -36,7 +36,7 @@ def test_health_endpoint(client):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert "stats" in data
+    assert "clipboard_stats" in data
 
 
 def test_get_history_empty(client):

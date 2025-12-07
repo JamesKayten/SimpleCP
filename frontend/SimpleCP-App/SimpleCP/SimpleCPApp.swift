@@ -38,7 +38,7 @@ struct SimpleCPApp: App {
         print(String(repeating: "=", count: 60))
         
         let backendPort = UserDefaults.standard.integer(forKey: "backendPort")
-        let port = backendPort == 0 ? 8000 : backendPort
+        let port = backendPort == 0 ? AppConstants.backendPort : backendPort
         print("🔍 Backend Port: \(port)")
         print("🔍 Current Directory: \(FileManager.default.currentDirectoryPath)")
         print("🔍 Bundle Path: \(Bundle.main.bundlePath)")
@@ -167,18 +167,9 @@ struct SimpleCPApp: App {
     /// lsof -i:8000
     
     // MARK: - Window Size Calculation
-    
+
     private var windowDimensions: (width: CGFloat, height: CGFloat) {
-        switch windowSize {
-        case "compact":
-            return (400, 450)
-        case "normal":
-            return (450, 500)
-        case "large":
-            return (550, 650)
-        default:
-            return (450, 500) // fallback to normal
-        }
+        WindowSizeConfig.from(windowSize).dimensions
     }
     
     // MARK: - Font Preferences

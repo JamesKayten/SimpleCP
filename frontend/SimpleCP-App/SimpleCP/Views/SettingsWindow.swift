@@ -12,7 +12,7 @@ struct SettingsWindow: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("startMinimized") private var startMinimized = false
     @AppStorage("windowPosition") private var windowPosition = "center"
-    @AppStorage("windowSize") private var windowSize = "normal"
+    @AppStorage("windowSize") private var windowSize = "compact"
     @AppStorage("maxHistorySize") private var maxHistorySize = 50
     @AppStorage("theme") private var theme = "auto"
     @AppStorage("windowOpacity") private var windowOpacity = 0.95
@@ -128,7 +128,7 @@ struct SettingsWindow: View {
         launchAtLogin = false
         startMinimized = false
         windowPosition = "center"
-        windowSize = "normal"
+        windowSize = "compact"
         maxHistorySize = 50
         theme = "auto"
         windowOpacity = 0.95
