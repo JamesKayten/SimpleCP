@@ -223,17 +223,24 @@ struct SaveSnippetDialogContent: View {
                 HStack(spacing: 8) {
                     AppKitTextField(text: $newFolderName, placeholder: "Folder name", onCommit: createFolder)
                         .frame(height: 22)
+                        .onChange(of: newFolderName) { newValue in
+                            print("🔵 newFolderName changed to: '\(newValue)' (isEmpty: \(newValue.isEmpty))")
+                        }
                     
                     Button(action: {
                         print("➕ Create folder button tapped. Folder name: '\(newFolderName)'")
-                        createFolder()
+                        print("➕ isEmpty check: \(newFolderName.isEmpty)")
+                        if !newFolderName.isEmpty {
+                            createFolder()
+                        } else {
+                            print("➕ Button was disabled, folder name is empty!")
+                        }
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 20))
                             .foregroundColor(newFolderName.isEmpty ? .gray : .blue)
                     }
                     .buttonStyle(.borderless)
-                    .disabled(newFolderName.isEmpty)
                     .help(newFolderName.isEmpty ? "Enter a folder name" : "Create folder '\(newFolderName)'")
                 }
                 .padding(.horizontal, 8)
@@ -316,12 +323,13 @@ struct SaveSnippetDialogContent: View {
         print("🔵 Folder created with ID: \(newFolderID)")
         print("🔵 Total folders now: \(clipboardManager.folders.count)")
         
-        // Update UI state
-        selectedFolderId = newFolderID
-        createNewFolder = false
-        newFolderName = ""
-        
-        print("🔵 Folder creation complete, UI state updated")
+        // Update UI state - force refresh
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.selectedFolderId = newFolderID
+            self.createNewFolder = false
+            self.newFolderName = ""
+            print("🔵 Folder creation complete, UI state updated")
+        }
     }
     
     private func saveSnippet() {

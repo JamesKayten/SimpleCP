@@ -53,7 +53,7 @@ class APIClient {
             // Use configurable host and port with sensible defaults
             let host = UserDefaults.standard.string(forKey: "apiHost") ?? "localhost"
             let port = UserDefaults.standard.integer(forKey: "apiPort")
-            let apiPort = port > 0 ? port : 8000
+            let apiPort = port > 0 ? port : 49917
             self.baseURL = "http://\(host):\(apiPort)"
         }
     }

@@ -34,7 +34,7 @@ struct SavedSnippetsColumn: View {
             HStack {
                 Image(systemName: "folder.fill")
                     .foregroundColor(.secondary)
-                Text("SAVED SNIPPETS")
+                Text("SNIPPETS")
                     .font(fontPrefs.interfaceFont(weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
@@ -44,15 +44,31 @@ struct SavedSnippetsColumn: View {
             .background(Color(NSColor.controlBackgroundColor))
             .contextMenu {
                 Button(action: {
+                    createAutoNamedFolder()
+                }) {
+                    Label("New Folder", systemImage: "folder.badge.plus")
+                }
+                
+                Divider()
+                
+                Button(action: {
                     exportSnippets()
                 }) {
-                    Label("Export Snippets...", systemImage: "square.and.arrow.up")
+                    Label("Export All Snippets...", systemImage: "square.and.arrow.up")
                 }
                 
                 Button(action: {
                     importSnippets()
                 }) {
                     Label("Import Snippets...", systemImage: "square.and.arrow.down")
+                }
+                
+                Divider()
+                
+                Button(action: {
+                    deleteEmptyFolders()
+                }) {
+                    Label("Delete Empty Folders", systemImage: "trash")
                 }
                 
                 Divider()
@@ -92,6 +108,54 @@ struct SavedSnippetsColumn: View {
         }
         return folderSnippets.filter { snippet in
             filteredSnippets.contains(where: { $0.id == snippet.id })
+        }
+    }
+    
+    // MARK: - Folder Management Functions
+    
+    private func createAutoNamedFolder() {
+        // Generate a unique folder name
+        var folderNumber = 1
+        var proposedName = "Folder \(folderNumber)"
+
+        // Find the next available folder name
+        while clipboardManager.folders.contains(where: { $0.name == proposedName }) {
+            folderNumber += 1
+            proposedName = "Folder \(folderNumber)"
+        }
+
+        // Create the folder immediately without any dialog
+        _ = clipboardManager.createFolder(name: proposedName)
+        print("✅ Auto-created folder: \(proposedName)")
+    }
+    
+    private func deleteEmptyFolders() {
+        let emptyFolders = clipboardManager.folders.filter { folder in
+            clipboardManager.getSnippets(for: folder.id).isEmpty
+        }
+        
+        if emptyFolders.isEmpty {
+            let alert = NSAlert()
+            alert.messageText = "No Empty Folders"
+            alert.informativeText = "There are no empty folders to delete."
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+            return
+        }
+
+        let alert = NSAlert()
+        alert.messageText = "Delete Empty Folders"
+        alert.informativeText = "Are you sure you want to delete \(emptyFolders.count) empty folder(s)?"
+        alert.addButton(withTitle: "Delete")
+        alert.addButton(withTitle: "Cancel")
+        alert.alertStyle = .warning
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            for folder in emptyFolders {
+                clipboardManager.deleteFolder(folder)
+            }
+            print("✅ Deleted \(emptyFolders.count) empty folder(s)")
         }
     }
     
@@ -211,6 +275,7 @@ struct SnippetItemRow: View {
                 Image(systemName: "star.fill")
                     .font(fontPrefs.interfaceFont())
                     .foregroundColor(.yellow)
+                    .fixedSize()
             }
 
             // Snippet name
@@ -219,16 +284,19 @@ struct SnippetItemRow: View {
                     .font(fontPrefs.clipContentFont())
                     .foregroundColor(.primary)
                     .lineLimit(1)
+                    .truncationMode(.tail)
 
                 if !snippet.tags.isEmpty {
                     Text(snippet.tags.map { "#\($0)" }.joined(separator: " "))
                         .font(fontPrefs.interfaceFont())
                         .foregroundColor(.secondary)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer()
+            Spacer(minLength: 4)
 
             // Actions (shown on hover)
             if isHovered || localHover {
@@ -239,15 +307,9 @@ struct SnippetItemRow: View {
                     }
                     .buttonStyle(.plain)
                     .help("Edit")
-
-                    Button(action: onDelete) {
-                        Image(systemName: "trash")
-                            .font(fontPrefs.interfaceFont())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Delete")
                 }
                 .foregroundColor(.secondary)
+                .fixedSize()
             }
         }
         .padding(.horizontal, 24)

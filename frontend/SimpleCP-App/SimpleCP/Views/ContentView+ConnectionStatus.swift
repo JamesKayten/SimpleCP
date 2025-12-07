@@ -44,6 +44,8 @@ extension ContentView {
     var connectionStatusColor: Color {
         if backendService.isReady {
             return .green
+        } else if backendService.backendError != nil {
+            return .red
         } else if backendService.isRunning {
             return .yellow
         } else if backendService.isMonitoring {
@@ -56,6 +58,17 @@ extension ContentView {
     var connectionStatusText: String {
         if backendService.isReady {
             return "Connected"
+        } else if let error = backendService.backendError {
+            // Show abbreviated error
+            if error.contains("port") && error.contains("occupied") {
+                return "Port Busy"
+            } else if error.contains("not found") {
+                return "Not Found"
+            } else if error.contains("Failed to start") {
+                return "Start Failed"
+            } else {
+                return "Error"
+            }
         } else if backendService.isRunning {
             return "Starting..."
         } else if backendService.isMonitoring {
@@ -79,16 +92,18 @@ extension ContentView {
 
     var connectionTooltipText: String {
         if backendService.isReady {
-            return "Backend is connected and ready"
+            return "Backend is connected and ready on port \(backendService.port)"
+        } else if let error = backendService.backendError {
+            return "Backend Error: \(error)\n\nTap to restart or run in Terminal:\nlsof -ti:\(backendService.port) | xargs kill -9"
         } else if backendService.isRunning {
-            return "Backend is starting up..."
+            return "Backend is starting up on port \(backendService.port)..."
         } else if backendService.isMonitoring {
             if backendService.restartCount > 0 {
-                return "Reconnecting... (attempt \(backendService.restartCount))"
+                return "Reconnecting... (attempt \(backendService.restartCount)/\(backendService.maxRestartAttempts))"
             }
-            return "Connecting to backend..."
+            return "Connecting to backend on port \(backendService.port)..."
         } else {
-            return "Backend is offline - tap to restart"
+            return "Backend is offline - tap to restart\n\nIf port \(backendService.port) is busy, run:\nlsof -ti:\(backendService.port) | xargs kill -9"
         }
     }
 

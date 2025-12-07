@@ -36,6 +36,7 @@ def kill_existing_process(port):
     """Try to kill any existing process using the port."""
     try:
         import subprocess
+        import time
         result = subprocess.run(
             ["lsof", "-t", f"-i:{port}"],
             capture_output=True,
@@ -45,12 +46,31 @@ def kill_existing_process(port):
             pids = result.stdout.strip().split('\n')
             for pid in pids:
                 try:
+                    pid_int = int(pid)
                     print(f"🛑 Killing existing process {pid} on port {port}")
-                    os.kill(int(pid), signal.SIGTERM)
-                except ProcessLookupError:
+                    # Try SIGTERM first
+                    os.kill(pid_int, signal.SIGTERM)
+                except (ProcessLookupError, ValueError):
                     pass
-            import time
             time.sleep(0.5)
+
+            # If port still in use, force kill with SIGKILL
+            if is_port_in_use(port):
+                print(f"⚠️ Process didn't respond to SIGTERM, using SIGKILL...")
+                result = subprocess.run(
+                    ["lsof", "-t", f"-i:{port}"],
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    pids = result.stdout.strip().split('\n')
+                    for pid in pids:
+                        try:
+                            os.kill(int(pid), signal.SIGKILL)
+                        except (ProcessLookupError, ValueError):
+                            pass
+                    time.sleep(0.3)
+
             return not is_port_in_use(port)
     except Exception as e:
         print(f"⚠️ Failed to kill existing process: {e}")
@@ -86,7 +106,8 @@ def signal_handler(signum, frame):
 
 def main():
     """Main application entry point."""
-    port = 8000
+    # Port 49917 derived from "SimpleCP" hash (private port range 49152-65535)
+    port = 49917
 
     # Register cleanup handlers
     atexit.register(remove_pid_file)

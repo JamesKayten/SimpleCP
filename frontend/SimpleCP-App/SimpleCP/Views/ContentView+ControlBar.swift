@@ -12,72 +12,31 @@ extension ContentView {
 
     var controlBar: some View {
         HStack(spacing: 12) {
-            Button(action: {
-                print("Save snippet button clicked")
-                SaveSnippetWindowManager.shared.showDialog(
-                    content: clipboardManager.currentClipboard,
-                    clipboardManager: clipboardManager,
-                    onDismiss: {}
-                )
-            }) {
-                Label("Save as Snippet", systemImage: "square.and.arrow.down")
-                    .font(.system(size: 11))
-            }
-            .buttonStyle(.borderedProminent)
-            .focusable()
-            .help("Save current clipboard as snippet")
-
-            Button(action: {
-                print("New folder button clicked - creating auto-named folder")
-                createAutoNamedFolder()
-            }) {
-                Label("New Folder", systemImage: "folder.badge.plus")
-                    .font(.system(size: 11))
-            }
-            .buttonStyle(.borderedProminent)
-            .focusable()
-            .help("Create new snippet folder")
-
-            Menu {
-                Button("Create Folder") {
-                    print("Menu: Create folder clicked")
-                    createAutoNamedFolder()
+            // Show install dependencies button if backend is not running
+            if !backendService.isRunning {
+                Button(action: {
+                    installDependencies()
+                }) {
+                    Label("Install Dependencies", systemImage: "arrow.down.circle")
+                        .font(.system(size: 11))
                 }
-                Menu("Rename Folder...") {
-                    if clipboardManager.folders.isEmpty {
-                        Text("No folders to rename")
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(clipboardManager.folders) { folder in
-                            Button("\(folder.icon) \(folder.name)") {
-                                RenameFolderWindowManager.shared.showDialog(
-                                    folder: folder,
-                                    clipboardManager: clipboardManager,
-                                    onDismiss: {}
-                                )
-                            }
-                        }
-                    }
-                }
-                Divider()
-                Button("Delete Empty Folders") {
-                    deleteEmptyFolders()
-                }
-            } label: {
-                Label("Manage Folders", systemImage: "folder")
-                    .font(.system(size: 11))
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+                .help("Install Python dependencies (may take 30-60 seconds)")
             }
-            .menuStyle(.borderlessButton)
-            .frame(height: 22)
-
-            Button(action: {
-                clearHistory()
-            }) {
-                Label("Clear History", systemImage: "trash")
-                    .font(.system(size: 11))
+            
+            // Show force kill port button if there's a port error
+            if let error = backendService.backendError, error.contains("port") || error.contains("Port") {
+                Button(action: {
+                    forceKillPort()
+                }) {
+                    Label("Force Kill Port", systemImage: "exclamationmark.triangle")
+                        .font(.system(size: 11))
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+                .help("Kill process using port \(backendService.port)")
             }
-            .buttonStyle(.bordered)
-            .help("Clear all clipboard history")
 
             Spacer()
         }
@@ -87,6 +46,45 @@ extension ContentView {
     }
 
     // MARK: - Actions
+    
+    func forceKillPort() {
+        Task {
+            print("🔴 Force killing process on port \(backendService.port)...")
+            
+            await MainActor.run {
+                let killed = backendService.killProcessOnPort(backendService.port)
+                
+                if killed {
+                    print("✅ Port \(backendService.port) freed")
+                    // Wait a moment, then restart backend
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        self.backendService.restartBackend()
+                    }
+                } else {
+                    print("❌ Failed to kill process on port \(backendService.port)")
+                    print("💡 Try manually in Terminal: lsof -ti:\(backendService.port) | xargs kill -9")
+                }
+            }
+        }
+    }
+    
+    func installDependencies() {
+        Task {
+            print("🔄 Manually installing Python dependencies...")
+            let success = await backendService.installDependenciesManually()
+            
+            if success {
+                print("✅ Dependencies installed, restarting backend...")
+                // Wait a moment, then restart backend
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                await MainActor.run {
+                    backendService.restartBackend()
+                }
+            } else {
+                print("❌ Failed to install dependencies")
+            }
+        }
+    }
 
     func clearHistory() {
         let alert = NSAlert()
@@ -96,8 +94,18 @@ extension ContentView {
         alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .warning
 
-        if alert.runModal() == .alertFirstButtonReturn {
-            clipboardManager.clearHistory()
+        // Ensure alert appears in front of all windows
+        if let window = NSApp.keyWindow ?? NSApp.windows.first {
+            alert.beginSheetModal(for: window) { response in
+                if response == .alertFirstButtonReturn {
+                    clipboardManager.clearHistory()
+                }
+            }
+        } else {
+            // Fallback if no window is available
+            if alert.runModal() == .alertFirstButtonReturn {
+                clipboardManager.clearHistory()
+            }
         }
     }
 

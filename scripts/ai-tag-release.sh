@@ -1,144 +1,150 @@
 #!/bin/bash
+# AI-Powered Release Tagger
+# Usage: ./ai-tag-release.sh [--auto] [--patch|--minor|--major]
+
+set -e
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m'
+
+AUTO_MODE=false
+VERSION_BUMP="minor"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --auto) AUTO_MODE=true; shift ;;
+        --patch) VERSION_BUMP="patch"; shift ;;
+        --minor) VERSION_BUMP="minor"; shift ;;
+        --major) VERSION_BUMP="major"; shift ;;
+        *) shift ;;
+    esac
+done
 
 echo -e "${BLUE}=== AI-Powered Release Tagger ===${NC}\n"
 
-call_ollama() {
-    local prompt="$1"
-    if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
-        return 1
-    fi
-
-    RESPONSE=$(curl -s http://localhost:11434/api/generate -d "{\"model\":\"llama3.2\",\"prompt\":\"$prompt\",\"stream\":false}")
-    echo "$RESPONSE" | jq -r '.response' 2>/dev/null
-}
-
-detect_project_type() {
-    local project_type="general software project"
-    local project_emoji="🔧"
-
-    # Check for specific project types based on file presence (most specific first)
-    if find . -name "*.swift" -type f | head -1 | grep -q "Sources\|SimpleCP" 2>/dev/null; then
-        project_type="macOS clipboard manager"
-        project_emoji="📋"
-    elif [ -f "backend/main.py" -o -f "frontend/package.json" ]; then
-        project_type="full-stack application"
-        project_emoji="🔄"
-    elif [ -f "package.json" ]; then
-        if [ -d "src" ] && [ -f "src/App.js" -o -f "src/App.tsx" ]; then
-            project_type="React web application"
-            project_emoji="⚛️"
-        elif grep -q "\"@types/node\"" package.json 2>/dev/null; then
-            project_type="Node.js application"
-            project_emoji="🟢"
-        else
-            project_type="JavaScript/web application"
-            project_emoji="🌐"
-        fi
-    elif [ -f "*.xcodeproj" -o -f "Package.swift" ] 2>/dev/null; then
-        if ls *.xcodeproj >/dev/null 2>&1; then
-            project_type="iOS/macOS application"
-            project_emoji="🍎"
-        else
-            project_type="Swift package"
-            project_emoji="🔶"
-        fi
-    elif [ -f "requirements.txt" -o -f "pyproject.toml" -o -f "setup.py" ]; then
-        if [ -f "manage.py" ]; then
-            project_type="Django web application"
-            project_emoji="🐍"
-        elif [ -f "app.py" -o -f "main.py" ]; then
-            project_type="Python application"
-            project_emoji="🐍"
-        else
-            project_type="Python library"
-            project_emoji="📚"
-        fi
-    elif [ -f "Cargo.toml" ]; then
-        project_type="Rust application"
-        project_emoji="🦀"
-    elif [ -f "go.mod" ]; then
-        project_type="Go application"
-        project_emoji="🐹"
-    elif [ -f "pom.xml" -o -f "build.gradle" ]; then
-        project_type="Java application"
-        project_emoji="☕"
-    elif [ -f "Dockerfile" ]; then
-        project_type="containerized application"
-        project_emoji="🐳"
-    fi
-
-    echo "${project_type}|${project_emoji}"
-}
+# Check we're in a git repo
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo -e "${RED}Error: Not in a git repository${NC}"
+    exit 1
+fi
 
 # Detect project type
+detect_project_type() {
+    if [ -f "backend/main.py" ] && [ -d "frontend" ]; then
+        echo "macOS clipboard manager|📋"
+    elif [ -f "Package.swift" ]; then
+        echo "Swift package|🔶"
+    elif [ -f "package.json" ]; then
+        echo "JavaScript application|🌐"
+    elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+        echo "Python application|🐍"
+    else
+        echo "software project|🔧"
+    fi
+}
+
 PROJECT_INFO=$(detect_project_type)
 PROJECT_TYPE=$(echo "$PROJECT_INFO" | cut -d'|' -f1)
 PROJECT_EMOJI=$(echo "$PROJECT_INFO" | cut -d'|' -f2)
 
-echo -e "${BLUE}${PROJECT_EMOJI} Project type: ${GREEN}${PROJECT_TYPE}${NC}\n"
+echo -e "${BLUE}${PROJECT_EMOJI} Project type: ${GREEN}${PROJECT_TYPE}${NC}"
 
-CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.2.0")
+# Get current version
+CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
 echo -e "Current version: ${GREEN}${CURRENT_VERSION}${NC}"
 
-if ! git diff-index --quiet HEAD --; then
-    echo -e "${YELLOW}⚠️  You have uncommitted changes${NC}"
-    UNCOMMITTED_FILES=$(git diff --name-only | head -5 | tr '\n' ', ')
-    
-    echo -e "${BLUE}🤖 Generating commit message...${NC}"
-    AI_COMMIT_MSG=$(call_ollama "Generate a single-line git commit message (max 72 chars) for a $PROJECT_TYPE with changes to: $UNCOMMITTED_FILES. Reply with only the message.")
-    
-    if [ ! -z "$AI_COMMIT_MSG" ]; then
-        AI_COMMIT_MSG=$(echo "$AI_COMMIT_MSG" | head -1 | sed 's/^["'"'"']//;s/["'"'"']$//')
-        echo -e "${GREEN}AI commit message:${NC} ${YELLOW}${AI_COMMIT_MSG}${NC}\n"
-        read -p "Use this? (y/n) [y]: " USE_IT
-        USE_IT=${USE_IT:-y}
-        if [[ $USE_IT == "y" ]]; then
+# Check for uncommitted changes
+if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo -e "\n${YELLOW}⚠️  Uncommitted changes detected${NC}"
+    git status --short
+
+    if [ "$AUTO_MODE" = true ]; then
+        echo -e "\n${BLUE}Auto-committing changes...${NC}"
+        git add -A
+        # Generate commit message from changed files
+        CHANGED=$(git diff --cached --name-only | head -5 | tr '\n' ', ' | sed 's/,$//')
+        COMMIT_MSG="Update: ${CHANGED}"
+        git commit -m "$COMMIT_MSG"
+        echo -e "${GREEN}✓ Committed: ${COMMIT_MSG}${NC}"
+    else
+        echo -e "\n${YELLOW}Please commit your changes first, or use --auto${NC}"
+        read -p "Commit all changes now? (y/n) [n]: " COMMIT_NOW
+        if [[ "$COMMIT_NOW" == "y" ]]; then
             git add -A
-            git commit -m "$AI_COMMIT_MSG"
+            read -p "Commit message: " COMMIT_MSG
+            if [ -z "$COMMIT_MSG" ]; then
+                COMMIT_MSG="Release preparation"
+            fi
+            git commit -m "$COMMIT_MSG"
+        else
+            echo -e "${RED}Aborted. Commit changes first.${NC}"
+            exit 1
         fi
     fi
 fi
 
+# Calculate new version
 CURRENT_VERSION_NO_V=${CURRENT_VERSION#v}
 MAJOR=$(echo $CURRENT_VERSION_NO_V | cut -d. -f1)
 MINOR=$(echo $CURRENT_VERSION_NO_V | cut -d. -f2)
-NEW_VERSION="v${MAJOR}.$((MINOR + 1)).0"
+PATCH=$(echo $CURRENT_VERSION_NO_V | cut -d. -f3)
+PATCH=${PATCH:-0}
 
-DIFF=$(git log ${CURRENT_VERSION}..HEAD --pretty=format:"%s" --no-merges | head -5 | tr '\n' ' ')
+case $VERSION_BUMP in
+    major) NEW_VERSION="v$((MAJOR + 1)).0.0" ;;
+    minor) NEW_VERSION="v${MAJOR}.$((MINOR + 1)).0" ;;
+    patch) NEW_VERSION="v${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+esac
 
-if [ -z "$DIFF" ]; then
-    echo "No changes since last tag"
-    exit 1
+# Get commits since last tag
+COMMITS=$(git log ${CURRENT_VERSION}..HEAD --pretty=format:"- %s" --no-merges 2>/dev/null || git log --pretty=format:"- %s" --no-merges -10)
+
+if [ -z "$COMMITS" ]; then
+    echo -e "\n${YELLOW}No new commits since ${CURRENT_VERSION}${NC}"
+    exit 0
 fi
+
+echo -e "\n${BLUE}Changes since ${CURRENT_VERSION}:${NC}"
+echo "$COMMITS" | head -10
+
+# Generate release title from commits
+FIRST_COMMIT=$(echo "$COMMITS" | head -1 | sed 's/^- //')
+RELEASE_TITLE=$(echo "$FIRST_COMMIT" | cut -c1-50)
+
+# Generate release notes
+RELEASE_NOTES="$COMMITS"
 
 echo -e "\n${BLUE}New version: ${GREEN}${NEW_VERSION}${NC}"
-echo -e "${BLUE}🤖 Generating release notes...${NC}\n"
+echo -e "${BLUE}Release title: ${GREEN}${RELEASE_TITLE}${NC}"
 
-AI_NOTES=$(call_ollama "For a $PROJECT_TYPE, analyze these commits: $DIFF. Generate: 1) A 4-word release title, 2) 3 bullet points of user-facing changes. Format: TITLE: [title] NOTES: - [point1] - [point2] - [point3]")
-
-RELEASE_TITLE=$(echo "$AI_NOTES" | grep "TITLE:" | sed 's/TITLE: //' | head -1)
-RELEASE_NOTES=$(echo "$AI_NOTES" | sed -n '/NOTES:/,$p' | tail -n +2)
-
-if [ -z "$RELEASE_TITLE" ]; then
-    RELEASE_TITLE=$(echo "$AI_NOTES" | head -1)
-    RELEASE_NOTES="- $AI_NOTES"
+if [ "$AUTO_MODE" = false ]; then
+    echo ""
+    read -p "Proceed with release? (y/n) [y]: " CONFIRM
+    CONFIRM=${CONFIRM:-y}
+    if [[ "$CONFIRM" != "y" ]]; then
+        echo -e "${YELLOW}Aborted${NC}"
+        exit 0
+    fi
 fi
 
-echo -e "${GREEN}Title:${NC} ${YELLOW}${RELEASE_TITLE}${NC}"
-echo -e "${GREEN}Notes:${NC}\n${RELEASE_NOTES}\n"
+# Create tag
+echo -e "\n${BLUE}Creating tag ${NEW_VERSION}...${NC}"
+git tag -a "$NEW_VERSION" -m "${PROJECT_TYPE} Release ${NEW_VERSION}
 
-read -p "Proceed? (y/n) [y]: " CONFIRM
-CONFIRM=${CONFIRM:-y}
+${RELEASE_TITLE}
 
-if [[ $CONFIRM == "y" ]]; then
-    git tag -a $NEW_VERSION -m "Feature Release ${NEW_VERSION} - ${RELEASE_TITLE}
+Changes:
+${RELEASE_NOTES}
 
-${RELEASE_NOTES}"
-    git push origin main --tags
-    echo -e "\n${GREEN}✅ Released ${NEW_VERSION}${NC}"
-fi
+🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+
+# Push
+echo -e "${BLUE}Pushing to origin...${NC}"
+git push origin HEAD --tags
+
+echo -e "\n${GREEN}✅ Released ${NEW_VERSION}${NC}"
+echo -e "${BLUE}View at: $(git remote get-url origin | sed 's/\.git$//')/releases/tag/${NEW_VERSION}${NC}"

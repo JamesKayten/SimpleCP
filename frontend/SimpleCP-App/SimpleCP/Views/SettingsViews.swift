@@ -63,7 +63,7 @@ struct GeneralSettingsView: View {
                         .pickerStyle(.radioGroup)
                     }
                     
-                    Text("Size changes apply when you reopen the SimpleCP window")
+                    Text("Size changes apply immediately")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -83,7 +83,7 @@ struct GeneralSettingsView: View {
 
                     HStack {
                         Text("Port:")
-                        TextField("8000", value: $apiPort, format: .number)
+                        TextField("49917", value: $apiPort, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 100)
                         
@@ -147,8 +147,6 @@ struct AppearanceSettingsView: View {
     @Binding var interfaceFontSize: Double
     @Binding var clipFont: String
     @Binding var clipFontSize: Double
-    @Binding var showFolderIcons: Bool
-    @Binding var animateFolderExpand: Bool
     @Binding var showSnippetPreviews: Bool
 
     var body: some View {
@@ -165,6 +163,10 @@ struct AppearanceSettingsView: View {
                         Text("Dark").tag("dark")
                     }
                     .pickerStyle(.radioGroup)
+                    .onChange(of: theme) { newValue in
+                        // Apply theme change immediately to main window and settings window
+                        applyThemeToAllWindows(newValue)
+                    }
 
                     Spacer()
                 }
@@ -174,10 +176,27 @@ struct AppearanceSettingsView: View {
             // Window Opacity
             GroupBox(label: Text("Window Opacity")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Slider(value: $windowOpacity, in: 0.5...1.0, step: 0.05) {
-                        Text("Opacity")
+                    HStack {
+                        Text("90%")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(width: 35, alignment: .leading)
+                        
+                        Slider(value: $windowOpacity, in: 0.90...1.0, step: 0.01) {
+                            Text("Opacity")
+                        }
+                        .onChange(of: windowOpacity) { newValue in
+                            // Apply opacity change immediately to main window
+                            applyOpacityToMainWindow(newValue)
+                        }
+                        
+                        Text("100%")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(width: 35, alignment: .trailing)
                     }
-                    Text("\(Int(windowOpacity * 100))%")
+                    
+                    Text("\(Int(windowOpacity * 100))% - Changes apply immediately")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -233,11 +252,9 @@ struct AppearanceSettingsView: View {
             // Display Options
             GroupBox(label: Text("Display Options")) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Show folder icons", isOn: $showFolderIcons)
-                    Toggle("Animate folder expand/collapse", isOn: $animateFolderExpand)
                     Toggle("Show snippet previews on hover", isOn: $showSnippetPreviews)
                     
-                    Text("Previews appear after hovering for 1.5 seconds")
+                    Text("Snippet previews appear after hovering for 1.5 seconds. Folders show their contents in a flyout after hovering for 1 second.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -247,6 +264,34 @@ struct AppearanceSettingsView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func applyOpacityToMainWindow(_ opacity: Double) {
+        // Find and update the main SimpleCP popover window
+        DispatchQueue.main.async {
+            MenuBarManager.shared.updatePopoverOpacity(opacity)
+        }
+    }
+    
+    private func applyThemeToAllWindows(_ theme: String) {
+        // Update the main popover window
+        DispatchQueue.main.async {
+            MenuBarManager.shared.updatePopoverAppearance()
+            
+            // Update the settings window
+            if let settingsWindow = NSApp.windows.first(where: { $0.title == "Settings" }) {
+                switch theme {
+                case "light":
+                    settingsWindow.appearance = NSAppearance(named: .aqua)
+                case "dark":
+                    settingsWindow.appearance = NSAppearance(named: .darkAqua)
+                default: // "auto"
+                    settingsWindow.appearance = nil // Use system default
+                }
+            }
+        }
     }
 }
 

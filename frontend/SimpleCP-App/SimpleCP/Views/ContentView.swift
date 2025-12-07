@@ -17,11 +17,13 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
+            // Solid background to override popover transparency and prevent visual artifacts
+            Color(NSColor.windowBackgroundColor)
+                .opacity(1.0) // Ensure completely opaque background
+                .ignoresSafeArea()
+            
             // Main content
             VStack(spacing: 0) {
-                // Header Bar
-                headerBar
-
                 // Search Bar
                 searchBar
 
@@ -46,14 +48,16 @@ struct ContentView: View {
                             )
                         }
                     )
-                    .frame(minWidth: 250, idealWidth: 300)
+                    .frame(minWidth: 200, maxWidth: .infinity)
 
                     // Right Column: Saved Snippets
                     SavedSnippetsColumn(searchText: searchText, selectedFolderId: $selectedFolderId)
-                        .frame(minWidth: 250, idealWidth: 300)
+                        .frame(minWidth: 200, maxWidth: .infinity)
                 }
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: 3.0))
+        .clipped() // Prevent content from overflowing
         // Error alert for clipboard manager errors
         .alert("Error", isPresented: $clipboardManager.showError, presenting: clipboardManager.lastError) { error in
             Button("OK", role: .cancel) {
@@ -71,44 +75,6 @@ struct ContentView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Header Bar
-
-    private var headerBar: some View {
-        HStack {
-            HStack(spacing: 8) {
-                Text("SimpleCP")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-
-                // Connection Status Indicator
-                connectionStatusIndicator
-            }
-
-            Spacer()
-
-            Button(action: {
-                openSettingsWindow()
-            }) {
-                Image(systemName: "gearshape.fill")
-                    .foregroundColor(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("Settings")
-
-            Button(action: {
-                NSApplication.shared.terminate(nil)
-            }) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("Quit")
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     // MARK: - Search Bar
@@ -137,30 +103,16 @@ struct ContentView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
     }
-    
-    // MARK: - Settings
-    
-    private func openSettingsWindow() {
-        // Direct AppKit approach to open settings window
-        for window in NSApp.windows {
-            if window.title == "Settings" {
-                window.makeKeyAndOrderFront(nil)
-                NSApp.activate(ignoringOtherApps: true)
-                return
-            }
-        }
-        
-        // If window doesn't exist, try SwiftUI approach
-        openWindow(id: "settings")
-        
-        // Give it a moment, then activate
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            NSApp.activate(ignoringOtherApps: true)
-        }
-    }
 }
 
 // MARK: - Preview
+
+#Preview {
+    ContentView()
+        .environmentObject(ClipboardManager())
+        .environmentObject(BackendService())
+        .frame(width: 600, height: 400)
+}
 
 #Preview {
     ContentView()

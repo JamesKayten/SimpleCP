@@ -3,6 +3,7 @@ Monitoring and analytics for SimpleCP.
 
 Provides crash reporting, performance monitoring, and usage analytics.
 """
+import logging
 import time
 from contextlib import contextmanager
 from functools import wraps

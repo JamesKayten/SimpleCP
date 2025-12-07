@@ -13,7 +13,7 @@ struct RecentClipsColumn: View {
     let onSaveAsSnippet: (ClipItem) -> Void
 
     @State private var hoveredClipId: UUID?
-    @State private var selectedClipId: UUID?
+    @State private var selectedClipIds: Set<UUID> = []
     @State private var expandedGroups: Set<String> = []
     @Environment(\.fontPreferences) private var fontPrefs
 
@@ -35,14 +35,57 @@ struct RecentClipsColumn: View {
             HStack {
                 Image(systemName: "doc.on.clipboard")
                     .foregroundColor(.secondary)
-                Text("RECENT CLIPS")
+                Text("CLIPS")
                     .font(fontPrefs.interfaceFont(weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
+                
+                // Trash button for deleting selected clips
+                Button(action: {
+                    deleteSelectedClips()
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(selectedClipIds.isEmpty ? .secondary : .red)
+                }
+                .buttonStyle(.plain)
+                .help(selectedClipIds.isEmpty ? "Select clips to delete" : "Delete \(selectedClipIds.count) selected clip(s)")
+                .disabled(selectedClipIds.isEmpty)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
+            .contextMenu {
+                Button(action: {
+                    SaveSnippetWindowManager.shared.showDialog(
+                        content: clipboardManager.currentClipboard,
+                        clipboardManager: clipboardManager,
+                        onDismiss: {}
+                    )
+                }) {
+                    Label("Save Current Clipboard as Snippet", systemImage: "square.and.arrow.down")
+                }
+                
+                Divider()
+                
+                Button(action: {
+                    // Select all clips
+                    selectedClipIds = Set(recentClips.map { $0.id })
+                }) {
+                    Label("Select All Clips", systemImage: "checkmark.circle")
+                }
+                
+                Button(action: {
+                    // Deselect all
+                    selectedClipIds.removeAll()
+                }) {
+                    Label("Deselect All", systemImage: "circle")
+                }
+                
+                Divider()
+                
+                Text("\(clipboardManager.clipHistory.count) clips in history")
+                    .foregroundColor(.secondary)
+            }
 
             Divider()
 
@@ -55,16 +98,19 @@ struct RecentClipsColumn: View {
                             index: index + 1,
                             clip: clip,
                             isHovered: hoveredClipId == clip.id,
-                            isSelected: selectedClipId == clip.id,
+                            isSelected: selectedClipIds.contains(clip.id),
                             onCopy: {
                                 clipboardManager.copyToClipboard(clip.content)
-                                selectedClipId = clip.id
+                            },
+                            onToggleSelect: {
+                                if selectedClipIds.contains(clip.id) {
+                                    selectedClipIds.remove(clip.id)
+                                } else {
+                                    selectedClipIds.insert(clip.id)
+                                }
                             },
                             onSave: {
                                 onSaveAsSnippet(clip)
-                            },
-                            onDelete: {
-                                clipboardManager.removeFromHistory(item: clip)
                             }
                         )
                         .onHover { isHovered in
@@ -78,8 +124,16 @@ struct RecentClipsColumn: View {
                                 onSaveAsSnippet(clip)
                             }
                             Divider()
+                            Button(selectedClipIds.contains(clip.id) ? "Deselect" : "Select") {
+                                if selectedClipIds.contains(clip.id) {
+                                    selectedClipIds.remove(clip.id)
+                                } else {
+                                    selectedClipIds.insert(clip.id)
+                                }
+                            }
                             Button("Remove from History") {
                                 clipboardManager.removeFromHistory(item: clip)
+                                selectedClipIds.remove(clip.id)
                             }
                         }
                     }
@@ -102,7 +156,7 @@ struct RecentClipsColumn: View {
                                     }
                                 },
                                 hoveredClipId: $hoveredClipId,
-                                selectedClipId: $selectedClipId,
+                                selectedClipIds: $selectedClipIds,
                                 onSaveAsSnippet: onSaveAsSnippet,
                                 clipboardManager: clipboardManager
                             )
@@ -131,6 +185,20 @@ struct RecentClipsColumn: View {
 
         return groups
     }
+    
+    // MARK: - Actions
+    
+    private func deleteSelectedClips() {
+        guard !selectedClipIds.isEmpty else { return }
+        
+        let clipsToDelete = clipboardManager.clipHistory.filter { selectedClipIds.contains($0.id) }
+        
+        for clip in clipsToDelete {
+            clipboardManager.removeFromHistory(item: clip)
+        }
+        
+        selectedClipIds.removeAll()
+    }
 }
 
 // MARK: - Clip Item Row
@@ -141,8 +209,8 @@ struct ClipItemRow: View {
     let isHovered: Bool
     let isSelected: Bool
     let onCopy: () -> Void
+    let onToggleSelect: () -> Void
     let onSave: () -> Void
-    let onDelete: () -> Void
     
     @State private var showPopover = false
     @State private var hoverTimer: Timer?
@@ -151,38 +219,24 @@ struct ClipItemRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // Index
-            Text("\(index).")
-                .font(fontPrefs.interfaceFont(weight: .medium))
-                .foregroundColor(.secondary)
-                .frame(width: 20, alignment: .trailing)
-
-            // Content preview
-            VStack(alignment: .leading, spacing: 2) {
-                Text(clip.preview)
-                    .font(fontPrefs.clipContentFont())
-                    .lineLimit(2)
-                    .foregroundColor(.primary)
-
-                Text(clip.displayTime)
-                    .font(fontPrefs.interfaceFont(weight: .regular))
-                    .foregroundColor(.secondary)
+            // Selection checkbox
+            Button(action: onToggleSelect) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isSelected ? .accentColor : .secondary)
+                    .font(.system(size: 14))
             }
+            .buttonStyle(.plain)
+            .fixedSize()
 
-            Spacer()
+            // Content preview (more compact - no timestamp shown)
+            Text(clip.preview)
+                .font(fontPrefs.clipContentFont())
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Actions (shown on hover)
-            if isHovered {
-                HStack(spacing: 4) {
-                    Button(action: onDelete) {
-                        Image(systemName: "trash")
-                            .font(fontPrefs.interfaceFont())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Remove")
-                }
-                .foregroundColor(.secondary)
-            }
+            Spacer(minLength: 4)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
@@ -196,8 +250,8 @@ struct ClipItemRow: View {
         }
         .onHover { hovering in
             if hovering && showSnippetPreviews {
-                // Show popover after a delay (1.5 seconds)
-                hoverTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+                // Show popover after a delay (0.7 seconds)
+                hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.7, repeats: false) { _ in
                     showPopover = true
                 }
             } else {
@@ -288,7 +342,7 @@ struct HistoryGroupDisclosure: View {
     let isExpanded: Bool
     let onToggle: () -> Void
     @Binding var hoveredClipId: UUID?
-    @Binding var selectedClipId: UUID?
+    @Binding var selectedClipIds: Set<UUID>
     let onSaveAsSnippet: (ClipItem) -> Void
     let clipboardManager: ClipboardManager
     
@@ -378,16 +432,19 @@ struct HistoryGroupDisclosure: View {
                             index: Int(range.components(separatedBy: " - ").first ?? "0")! + index,
                             clip: clip,
                             isHovered: hoveredClipId == clip.id,
-                            isSelected: selectedClipId == clip.id,
+                            isSelected: selectedClipIds.contains(clip.id),
                             onCopy: {
                                 clipboardManager.copyToClipboard(clip.content)
-                                selectedClipId = clip.id
+                            },
+                            onToggleSelect: {
+                                if selectedClipIds.contains(clip.id) {
+                                    selectedClipIds.remove(clip.id)
+                                } else {
+                                    selectedClipIds.insert(clip.id)
+                                }
                             },
                             onSave: {
                                 onSaveAsSnippet(clip)
-                            },
-                            onDelete: {
-                                clipboardManager.removeFromHistory(item: clip)
                             }
                         )
                         .onHover { isHovered in
@@ -401,8 +458,16 @@ struct HistoryGroupDisclosure: View {
                                 onSaveAsSnippet(clip)
                             }
                             Divider()
+                            Button(selectedClipIds.contains(clip.id) ? "Deselect" : "Select") {
+                                if selectedClipIds.contains(clip.id) {
+                                    selectedClipIds.remove(clip.id)
+                                } else {
+                                    selectedClipIds.insert(clip.id)
+                                }
+                            }
                             Button("Remove from History") {
                                 clipboardManager.removeFromHistory(item: clip)
+                                selectedClipIds.remove(clip.id)
                             }
                         }
                     }
@@ -548,10 +613,20 @@ struct ClipGroupFlyout: View {
                 alert.addButton(withTitle: "Cancel")
                 alert.alertStyle = .informational
                 
-                if alert.runModal() == .alertFirstButtonReturn {
-                    // Open System Settings to Accessibility
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                        NSWorkspace.shared.open(url)
+                // Ensure alert appears in front
+                if let window = NSApp.keyWindow ?? NSApp.windows.first {
+                    alert.beginSheetModal(for: window) { response in
+                        if response == .alertFirstButtonReturn {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                } else {
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                            NSWorkspace.shared.open(url)
+                        }
                     }
                 }
             }

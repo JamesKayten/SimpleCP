@@ -51,7 +51,7 @@ class ClipboardManager: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             
             // Try a quick health check
-            if let url = URL(string: "http://localhost:8000/health"),
+            if let url = URL(string: "http://localhost:49917/health"),
                let (_, response) = try? await URLSession.shared.data(from: url),
                let httpResponse = response as? HTTPURLResponse,
                httpResponse.statusCode == 200 {

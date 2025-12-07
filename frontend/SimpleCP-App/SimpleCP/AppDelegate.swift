@@ -16,6 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     // Observe window size changes
     private var windowSizeObserver: NSObjectProtocol?
+    private var windowOpacityObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         logger.info("🚀 Application finished launching")
@@ -35,11 +36,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         logger.info("Activation policy: \(showInDock ? "regular (show in Dock)" : "accessory (menu bar only)")")
 
+        // Menu bar content will be set up by the App's view hierarchy
         // Backend will be started by BackendService init with proper exponential backoff
         // No need for additional delays here
         
         // Observe window size preference changes
         setupWindowSizeObserver()
+        
+        // Observe window opacity changes
+        setupWindowOpacityObserver()
+    }
+    
+    // MARK: - Window Opacity Management
+    
+    private func setupWindowOpacityObserver() {
+        windowOpacityObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.applyWindowOpacity()
+        }
+        
+        // Apply initial opacity after a slight delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.applyWindowOpacity()
+        }
     }
     
     // MARK: - Window Size Management
@@ -81,24 +103,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    private func applyWindowOpacity() {
+        let opacity = UserDefaults.standard.double(forKey: "windowOpacity")
+        let alphaValue = opacity > 0 ? opacity : 0.9 // Default to 0.9 if not set
+        
+        logger.info("🎨 Opacity preference changed to: \(Int(alphaValue * 100))%")
+        
+        // The opacity will be applied by MenuBarManager when popover is shown
+        // and by the settings view when it changes
+    }
+    
     private func windowDimensions(for size: String) -> (width: CGFloat, height: CGFloat) {
         switch size {
         case "compact":
-            return (500, 350)
+            return (400, 500)  // Portrait: taller than wide
         case "normal":
-            return (600, 400)
+            return (450, 600)  // Portrait: taller than wide
         case "large":
-            return (800, 550)
+            return (550, 750)  // Portrait: taller than wide
         default:
-            return (600, 400)
+            return (450, 600)
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         logger.info("🛑 Application will terminate - cleaning up backend...")
 
-        // Remove observer
+        // Remove observers
         if let observer = windowSizeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        if let observer = windowOpacityObserver {
             NotificationCenter.default.removeObserver(observer)
         }
 

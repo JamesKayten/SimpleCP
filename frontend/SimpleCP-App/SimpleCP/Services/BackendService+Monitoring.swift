@@ -11,43 +11,110 @@ extension BackendService {
     // MARK: - Health Check
 
     func verifyBackendHealth() async {
-        do {
-            let url = URL(string: "http://localhost:\(port)/health")!
-            let (_, response) = try await URLSession.shared.data(from: url)
-
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                await MainActor.run {
-                    logger.info("Backend health check passed")
-                    self.consecutiveFailures = 0
-                    self.backendError = nil
-                    self.isReady = true  // Backend is now ready for API calls
-                    self.connectionState = .connected
-                }
+        print("🏥 Starting health check on http://localhost:\(port)/health")
+        
+        // First check if process is even running
+        await MainActor.run {
+            if let process = self.backendProcess, process.isRunning {
+                print("✅ Backend process is running (PID: \(process.processIdentifier))")
             } else {
-                logger.warning("Backend health check returned unexpected response")
-                await MainActor.run {
-                    self.isReady = false
-                    self.connectionState = .error("Unexpected response")
-                }
-                handleHealthCheckFailure()
+                print("⚠️ Backend process is NOT running or is nil")
             }
-        } catch {
-            logger.error("Backend health check failed: \(error.localizedDescription)")
-            await MainActor.run {
-                self.isReady = false
-                self.connectionState = .error("Health check failed")
-            }
-            handleHealthCheckFailure()
         }
+        
+        // Retry health check up to 3 times with delays
+        for attempt in 1...3 {
+            print("🏥 Health check attempt \(attempt)/3...")
+            
+            do {
+                let url = URL(string: "http://localhost:\(port)/health")!
+                var request = URLRequest(url: url)
+                request.timeoutInterval = 5.0
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("🏥 Health check response: HTTP \(httpResponse.statusCode)")
+                    
+                    if httpResponse.statusCode == 200 {
+                        if let responseText = String(data: data, encoding: .utf8) {
+                            print("🏥 Response body: \(responseText)")
+                        }
+                        await MainActor.run {
+                            logger.info("Backend health check passed")
+                            self.consecutiveFailures = 0
+                            self.backendError = nil
+                            self.isReady = true  // Backend is now ready for API calls
+                            self.connectionState = .connected
+                            print("✅ Backend is CONNECTED and READY!")
+                        }
+                        return // Success! Exit the retry loop
+                    } else {
+                        print("⚠️ Health check returned unexpected status: \(httpResponse.statusCode)")
+                        if attempt < 3 {
+                            print("⏳ Waiting 1 second before retry...")
+                            try? await Task.sleep(nanoseconds: 1_000_000_000)
+                            continue
+                        }
+                    }
+                }
+            } catch let error as URLError {
+                print("❌ Health check attempt \(attempt) failed: \(error.code.rawValue) - \(error.localizedDescription)")
+                
+                if attempt < 3 {
+                    print("⏳ Waiting 1 second before retry...")
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    continue
+                }
+                
+                // Last attempt failed - provide diagnostics
+                let diagnostic: String
+                switch error.code {
+                case .cannotConnectToHost:
+                    diagnostic = "Cannot connect - backend may not be listening on port \(port)"
+                case .timedOut:
+                    diagnostic = "Connection timed out - backend is slow to respond or not running"
+                case .cannotFindHost:
+                    diagnostic = "Cannot find localhost - network configuration issue"
+                default:
+                    diagnostic = error.localizedDescription
+                }
+                
+                print("🔍 Diagnostic: \(diagnostic)")
+                logger.error("Backend health check failed: \(diagnostic)")
+            } catch {
+                print("❌ Health check attempt \(attempt) failed: \(error.localizedDescription)")
+                
+                if attempt < 3 {
+                    print("⏳ Waiting 1 second before retry...")
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    continue
+                }
+                
+                logger.error("Backend health check failed: \(error.localizedDescription)")
+            }
+        }
+        
+        // All attempts failed
+        print("❌ All health check attempts failed")
+        await MainActor.run {
+            self.isReady = false
+            self.connectionState = .error("Health check failed after 3 attempts")
+        }
+        await handleHealthCheckFailure()
     }
 
-    func handleHealthCheckFailure() {
-        self.consecutiveFailures += 1
-        logger.warning("Health check failure #\(self.consecutiveFailures)")
+    func handleHealthCheckFailure() async {
+        await MainActor.run {
+            self.consecutiveFailures += 1
+            logger.warning("Health check failure #\(self.consecutiveFailures)")
+            print("📊 Health check failure #\(self.consecutiveFailures)")
 
-        if self.consecutiveFailures >= 3 && self.autoRestartEnabled {
-            logger.error("Multiple health check failures detected, triggering restart")
-            triggerAutoRestart(reason: "Health check failures")
+            if self.consecutiveFailures >= 3 && self.autoRestartEnabled {
+                logger.error("Multiple health check failures detected, triggering restart")
+                print("🔄 Multiple health check failures detected, triggering restart")
+                triggerAutoRestart(reason: "Health check failures")
+            }
         }
     }
 
@@ -164,11 +231,17 @@ extension BackendService {
     func triggerAutoRestart(reason: String) {
         guard autoRestartEnabled else {
             logger.info("Auto-restart disabled, not restarting")
+            print("⏸️ Auto-restart disabled, not restarting")
             return
         }
 
         guard restartCount < maxRestartAttempts else {
             logger.error("Maximum restart attempts (\(self.maxRestartAttempts)) reached, disabling auto-restart")
+            print("🛑 Maximum restart attempts (\(self.maxRestartAttempts)) reached, disabling auto-restart")
+            print("💡 Manual intervention required. Try:")
+            print("   1. Check Console.app for backend errors")
+            print("   2. Run: lsof -ti:8000 | xargs kill -9")
+            print("   3. Manually restart the backend from Settings")
             autoRestartEnabled = false
             backendError = "Backend failed to restart after \(self.maxRestartAttempts) attempts. Please check logs."
             return
@@ -180,6 +253,7 @@ extension BackendService {
             if timeSinceLastRestart < restartDelay {
                 let waitTime = restartDelay - timeSinceLastRestart
                 logger.info("Waiting \(String(format: "%.1f", waitTime))s before restart attempt")
+                print("⏳ Waiting \(String(format: "%.1f", waitTime))s before restart attempt")
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + waitTime) {
                     self.performAutoRestart(reason: reason)

@@ -50,8 +50,8 @@ class BackendService: ObservableObject {
     @Published var restartCount: Int = 0
     @Published var isMonitoring: Bool = false
     
-    // Make port configurable via UserDefaults
-    @AppStorage("backendPort") var port: Int = 8000
+    // Port 49917 derived from "SimpleCP" hash (private port range 49152-65535)
+    @AppStorage("backendPort") var port: Int = 49917
 
     var backendProcess: Process?
     let logger = Logger(subsystem: "com.simplecp.app", category: "backend")

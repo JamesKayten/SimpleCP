@@ -21,7 +21,8 @@ extension APIClient {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.timeoutInterval = 10.0
+            request.setValue("keep-alive", forHTTPHeaderField: "Connection")
+            request.timeoutInterval = 30.0  // Increased timeout for potentially large snippets
 
             let body: [String: Any] = [
                 "name": name,
@@ -67,7 +68,8 @@ extension APIClient {
             var request = URLRequest(url: url)
             request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.timeoutInterval = 10.0
+            request.setValue("keep-alive", forHTTPHeaderField: "Connection")
+            request.timeoutInterval = 30.0  // Increased timeout for potentially large snippets
 
             var body: [String: Any] = [
                 "clip_id": clipId  // Backend requires clip_id in the body
@@ -113,7 +115,7 @@ extension APIClient {
 
             var request = URLRequest(url: url)
             request.httpMethod = "DELETE"
-            request.timeoutInterval = 10.0
+            request.timeoutInterval = 30.0  // Increased timeout
 
             self.logger.info("📡 API: Deleting snippet from folder '\(folderName)'")
 

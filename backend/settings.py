@@ -10,7 +10,8 @@ Loads configuration from:
 import os
 from pathlib import Path
 from typing import Optional
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -20,12 +21,13 @@ class Settings(BaseSettings):
     app_name: str = Field(default="SimpleCP", env="APP_NAME")
     app_version: str = Field(default="1.0.0", env="APP_VERSION")
     debug: bool = Field(default=False, env="DEBUG")
+    environment: str = Field(default="development", env="ENVIRONMENT")
 
     # Server Configuration
     api_host: str = Field(default="127.0.0.1", env="API_HOST")
     api_port: int = Field(default=8000, env="API_PORT")
+    api_reload: bool = Field(default=False, env="API_RELOAD")
     api_workers: int = Field(default=1, env="API_WORKERS")
-    reload: bool = Field(default=False, env="API_RELOAD")
 
     # Storage Configuration
     data_dir: Path = Field(default=Path("data"), env="DATA_DIR")
@@ -33,7 +35,7 @@ class Settings(BaseSettings):
     snippets_file: str = Field(default="data/snippets.json", env="SNIPPETS_FILE")
 
     # Clipboard Configuration
-    check_interval: float = Field(default=1.0, env="CHECK_INTERVAL")
+    clipboard_check_interval: float = Field(default=1.0, env="CLIPBOARD_CHECK_INTERVAL")
     max_history_size: int = Field(default=100, env="MAX_HISTORY_SIZE")
     max_content_length: int = Field(default=10000, env="MAX_CONTENT_LENGTH")
 
@@ -44,6 +46,11 @@ class Settings(BaseSettings):
         default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         env="LOG_FORMAT"
     )
+    log_json_format: bool = Field(default=False, env="LOG_JSON_FORMAT")
+    log_to_file: bool = Field(default=True, env="LOG_TO_FILE")
+    log_file_path: str = Field(default="logs/simplecp.log", env="LOG_FILE_PATH")
+    log_max_bytes: int = Field(default=10485760, env="LOG_MAX_BYTES")  # 10MB
+    log_backup_count: int = Field(default=5, env="LOG_BACKUP_COUNT")
 
     # Security Configuration
     cors_origins: list = Field(
@@ -55,6 +62,15 @@ class Settings(BaseSettings):
     # Feature Flags
     enable_monitoring: bool = Field(default=True, env="ENABLE_MONITORING")
     enable_api: bool = Field(default=True, env="ENABLE_API")
+    enable_sentry: bool = Field(default=False, env="ENABLE_SENTRY")
+    enable_usage_analytics: bool = Field(default=True, env="ENABLE_USAGE_ANALYTICS")
+    health_check_enabled: bool = Field(default=True, env="HEALTH_CHECK_ENABLED")
+    enable_performance_tracking: bool = Field(default=True, env="ENABLE_PERFORMANCE_TRACKING")
+
+    @property
+    def is_development(self) -> bool:
+        """Check if running in development environment."""
+        return self.environment.lower() in ("development", "dev", "local")
 
     class Config:
         """Pydantic config."""
@@ -69,6 +85,15 @@ class Settings(BaseSettings):
         if self.log_file:
             log_dir = Path(self.log_file).parent
             log_dir.mkdir(parents=True, exist_ok=True)
+
+    def get_sentry_config(self):
+        """Get Sentry configuration."""
+        return {
+            "enabled": self.enable_sentry,
+            "dsn": os.getenv("SENTRY_DSN"),
+            "environment": self.environment,
+            "release": self.app_version,
+        }
 
 
 # Global settings instance
@@ -89,3 +114,7 @@ def reload_settings():
     global _settings
     _settings = None
     return get_settings()
+
+
+# Create global settings instance for direct import
+settings = get_settings()

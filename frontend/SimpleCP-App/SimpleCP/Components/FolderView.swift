@@ -22,74 +22,67 @@ struct FolderView: View {
     @State private var isHovered = false
     @State private var showFlyout = false
     @State private var hoverTimer: Timer?
-    @State private var flyoutHovered = false
+    @State private var isFlyoutHovered = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Folder Header
-            HStack(spacing: 6) {
-                // Selection indicator
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.accentColor)
-                        .frame(width: 3)
-                }
-
-                Text(folder.icon)
-                    .font(.system(size: 14))
-
-                Text(folder.name)
-                    .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
-
-                Spacer()
-
-                // Expand/Collapse indicator
-                Image(systemName: folder.isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 10, weight: .semibold))
+            // Collection Header Bar
+            HStack(spacing: 8) {
+                Text(folder.name.uppercased())
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
 
-                if !folder.isExpanded {
-                    Text("(\(snippets.count))")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                }
+                Spacer(minLength: 8)
+
+                // Snippet count badge
+                Text("\(snippets.count)")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.secondary.opacity(0.15))
+                    )
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 4)
+                Rectangle()
                     .fill(
-                        showFlyout ? Color.accentColor.opacity(0.25) :
-                        isSelected ? Color.accentColor.opacity(0.15) : 
-                        (isHovered ? Color.accentColor.opacity(0.08) : Color.clear)
+                        isSelected ? Color.accentColor.opacity(0.1) : 
+                        (isHovered ? Color(NSColor.controlBackgroundColor).opacity(0.5) : Color(NSColor.controlBackgroundColor))
                     )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .strokeBorder(isHovered ? Color.accentColor : Color.clear, lineWidth: 1)
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color.secondary.opacity(0.2)),
+                alignment: .bottom
             )
             .contentShape(Rectangle())
             .onTapGesture {
-                // Single click: select folder and toggle expansion
-                print("🔵 FOLDER CLICKED: '\(folder.name)' (ID: \(folder.id))")
+                // Single click: select folder
                 onSelect()
-                clipboardManager.toggleFolderExpansion(folder.id)
             }
             .onHover { hovering in
-                print("🔶 SIMPLE HOVER: \(hovering) on folder: \(folder.name)")
                 isHovered = hovering
                 if hovering {
-                    hoverTimer?.invalidate()
-                    hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
-                        print("🟦 SHOWING FLYOUT for folder: \(folder.name)")
-                        showFlyout = true
+                    // Start timer to show flyout after 1 second
+                    hoverTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                        if !snippets.isEmpty {
+                            showFlyout = true
+                        }
                     }
                 } else {
+                    // Cancel timer if we stop hovering
                     hoverTimer?.invalidate()
                     hoverTimer = nil
-                    // Keep flyout open if mouse is over flyout
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        if !isHovered && !flyoutHovered {
+                    // Hide flyout after a short delay, unless hovering over flyout
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        if !isFlyoutHovered {
                             showFlyout = false
                         }
                     }
@@ -101,20 +94,20 @@ struct FolderView: View {
                     snippets: snippets,
                     clipboardManager: clipboardManager,
                     onHoverChange: { hovering in
-                        flyoutHovered = hovering
+                        isFlyoutHovered = hovering
+                        if !hovering {
+                            // Hide flyout when mouse leaves
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                if !isHovered && !isFlyoutHovered {
+                                    showFlyout = false
+                                }
+                            }
+                        }
                     },
-                    onClose: { 
+                    onClose: {
                         showFlyout = false
-                        flyoutHovered = false
                     }
                 )
-                .onAppear {
-                    print("✅ FLYOUT APPEARED for folder: \(folder.name)")
-                    flyoutHovered = true
-                }
-                .onDisappear {
-                    flyoutHovered = false
-                }
             }
             .contextMenu {
                 Button("Add Snippet from Clipboard") {
@@ -128,110 +121,14 @@ struct FolderView: View {
                         onDismiss: {}
                     )
                 }
-                Button("Change Icon...") {
-                    changeIcon()
+                Divider()
+                Button("Export Folder...") {
+                    clipboardManager.exportFolder(folder)
                 }
                 Divider()
                 Button("Delete Folder") {
                     deleteFolder()
                 }
-            }
-
-            // Snippets in folder (when expanded)
-            if folder.isExpanded {
-                ForEach(snippets) { snippet in
-                    SnippetItemRow(
-                        snippet: snippet,
-                        isHovered: hoveredSnippetId == snippet.id,
-                        onCopy: {
-                            clipboardManager.copyToClipboard(snippet.content)
-                        },
-                        onEdit: {
-                            EditSnippetWindowManager.shared.showDialog(
-                                snippet: snippet,
-                                clipboardManager: clipboardManager,
-                                onDismiss: {}
-                            )
-                        },
-                        onDelete: {
-                            clipboardManager.deleteSnippet(snippet)
-                        }
-                    )
-                    .onHover { isHovered in
-                        hoveredSnippetId = isHovered ? snippet.id : nil
-                    }
-                    .contextMenu {
-                        Button("Paste Immediately") {
-                            clipboardManager.copyToClipboard(snippet.content)
-                            // Simulate paste command (Cmd+V)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                pasteToActiveApp()
-                            }
-                        }
-                        Divider()
-                        Button("Copy to Clipboard") {
-                            clipboardManager.copyToClipboard(snippet.content)
-                        }
-                        Button("Edit...") {
-                            EditSnippetWindowManager.shared.showDialog(
-                                snippet: snippet,
-                                clipboardManager: clipboardManager,
-                                onDismiss: {}
-                            )
-                        }
-                        Button("Duplicate") {
-                            duplicateSnippet(snippet)
-                        }
-                        Divider()
-                        Button("Delete") {
-                            clipboardManager.deleteSnippet(snippet)
-                        }
-                    }
-                }
-
-                // Quick add snippet divider
-                if !snippets.isEmpty {
-                    Divider()
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                }
-
-                // Quick add button
-                Button(action: {
-                    addSnippetToFolder()
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle")
-                            .foregroundColor(.secondary)
-                        Text("Add snippet here...")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-            }
-        }
-    }
-
-    private func changeIcon() {
-        let alert = NSAlert()
-        alert.messageText = "Change Folder Icon"
-        alert.informativeText = "Enter a new icon (emoji) for '\(folder.name)':"
-        alert.addButton(withTitle: "Change")
-        alert.addButton(withTitle: "Cancel")
-
-        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
-        textField.stringValue = folder.icon
-        alert.accessoryView = textField
-
-        if alert.runModal() == .alertFirstButtonReturn {
-            let newIcon = textField.stringValue
-            if !newIcon.isEmpty {
-                var updatedFolder = folder
-                updatedFolder.changeIcon(to: newIcon)
-                clipboardManager.updateFolder(updatedFolder)
             }
         }
     }
@@ -244,8 +141,17 @@ struct FolderView: View {
         alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .warning
 
-        if alert.runModal() == .alertFirstButtonReturn {
-            clipboardManager.deleteFolder(folder)
+        // Ensure alert appears in front
+        if let window = NSApp.keyWindow ?? NSApp.windows.first {
+            alert.beginSheetModal(for: window) { response in
+                if response == .alertFirstButtonReturn {
+                    clipboardManager.deleteFolder(folder)
+                }
+            }
+        } else {
+            if alert.runModal() == .alertFirstButtonReturn {
+                clipboardManager.deleteFolder(folder)
+            }
         }
     }
 
@@ -285,10 +191,20 @@ struct FolderView: View {
                 alert.addButton(withTitle: "Cancel")
                 alert.alertStyle = .informational
                 
-                if alert.runModal() == .alertFirstButtonReturn {
-                    // Open System Settings to Accessibility
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                        NSWorkspace.shared.open(url)
+                // Ensure alert appears in front
+                if let window = NSApp.keyWindow ?? NSApp.windows.first {
+                    alert.beginSheetModal(for: window) { response in
+                        if response == .alertFirstButtonReturn {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                } else {
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                            NSWorkspace.shared.open(url)
+                        }
                     }
                 }
             }
@@ -309,6 +225,44 @@ struct FolderView: View {
         // Post the events
         keyVDown?.post(tap: .cghidEventTap)
         keyVUp?.post(tap: .cghidEventTap)
+    }
+    
+    private func applyFlyoutAppearance() {
+        // Find the flyout popover window among all windows
+        // The flyout should be the most recently created popover
+        for window in NSApp.windows {
+            // Check if this is a popover window that's not the main menubar popover
+            if let popoverWindow = window as? NSPanel,
+               popoverWindow.styleMask.contains(.nonactivatingPanel),
+               window.isVisible {
+                
+                // Make the flyout fully opaque regardless of main window opacity
+                popoverWindow.isOpaque = true
+                popoverWindow.alphaValue = 1.0
+                popoverWindow.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(1.0)
+                
+                // Apply proper appearance based on theme
+                let theme = UserDefaults.standard.string(forKey: "theme") ?? "auto"
+                switch theme {
+                case "light":
+                    popoverWindow.appearance = NSAppearance(named: .aqua)
+                case "dark":
+                    popoverWindow.appearance = NSAppearance(named: .darkAqua)
+                default: // "auto"
+                    popoverWindow.appearance = nil // Use system default
+                }
+                
+                // Ensure proper shadow and corner radius
+                popoverWindow.hasShadow = true
+                if let contentView = popoverWindow.contentView {
+                    contentView.wantsLayer = true
+                    contentView.layer?.cornerRadius = 3.0
+                    contentView.layer?.masksToBounds = true
+                }
+                
+                break // Only apply to the first matching window
+            }
+        }
     }
 }
 
@@ -395,7 +349,13 @@ struct FolderSnippetsFlyout: View {
             }
         }
         .frame(minWidth: 300, maxWidth: 400)
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(
+            ZStack {
+                // Ensure solid background to prevent transparency issues
+                Color(NSColor.windowBackgroundColor)
+                    .opacity(1.0)
+            }
+        )
         .onHover { hovering in
             onHoverChange(hovering)
         }
@@ -415,10 +375,20 @@ struct FolderSnippetsFlyout: View {
                 alert.addButton(withTitle: "Cancel")
                 alert.alertStyle = .informational
                 
-                if alert.runModal() == .alertFirstButtonReturn {
-                    // Open System Settings to Accessibility
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                        NSWorkspace.shared.open(url)
+                // Ensure alert appears in front
+                if let window = NSApp.keyWindow ?? NSApp.windows.first {
+                    alert.beginSheetModal(for: window) { response in
+                        if response == .alertFirstButtonReturn {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                } else {
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                            NSWorkspace.shared.open(url)
+                        }
                     }
                 }
             }
@@ -452,10 +422,12 @@ struct FlyoutSnippetRow: View {
                 Image(systemName: "star.fill")
                     .font(.system(size: 11))
                     .foregroundColor(.yellow)
+                    .fixedSize()
             } else {
                 Image(systemName: "doc.text")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
+                    .fixedSize()
             }
             
             // Content
@@ -463,11 +435,13 @@ struct FlyoutSnippetRow: View {
                 Text(snippet.name)
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
+                    .truncationMode(.tail)
                 
                 Text(snippet.preview)
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .truncationMode(.tail)
                 
                 if !snippet.tags.isEmpty {
                     HStack(spacing: 3) {
@@ -484,14 +458,16 @@ struct FlyoutSnippetRow: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer()
+            Spacer(minLength: 4)
             
             // Hover action button
             if isHovered {
                 Image(systemName: "arrow.right.circle.fill")
                     .font(.system(size: 16))
                     .foregroundColor(.accentColor)
+                    .fixedSize()
             }
         }
         .padding(.horizontal, 12)

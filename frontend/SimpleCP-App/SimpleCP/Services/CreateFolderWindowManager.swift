@@ -75,7 +75,12 @@ struct CreateFolderDialogContent: View {
     let onDismiss: () -> Void
     
     @State private var folderName: String = ""
+    @State private var errorMessage: String? = nil
     @FocusState private var isTextFieldFocused: Bool
+    
+    private var folderExists: Bool {
+        clipboardManager.folders.contains { $0.name.lowercased() == folderName.lowercased() }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -103,6 +108,20 @@ struct CreateFolderDialogContent: View {
                     .onSubmit {
                         createFolder()
                     }
+                    .onChange(of: folderName) { _ in
+                        // Clear error when user types
+                        errorMessage = nil
+                    }
+                
+                if let error = errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                } else if folderExists {
+                    Text("A folder with this name already exists")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
             }
             
             Spacer()
@@ -122,7 +141,7 @@ struct CreateFolderDialogContent: View {
                     createFolder()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(folderName.isEmpty)
+                .disabled(folderName.isEmpty || folderExists)
             }
         }
         .padding(16)
@@ -137,10 +156,16 @@ struct CreateFolderDialogContent: View {
     }
     
     private func createFolder() {
-        if !folderName.isEmpty {
-            _ = clipboardManager.createFolder(name: folderName)
-            print("✅ Folder created: \(folderName)")
+        guard !folderName.isEmpty else { return }
+        
+        // Check for duplicate folder names (case-insensitive)
+        if folderExists {
+            errorMessage = "A folder with this name already exists"
+            return
         }
+        
+        _ = clipboardManager.createFolder(name: folderName)
+        print("✅ Folder created: \(folderName)")
         onDismiss()
     }
 }

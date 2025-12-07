@@ -15,16 +15,14 @@ struct SettingsWindow: View {
     @AppStorage("windowSize") private var windowSize = "normal"
     @AppStorage("maxHistorySize") private var maxHistorySize = 50
     @AppStorage("theme") private var theme = "auto"
-    @AppStorage("windowOpacity") private var windowOpacity = 0.9
+    @AppStorage("windowOpacity") private var windowOpacity = 0.95
     @AppStorage("interfaceFont") private var interfaceFont = "SF Pro"
     @AppStorage("interfaceFontSize") private var interfaceFontSize = 13.0
     @AppStorage("clipFont") private var clipFont = "SF Mono"
     @AppStorage("clipFontSize") private var clipFontSize = 12.0
-    @AppStorage("showFolderIcons") private var showFolderIcons = true
-    @AppStorage("animateFolderExpand") private var animateFolderExpand = true
     @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
     @AppStorage("apiHost") private var apiHost = "localhost"
-    @AppStorage("apiPort") private var apiPort = 8000
+    @AppStorage("apiPort") private var apiPort = 49917
 
     enum Tab {
         case general, appearance, clips, snippets
@@ -94,8 +92,6 @@ struct SettingsWindow: View {
                             interfaceFontSize: $interfaceFontSize,
                             clipFont: $clipFont,
                             clipFontSize: $clipFontSize,
-                            showFolderIcons: $showFolderIcons,
-                            animateFolderExpand: $animateFolderExpand,
                             showSnippetPreviews: $showSnippetPreviews
                         )
                     case .clips:
@@ -135,11 +131,9 @@ struct SettingsWindow: View {
         windowSize = "normal"
         maxHistorySize = 50
         theme = "auto"
-        windowOpacity = 0.9
+        windowOpacity = 0.95
         interfaceFontSize = 13.0
         clipFontSize = 12.0
-        showFolderIcons = true
-        animateFolderExpand = true
         showSnippetPreviews = false
     }
 }

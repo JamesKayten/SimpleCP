@@ -20,7 +20,7 @@ struct SnippetFolder: Identifiable, Codable, Hashable {
         id: UUID = UUID(),
         name: String,
         icon: String = "📁",
-        isExpanded: Bool = true,
+        isExpanded: Bool = false,
         order: Int = 0,
         createdAt: Date = Date(),
         modifiedAt: Date = Date()
