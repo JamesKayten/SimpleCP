@@ -53,8 +53,9 @@ PROJECT_EMOJI=$(echo "$PROJECT_INFO" | cut -d'|' -f2)
 
 echo -e "${BLUE}${PROJECT_EMOJI} Project type: ${GREEN}${PROJECT_TYPE}${NC}"
 
-# Get current version
-CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+# Get current version (highest semver tag, not just reachable from HEAD)
+CURRENT_VERSION=$(git tag -l 'v*' | sort -V | tail -1)
+CURRENT_VERSION=${CURRENT_VERSION:-v0.0.0}
 echo -e "Current version: ${GREEN}${CURRENT_VERSION}${NC}"
 
 # Check for uncommitted changes
