@@ -4,48 +4,25 @@
 # Usage: ./scripts/watch-all.sh [interval_seconds]
 # Default interval: 30 seconds
 
-# ANSI color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-CYAN='\033[0;36m'
-BLUE='\033[0;34m'
-BOLD='\033[1m'
-RESET='\033[0m'
+# Load common watcher functions
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/lib/watcher-common.sh"
 
 INTERVAL=${1:-30}
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
-REPO_NAME=$(basename "$REPO_ROOT" 2>/dev/null || echo "UNKNOWN")
+REPO_ROOT=$(get_repo_root)
+REPO_NAME=$(get_repo_name)
 BRANCH_PATTERN="claude/*"
 BOARD_FILE="docs/BOARD.md"
 STATE_FILE="/tmp/branch-watcher-${REPO_NAME}.state"
 PENDING_FILE="/tmp/branch-watcher-${REPO_NAME}.pending"
 
-# Audio alerts (macOS)
+# Audio alerts - use common library functions
 play_branch_alert() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        afplay /System/Library/Sounds/Hero.aiff 2>/dev/null &
-    else
-        echo -e "\a"
-    fi
+    play_hero_sound
 }
 
 play_board_alert() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
-        sleep 0.3
-        afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
-    else
-        echo -e "\a"
-    fi
-}
-
-show_notification() {
-    local title="$1"
-    local message="$2"
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        osascript -e "display notification \"$message\" with title \"$title\"" 2>/dev/null
-    fi
+    play_glass_sound
 }
 
 clear

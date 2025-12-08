@@ -163,10 +163,19 @@ cp .env.example .env
 
 ### Run SimpleCP
 
+**For development (API server only):**
 ```bash
-# Start daemon (clipboard monitoring + API server)
+cd backend
+python3 main.py
+```
+
+**For full daemon (clipboard monitoring + API server):**
+```bash
+cd backend
 python3 daemon.py
 ```
+
+The Swift frontend app automatically manages the backend.
 
 You'll see:
 ```
@@ -379,33 +388,29 @@ Automated testing on every commit:
 
 ```
 SimpleCP/
-├── api/                        # REST API
-│   ├── server.py              # FastAPI server (monitoring integrated)
-│   ├── endpoints.py           # API routes
-│   └── models.py              # Pydantic models
-├── stores/                    # Data storage
-│   ├── clipboard_item.py      # Clipboard item model
-│   ├── history_store.py       # History management
-│   └── snippet_store.py       # Snippet organization
+├── backend/                   # Python backend
+│   ├── api/                  # REST API
+│   │   ├── server.py        # FastAPI server
+│   │   ├── endpoints.py     # API routes
+│   │   └── models.py        # Pydantic models
+│   ├── stores/              # Data storage
+│   │   ├── clipboard_item.py
+│   │   ├── history_store.py
+│   │   └── snippet_store.py
+│   ├── main.py              # Entry point (API only)
+│   ├── daemon.py            # Full daemon (API + clipboard monitor)
+│   ├── clipboard_manager.py # Core clipboard manager
+│   ├── settings.py          # Configuration
+│   └── logger.py            # Logging
+├── frontend/                  # Swift macOS app
+│   └── SimpleCP-App/        # Xcode project
 ├── tests/                     # Test suite
-│   ├── unit/                 # Unit tests
-│   ├── integration/          # Integration tests
-│   └── performance/          # Performance tests
+│   ├── unit/                # Unit tests
+│   ├── integration/         # Integration tests
+│   └── performance/         # Performance tests
+├── scripts/                   # Build & utility scripts
 ├── docs/                      # Documentation
-│   ├── USER_GUIDE.md         # User manual
-│   ├── API.md                # API reference
-│   ├── TESTING.md            # Testing guide
-│   ├── TROUBLESHOOTING.md    # Common issues
-│   └── MONITORING.md         # Monitoring setup
-├── .github/workflows/         # CI/CD pipeline
-├── clipboard_manager.py       # Core manager
-├── daemon.py                  # Background daemon
-├── logger.py                  # Logging infrastructure
-├── monitoring.py              # Monitoring & analytics
-├── settings.py                # Configuration management
-├── QUICKSTART.md             # Quick start guide
-├── CONTRIBUTING.md           # Contributing guidelines
-└── requirements.txt          # Python dependencies
+└── version.py                # Version info
 ```
 
 ---
