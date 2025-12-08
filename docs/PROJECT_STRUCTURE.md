@@ -35,18 +35,12 @@ SimpleCP/
 │   │   ├── history_store.py     # History management
 │   │   └── snippet_store.py     # Snippet management
 │   ├── tests/                   # Backend-specific tests
-│   ├── ui/                      # UI components (minimal)
-│   │   └── menu_builder.py
 │   ├── clipboard_manager.py     # Core clipboard logic
-│   ├── config.py                # Configuration module
-│   ├── daemon.py                # Background daemon service
-│   ├── keyboard_shortcuts.py    # Keyboard handling
-│   ├── logging_config.py        # Logging configuration
-│   ├── logger.py                # Logger setup
-│   ├── main.py                  # Main entry point
-│   ├── monitoring.py            # Monitoring module
-│   ├── settings.py              # Settings module
-│   ├── version.py               # Version info
+│   ├── daemon.py                # Background daemon (API + clipboard monitor)
+│   ├── logger.py                # Logging infrastructure
+│   ├── main.py                  # Entry point (API only)
+│   ├── monitoring_core.py       # Monitoring and analytics
+│   ├── settings.py              # Configuration management
 │   ├── requirements.txt         # Backend dependencies
 │   └── requirements-dev.txt     # Dev dependencies
 │
@@ -94,9 +88,9 @@ SimpleCP/
 │   ├── release.sh               # Release script
 │   ├── ai-tag-release.sh        # AI-assisted releases
 │   ├── watch-build.sh           # Build watcher
-│   ├── watch-branches.sh        # Git branch watcher
-│   ├── watch-board.sh           # BOARD.md watcher
-│   ├── watch-all.sh             # Combined watcher
+│   ├── watch-all.sh             # Combined branch + board watcher
+│   ├── lib/                     # Shared script libraries
+│   │   └── watcher-common.sh   # Common watcher functions
 │   ├── aim-launcher.sh          # AIM launcher
 │   ├── tcc-file-compliance.sh   # TCC compliance
 │   ├── tcc-validate-branch.sh   # Branch validation
