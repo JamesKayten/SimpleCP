@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import ApplicationServices  // For AXIsProcessTrusted
+import Carbon.HIToolbox  // For kVK_ANSI_V key code
 
 struct RecentClipsColumn: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
@@ -103,7 +105,7 @@ struct RecentClipsColumn: View {
                             isHovered: hoveredClipId == clip.id,
                             isSelected: selectedClipIds.contains(clip.id),
                             onCopy: {
-                                clipboardManager.copyToClipboard(clip.content)
+                                copyAndRestoreFocus(clip.content)
                             },
                             onToggleSelect: {
                                 if selectedClipIds.contains(clip.id) {
@@ -178,7 +180,8 @@ struct RecentClipsColumn: View {
                                 selectedClipIds: $selectedClipIds,
                                 onSaveAsSnippet: onSaveAsSnippet,
                                 clipboardManager: clipboardManager,
-                                onPasteToActiveApp: pasteToActiveApp
+                                onPasteToActiveApp: pasteToActiveApp,
+                                onCopyAndRestoreFocus: copyAndRestoreFocus
                             )
                         }
                     }
@@ -208,6 +211,20 @@ struct RecentClipsColumn: View {
     
     // MARK: - Actions
     
+    private func checkAccessibilityPermissions() -> Bool {
+        // Use AXIsProcessTrusted - the official and reliable permission check
+        // Note: This may return false immediately after granting in System Settings
+        // until the app is restarted. That's a macOS limitation we document.
+        let trusted = AXIsProcessTrusted()
+        
+        if !trusted {
+            print("⚠️ Accessibility permission not granted (AXIsProcessTrusted = false)")
+            print("ℹ️ If you just granted permission, restart SimpleCP (⌘Q)")
+        }
+        
+        return trusted
+    }
+    
     private func deleteSelectedClips() {
         guard !selectedClipIds.isEmpty else { return }
         
@@ -220,47 +237,136 @@ struct RecentClipsColumn: View {
         selectedClipIds.removeAll()
     }
     
-    private func pasteToActiveApp() {
-        // Check if we have accessibility permissions
-        let trusted = AXIsProcessTrusted()
+    private func copyAndRestoreFocus(_ content: String) {
+        // Copy the content
+        clipboardManager.copyToClipboard(content)
         
-        if !trusted {
-            // Show alert and open System Settings
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = "Accessibility Permission Required"
-                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
-                alert.addButton(withTitle: "Open Settings")
-                alert.addButton(withTitle: "Cancel")
-                alert.alertStyle = .informational
-                
-                // Ensure alert appears in front
-                if let window = NSApp.keyWindow ?? NSApp.windows.first {
-                    alert.beginSheetModal(for: window) { response in
-                        if response == .alertFirstButtonReturn {
-                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }
-                    }
-                } else {
-                    if alert.runModal() == .alertFirstButtonReturn {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-            }
+        // Restore focus to the previously active app
+        restoreFocusToPreviousApp()
+    }
+    
+    private func restoreFocusToPreviousApp() {
+        // Get the previously active app that was captured when SimpleCP opened
+        guard let targetApp = MenuBarManager.shared.previouslyActiveApp,
+              !targetApp.isTerminated else {
+            print("⚠️ No valid target app to restore focus to")
             return
         }
         
-        let source = CGEventSource(stateID: .hidSystemState)
-        let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
-        keyVDown?.flags = .maskCommand
-        let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
-        keyVUp?.flags = .maskCommand
-        keyVDown?.post(tap: .cghidEventTap)
-        keyVUp?.post(tap: .cghidEventTap)
+        // Small delay to ensure clipboard is updated
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            targetApp.activate(options: [.activateIgnoringOtherApps])
+            print("✅ Restored focus to: \(targetApp.localizedName ?? "unknown")")
+        }
+    }
+    
+    private func pasteToActiveApp() {
+        // TEMPORARY: Skip permission check and just try to paste
+        // If permissions are missing, executePaste() will fail gracefully
+        print("🔵 Attempting paste (permission check bypassed for testing)")
+        
+        // STEP 2: Get the previously active application that was captured when SimpleCP opened
+        let targetApp = MenuBarManager.shared.previouslyActiveApp
+        
+        if let app = targetApp {
+            print("🎯 Target app (captured): \(app.localizedName ?? "unknown")")
+        } else {
+            print("⚠️ No target app captured - will try to find frontmost app")
+        }
+        
+        // STEP 3: Hide the SimpleCP window first
+        MenuBarManager.shared.hidePopover()
+        
+        // STEP 4: Give a moment for the window to hide
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // Activate the target app to restore focus
+            if let app = targetApp, !app.isTerminated {
+                app.activate(options: [.activateIgnoringOtherApps])
+                print("✅ Activated: \(app.localizedName ?? "unknown")")
+                
+                // Wait for focus to fully shift - increased delay for apps like Pages
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    self.executePaste()
+                }
+            } else {
+                // Fallback: try to find any frontmost app
+                let workspace = NSWorkspace.shared
+                if let frontmost = workspace.runningApplications.first(where: { 
+                    $0.activationPolicy == .regular && 
+                    $0.bundleIdentifier != Bundle.main.bundleIdentifier &&
+                    !$0.isTerminated
+                }) {
+                    frontmost.activate(options: [.activateIgnoringOtherApps])
+                    print("✅ Activated (fallback): \(frontmost.localizedName ?? "unknown")")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        self.executePaste()
+                    }
+                } else {
+                    print("❌ No app found to paste to")
+                    self.executePaste() // Try anyway
+                }
+            }
+        }
+    }
+    
+    private func executePaste() {
+        // Use CGEvents for native keyboard simulation (requires accessibility permission)
+        guard let source = CGEventSource(stateID: .hidSystemState) else {
+            print("❌ Failed to create CGEventSource")
+            showPermissionDeniedAlert()
+            return
+        }
+
+        // V key = 0x09 (kVK_ANSI_V)
+        let keyCode: CGKeyCode = 0x09
+
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else {
+            print("❌ Failed to create CGEvents")
+            showPermissionDeniedAlert()
+            return
+        }
+
+        // Add Command modifier
+        keyDown.flags = .maskCommand
+        keyUp.flags = .maskCommand
+
+        // Post the events
+        keyDown.post(tap: .cghidEventTap)
+        keyUp.post(tap: .cghidEventTap)
+
+        print("⌨️ Executed paste via CGEvents (⌘V)")
+    }
+    
+    private func showPermissionDeniedAlert() {
+        DispatchQueue.main.async {
+            let alert = NSAlert()
+            alert.messageText = "Accessibility Permission Required"
+            alert.informativeText = """
+            The "Paste Immediately" feature requires Accessibility permission to simulate keyboard input.
+            
+            To enable this feature:
+            
+            1. Click "Open System Settings" below
+            2. Find "SimpleCP" in the Accessibility list
+            3. Toggle the switch ON
+            4. **Quit and restart SimpleCP** (⌘Q then reopen)
+            
+            Note: This is optional. You can still copy clips normally without this permission.
+            """
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "Open System Settings")
+            alert.addButton(withTitle: "Not Now")
+            
+            if let icon = NSImage(systemSymbolName: "hand.tap.fill", accessibilityDescription: "Permission") {
+                alert.icon = icon
+            }
+            
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                AccessibilityPermissionManager.shared.openAccessibilitySettings()
+            }
+        }
     }
 }
 
@@ -446,6 +552,7 @@ struct HistoryGroupDisclosure: View {
     let onSaveAsSnippet: (ClipItem) -> Void
     let clipboardManager: ClipboardManager
     let onPasteToActiveApp: () -> Void
+    let onCopyAndRestoreFocus: (String) -> Void
     
     @State private var isHovered: Bool = false
     @State private var showFlyout: Bool = false
@@ -537,7 +644,7 @@ struct HistoryGroupDisclosure: View {
                             isHovered: hoveredClipId == clip.id,
                             isSelected: selectedClipIds.contains(clip.id),
                             onCopy: {
-                                clipboardManager.copyToClipboard(clip.content)
+                                onCopyAndRestoreFocus(clip.content)
                             },
                             onToggleSelect: {
                                 if selectedClipIds.contains(clip.id) {

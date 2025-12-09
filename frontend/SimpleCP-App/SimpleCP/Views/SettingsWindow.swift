@@ -31,7 +31,7 @@ struct SettingsWindow: View {
     @AppStorage("apiPort") private var apiPort = 49917
 
     enum Tab {
-        case general, appearance, clips
+        case general, appearance, clips, permissions
     }
 
     @State private var selectedTab: Tab = .general
@@ -62,6 +62,14 @@ struct SettingsWindow: View {
                     isSelected: selectedTab == .clips
                 ) {
                     selectedTab = .clips
+                }
+                
+                TabButton(
+                    title: "Permissions",
+                    icon: "lock.shield",
+                    isSelected: selectedTab == .permissions
+                ) {
+                    selectedTab = .permissions
                 }
             }
             .padding(.horizontal, 12)
@@ -98,6 +106,8 @@ struct SettingsWindow: View {
                             clipPreviewDelay: $clipPreviewDelay,
                             folderFlyoutDelay: $folderFlyoutDelay
                         )
+                    case .permissions:
+                        PermissionsSettingsView()
                     }
                 }
                 .padding(10)

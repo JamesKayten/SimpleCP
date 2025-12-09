@@ -266,6 +266,8 @@ struct FolderSnippetsFlyout: View {
                                 },
                                 onCopy: {
                                     clipboardManager.copyToClipboard(snippet.content)
+                                    // Restore focus to the previously active app
+                                    restoreFocusToPreviousApp()
                                 },
                                 onEdit: {
                                     EditSnippetWindowManager.shared.showDialog(
@@ -297,6 +299,21 @@ struct FolderSnippetsFlyout: View {
         )
         .onHover { hovering in
             onHoverChange(hovering)
+        }
+    }
+    
+    private func restoreFocusToPreviousApp() {
+        // Get the previously active app that was captured when SimpleCP opened
+        guard let targetApp = MenuBarManager.shared.previouslyActiveApp,
+              !targetApp.isTerminated else {
+            print("⚠️ No valid target app to restore focus to")
+            return
+        }
+        
+        // Small delay to ensure clipboard is updated
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            targetApp.activate(options: [.activateIgnoringOtherApps])
+            print("✅ Restored focus to: \(targetApp.localizedName ?? "unknown")")
         }
     }
     

@@ -29,6 +29,11 @@ struct SimpleCPApp: App {
     init() {
         // Check accessibility permissions silently (no prompt)
         checkAccessibilityPermissionsSilent()
+        
+        // Show welcome screen on first launch
+        Task { @MainActor in
+            FirstLaunchManager.shared.showWelcomeIfNeeded()
+        }
     }
     
     private func checkAccessibilityPermissionsSilent() {

@@ -88,8 +88,8 @@ struct SavedSnippetsColumn: View {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     ForEach(sortedFolders) { folder in
                         let folderSnippets = getSnippets(for: folder.id)
-                        // Only show folder if it has snippets (especially during search)
-                        if !folderSnippets.isEmpty {
+                        // Show folder if it has snippets OR if not searching (show empty folders when not searching)
+                        if !folderSnippets.isEmpty || searchText.isEmpty {
                             FolderView(
                                 folder: folder,
                                 snippets: folderSnippets,

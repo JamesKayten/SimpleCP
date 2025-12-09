@@ -26,6 +26,9 @@ struct ContentView: View {
             
             // Main content
             VStack(spacing: 0) {
+                // Accessibility Permission Banner
+                AccessibilityStatusBanner()
+                
                 // Search Bar
                 searchBar
 

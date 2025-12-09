@@ -17,6 +17,16 @@
 		285441422EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 285441412EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md */; };
 		285441442EE5D74D006B8CC9 /* PORT_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 285441432EE5D74D006B8CC9 /* PORT_FIX_DEC7.md */; };
 		285441462EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 285441452EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md */; };
+		2855335A2EE87D4500133AA1 /* MULTI_COPY_SPLIT_PASTE_IMPLEMENTATION.md in Resources */ = {isa = PBXBuildFile; fileRef = 285533592EE87D4500133AA1 /* MULTI_COPY_SPLIT_PASTE_IMPLEMENTATION.md */; };
+		2855335C2EE87E0700133AA1 /* ACCESSIBILITY_PERMISSIONS_IMPROVEMENT.md in Resources */ = {isa = PBXBuildFile; fileRef = 2855335B2EE87E0700133AA1 /* ACCESSIBILITY_PERMISSIONS_IMPROVEMENT.md */; };
+		2855335E2EE87E5500133AA1 /* AccessibilityStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2855335D2EE87E5500133AA1 /* AccessibilityStatusBanner.swift */; };
+		285533602EE87E8300133AA1 /* PermissionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2855335F2EE87E8300133AA1 /* PermissionsSettingsView.swift */; };
+		285533622EE87EC100133AA1 /* FirstLaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285533612EE87EC100133AA1 /* FirstLaunchManager.swift */; };
+		285533642EE87F0800133AA1 /* ACCESSIBILITY_PERMISSIONS_COMPLETE.md in Resources */ = {isa = PBXBuildFile; fileRef = 285533632EE87F0800133AA1 /* ACCESSIBILITY_PERMISSIONS_COMPLETE.md */; };
+		285533662EE880A200133AA1 /* PASTE_IMMEDIATELY_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 285533652EE880A200133AA1 /* PASTE_IMMEDIATELY_FIX.md */; };
+		285533682EE8820700133AA1 /* ACCESSIBILITY_PERMISSION_DETECTION_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 285533672EE8820700133AA1 /* ACCESSIBILITY_PERMISSION_DETECTION_FIX.md */; };
+		2855336A2EE8822500133AA1 /* PERMISSION_DETECTION_WORKAROUND.md in Resources */ = {isa = PBXBuildFile; fileRef = 285533692EE8822500133AA1 /* PERMISSION_DETECTION_WORKAROUND.md */; };
+		2855336C2EE8846900133AA1 /* PASTE_FOCUS_MANAGEMENT_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 2855336B2EE8846900133AA1 /* PASTE_FOCUS_MANAGEMENT_FIX.md */; };
 		287378EF2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */; };
 		287378F12EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */; };
 		287378F32EE4ACA5003DC457 /* check_backend_structure.sh in Resources */ = {isa = PBXBuildFile; fileRef = 287378F22EE4ACA5003DC457 /* check_backend_structure.sh */; };
@@ -46,6 +56,8 @@
 		28CDEE2D2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 28CDEE2C2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md */; };
 		28CDEE2F2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 28CDEE2E2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md */; };
 		28CDEE312EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 28CDEE302EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md */; };
+		28DD795C2EE88EDF00D86615 /* ACCESSIBILITY_PERMISSION_FIX_FINAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 28DD795B2EE88EDF00D86615 /* ACCESSIBILITY_PERMISSION_FIX_FINAL.md */; };
+		28DD795E2EE8910B00D86615 /* PERMISSION_UI_FIX_COMPLETE.md in Resources */ = {isa = PBXBuildFile; fileRef = 28DD795D2EE8910B00D86615 /* PERMISSION_UI_FIX_COMPLETE.md */; };
 		28F1D7842EE48FFA0088E267 /* diagnose_backend.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */; };
 		28F1D7862EE491210088E267 /* clear_sandbox.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28F1D7852EE491210088E267 /* clear_sandbox.sh */; };
 		F0000001230001 /* SimpleCPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000001230000 /* SimpleCPApp.swift */; };
@@ -96,6 +108,16 @@
 		285441412EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CRASH_FIX_DEC7.md; sourceTree = "<group>"; };
 		285441432EE5D74D006B8CC9 /* PORT_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PORT_FIX_DEC7.md; sourceTree = "<group>"; };
 		285441452EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SAVE_SNIPPET_FIX_DEC7.md; sourceTree = "<group>"; };
+		285533592EE87D4500133AA1 /* MULTI_COPY_SPLIT_PASTE_IMPLEMENTATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MULTI_COPY_SPLIT_PASTE_IMPLEMENTATION.md; sourceTree = "<group>"; };
+		2855335B2EE87E0700133AA1 /* ACCESSIBILITY_PERMISSIONS_IMPROVEMENT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ACCESSIBILITY_PERMISSIONS_IMPROVEMENT.md; sourceTree = "<group>"; };
+		2855335D2EE87E5500133AA1 /* AccessibilityStatusBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityStatusBanner.swift; sourceTree = "<group>"; };
+		2855335F2EE87E8300133AA1 /* PermissionsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsSettingsView.swift; sourceTree = "<group>"; };
+		285533612EE87EC100133AA1 /* FirstLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstLaunchManager.swift; sourceTree = "<group>"; };
+		285533632EE87F0800133AA1 /* ACCESSIBILITY_PERMISSIONS_COMPLETE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ACCESSIBILITY_PERMISSIONS_COMPLETE.md; sourceTree = "<group>"; };
+		285533652EE880A200133AA1 /* PASTE_IMMEDIATELY_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PASTE_IMMEDIATELY_FIX.md; sourceTree = "<group>"; };
+		285533672EE8820700133AA1 /* ACCESSIBILITY_PERMISSION_DETECTION_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ACCESSIBILITY_PERMISSION_DETECTION_FIX.md; sourceTree = "<group>"; };
+		285533692EE8822500133AA1 /* PERMISSION_DETECTION_WORKAROUND.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PERMISSION_DETECTION_WORKAROUND.md; sourceTree = "<group>"; };
+		2855336B2EE8846900133AA1 /* PASTE_FOCUS_MANAGEMENT_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PASTE_FOCUS_MANAGEMENT_FIX.md; sourceTree = "<group>"; };
 		287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_STARTUP_FIX.md; sourceTree = "<group>"; };
 		287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_STATUS_REPORT.md; sourceTree = "<group>"; };
 		287378F22EE4ACA5003DC457 /* check_backend_structure.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_backend_structure.sh; sourceTree = "<group>"; };
@@ -125,6 +147,8 @@
 		28CDEE2C2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODE_CLEANUP_DEC7.md; sourceTree = "<group>"; };
 		28CDEE2E2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION_ERRORS_DEC7.md; sourceTree = "<group>"; };
 		28CDEE302EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_STATUS_REPORT_FINAL.md; sourceTree = "<group>"; };
+		28DD795B2EE88EDF00D86615 /* ACCESSIBILITY_PERMISSION_FIX_FINAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ACCESSIBILITY_PERMISSION_FIX_FINAL.md; sourceTree = "<group>"; };
+		28DD795D2EE8910B00D86615 /* PERMISSION_UI_FIX_COMPLETE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PERMISSION_UI_FIX_COMPLETE.md; sourceTree = "<group>"; };
 		28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = diagnose_backend.sh; sourceTree = "<group>"; };
 		28F1D7852EE491210088E267 /* clear_sandbox.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clear_sandbox.sh; sourceTree = "<group>"; };
 		F0000000100000 /* SimpleCP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleCP.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -243,6 +267,18 @@
 				285441432EE5D74D006B8CC9 /* PORT_FIX_DEC7.md */,
 				285441452EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md */,
 				28151F122EE62F9200797750 /* BUG_FIXES_DEC7.md */,
+				285533592EE87D4500133AA1 /* MULTI_COPY_SPLIT_PASTE_IMPLEMENTATION.md */,
+				2855335B2EE87E0700133AA1 /* ACCESSIBILITY_PERMISSIONS_IMPROVEMENT.md */,
+				2855335D2EE87E5500133AA1 /* AccessibilityStatusBanner.swift */,
+				2855335F2EE87E8300133AA1 /* PermissionsSettingsView.swift */,
+				285533612EE87EC100133AA1 /* FirstLaunchManager.swift */,
+				285533632EE87F0800133AA1 /* ACCESSIBILITY_PERMISSIONS_COMPLETE.md */,
+				285533652EE880A200133AA1 /* PASTE_IMMEDIATELY_FIX.md */,
+				285533672EE8820700133AA1 /* ACCESSIBILITY_PERMISSION_DETECTION_FIX.md */,
+				285533692EE8822500133AA1 /* PERMISSION_DETECTION_WORKAROUND.md */,
+				2855336B2EE8846900133AA1 /* PASTE_FOCUS_MANAGEMENT_FIX.md */,
+				28DD795B2EE88EDF00D86615 /* ACCESSIBILITY_PERMISSION_FIX_FINAL.md */,
+				28DD795D2EE8910B00D86615 /* PERMISSION_UI_FIX_COMPLETE.md */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -386,12 +422,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				285533682EE8820700133AA1 /* ACCESSIBILITY_PERMISSION_DETECTION_FIX.md in Resources */,
 				2811D1872EE7175200F0E743 /* FLYOUT_DELAY_FEATURE.md in Resources */,
 				2885B67A2EE5D38200048E0A /* BACKEND_API_404_FIX.md in Resources */,
 				2885B6762EE5D05500048E0A /* make_scripts_executable.sh in Resources */,
+				28DD795E2EE8910B00D86615 /* PERMISSION_UI_FIX_COMPLETE.md in Resources */,
 				287378F12EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md in Resources */,
 				28CDEE2D2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md in Resources */,
 				28B7BC7E2EE4B644007A1982 /* CHANGELOG_DEC6.md in Resources */,
+				285533662EE880A200133AA1 /* PASTE_IMMEDIATELY_FIX.md in Resources */,
 				285441442EE5D74D006B8CC9 /* PORT_FIX_DEC7.md in Resources */,
 				28B7BC802EE4B732007A1982 /* kill_backend.sh in Resources */,
 				28CDEE312EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md in Resources */,
@@ -406,9 +445,12 @@
 				287378EF2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md in Resources */,
 				287378F52EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md in Resources */,
 				288341342EE635550087B708 /* FOLDER_SYNC_FIX.md in Resources */,
+				2855336C2EE8846900133AA1 /* PASTE_FOCUS_MANAGEMENT_FIX.md in Resources */,
 				2885B6722EE5D02800048E0A /* check_backend_port_config.sh in Resources */,
 				28862C7E2EE4A53400DD250B /* backend_requirements.txt in Resources */,
+				2855336A2EE8822500133AA1 /* PERMISSION_DETECTION_WORKAROUND.md in Resources */,
 				285441462EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md in Resources */,
+				285533642EE87F0800133AA1 /* ACCESSIBILITY_PERMISSIONS_COMPLETE.md in Resources */,
 				2885B66E2EE5D00600048E0A /* PORT_49917_SETUP.md in Resources */,
 				28B7BC822EE4B757007A1982 /* PORT_CONFLICT_FIX.md in Resources */,
 				287574682EE4FC6D001F548B /* UI_UX_IMPROVEMENTS_DEC6.md in Resources */,
@@ -417,7 +459,10 @@
 				28B7BC7C2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md in Resources */,
 				28F1D7862EE491210088E267 /* clear_sandbox.sh in Resources */,
 				28151F152EE6330F00797750 /* IMMEDIATE_FIX_NEEDED.md in Resources */,
+				2855335C2EE87E0700133AA1 /* ACCESSIBILITY_PERMISSIONS_IMPROVEMENT.md in Resources */,
+				28DD795C2EE88EDF00D86615 /* ACCESSIBILITY_PERMISSION_FIX_FINAL.md in Resources */,
 				28F1D7842EE48FFA0088E267 /* diagnose_backend.sh in Resources */,
+				2855335A2EE87D4500133AA1 /* MULTI_COPY_SPLIT_PASTE_IMPLEMENTATION.md in Resources */,
 				287378F32EE4ACA5003DC457 /* check_backend_structure.sh in Resources */,
 				28134EF72EE7A13F00353A53 /* BACKEND_FIX_INSTRUCTIONS.md in Resources */,
 				2885B66C2EE5CFE000048E0A /* configure_backend_port.sh in Resources */,
@@ -445,6 +490,7 @@
 				F0000011230001 /* ClipboardManager.swift in Sources */,
 				F0000012230001 /* AppError.swift in Sources */,
 				F0000013230001 /* AppState.swift in Sources */,
+				2855335E2EE87E5500133AA1 /* AccessibilityStatusBanner.swift in Sources */,
 				28B97A252EE5E76A00E239EF /* WindowConfiguration.swift in Sources */,
 				F0000014230001 /* ClipItem.swift in Sources */,
 				F0000015230001 /* Snippet.swift in Sources */,
@@ -459,6 +505,7 @@
 				F0000023230001 /* CreateFolderWindowManager.swift in Sources */,
 				F0000024230001 /* EditSnippetWindowManager.swift in Sources */,
 				F0000025230001 /* RenameFolderWindowManager.swift in Sources */,
+				285533622EE87EC100133AA1 /* FirstLaunchManager.swift in Sources */,
 				2885B67E2EE5D44600048E0A /* AccessibilityPermissionManager.swift in Sources */,
 				F0000026230001 /* Constants.swift in Sources */,
 				F0000027230001 /* DateUtils.swift in Sources */,
@@ -469,6 +516,7 @@
 				F0000032230001 /* ContentViewSheets.swift in Sources */,
 				F0000033230001 /* FontPreferences.swift in Sources */,
 				F0000034230001 /* SaveSnippetWindowManager.swift in Sources */,
+				285533602EE87E8300133AA1 /* PermissionsSettingsView.swift in Sources */,
 				287667722EE505B100871224 /* MenuBarManager.swift in Sources */,
 				F0000035230001 /* SettingsViews.swift in Sources */,
 				F0000036230001 /* SettingsWindow.swift in Sources */,
@@ -612,7 +660,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = SFA57Z5S4E;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -638,24 +686,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				AUTOMATION_APPLE_EVENTS = YES;
 				CODE_SIGN_ENTITLEMENTS = SimpleCP/SimpleCP.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = YES;
+				DEVELOPMENT_TEAM = SFA57Z5S4E;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
-				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
-				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SimpleCP/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";

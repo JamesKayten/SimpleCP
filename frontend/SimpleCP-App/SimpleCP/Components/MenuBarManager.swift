@@ -9,14 +9,14 @@ import Foundation
 import SwiftUI
 import AppKit
 
-// Custom NSPanel that can accept keyboard input
+// Custom NSPanel that can accept keyboard input when explicitly made key
 class KeyablePanel: NSPanel {
     override var canBecomeKey: Bool {
-        return true
+        return true  // Allow becoming key when explicitly requested (e.g., for search field)
     }
     
     override var canBecomeMain: Bool {
-        return true
+        return false  // But never become main to avoid taking full focus
     }
 }
 
@@ -27,6 +27,9 @@ class MenuBarManager: NSObject {
     var menuBarWindow: NSPanel?  // Made internal for WindowManager access
     var contentView: AnyView?
     private var eventMonitor: Any?  // Monitor for clicks outside the window
+    
+    // Track the previously active app for "Paste Immediately" feature
+    var previouslyActiveApp: NSRunningApplication?
     
     override init() {
         super.init()
@@ -61,6 +64,10 @@ class MenuBarManager: NSObject {
     
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
+        
+        // CAPTURE THE ACTIVE APP IMMEDIATELY, before any UI changes
+        capturePreviouslyActiveApp()
+        
         if event.type == .rightMouseUp {
             showContextMenu()
         } else {
@@ -121,6 +128,9 @@ class MenuBarManager: NSObject {
     private func showPanel() {
         guard let button = statusItem?.button else { return }
         
+        // IMPORTANT: Capture the frontmost app BEFORE showing our window
+        capturePreviouslyActiveApp()
+        
         // Create window if it doesn't exist
         if menuBarWindow == nil {
             let windowDimensions = currentWindowDimensions
@@ -131,7 +141,7 @@ class MenuBarManager: NSObject {
             
             let panel = KeyablePanel(
                 contentRect: NSRect(x: 0, y: 0, width: windowDimensions.width, height: windowDimensions.height),
-                styleMask: [.borderless],  // Removed .nonactivatingPanel to allow keyboard input
+                styleMask: [.borderless],  // Allow window to become key for keyboard input
                 backing: .buffered,
                 defer: false
             )
@@ -174,9 +184,8 @@ class MenuBarManager: NSObject {
             // Apply appearance settings once after window is fully configured
             applyOpacityAndAppearance()
             
-            // Show the window and make it key so it can accept keyboard input
+            // Show the window without activating the app
             panel.orderFront(nil)
-            panel.makeKey()
             
             // Start monitoring for clicks outside the window
             startMonitoringClicksOutside()
@@ -184,13 +193,10 @@ class MenuBarManager: NSObject {
             // Window already exists, just show it
             // No need to reposition or reconfigure
             menuBarWindow?.orderFront(nil)
-            menuBarWindow?.makeKey()
             
             // Ensure event monitor is running
             startMonitoringClicksOutside()
         }
-        
-        NSApp.activate(ignoringOtherApps: true)
     }
     
     private func applyOpacityAndAppearance() {
@@ -276,7 +282,43 @@ class MenuBarManager: NSObject {
     }
     
     func makeWindowKey() {
+        // Explicitly make the window key to allow keyboard input (e.g., for search field)
+        NSApp.activate(ignoringOtherApps: true)
         menuBarWindow?.makeKey()
+    }
+    
+    func hidePopover() {
+        menuBarWindow?.orderOut(nil)
+        stopMonitoringClicksOutside()
+        
+        // Clear the captured app so it can be captured fresh next time
+        previouslyActiveApp = nil
+        print("🔄 Cleared captured app")
+    }
+    
+    /// Capture the currently active app (for "Paste Immediately" feature)
+    private func capturePreviouslyActiveApp() {
+        // Only capture if we haven't already captured an app (prevent re-capturing)
+        guard previouslyActiveApp == nil || previouslyActiveApp?.isTerminated == true else {
+            print("📱 Already have captured app: \(previouslyActiveApp?.localizedName ?? "unknown")")
+            return
+        }
+        
+        let workspace = NSWorkspace.shared
+        
+        // Find the frontmost regular app that's not SimpleCP
+        previouslyActiveApp = workspace.runningApplications.first { app in
+            app.isActive && 
+            app.activationPolicy == .regular &&
+            app.bundleIdentifier != Bundle.main.bundleIdentifier &&
+            !app.isTerminated
+        }
+        
+        if let app = previouslyActiveApp {
+            print("📱 Captured previous app: \(app.localizedName ?? "unknown")")
+        } else {
+            print("⚠️ No previous app captured")
+        }
     }
     
     func destroyWindow() {
