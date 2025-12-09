@@ -19,6 +19,10 @@ struct RecentClipsColumn: View {
     @State private var expandedGroups: Set<String> = []
     @Environment(\.fontPreferences) private var fontPrefs
 
+    // Configurable paste delays (in seconds)
+    @AppStorage("pasteHideDelay") private var pasteHideDelay = 0.1
+    @AppStorage("pasteActivateDelay") private var pasteActivateDelay = 0.4
+
     private var filteredClips: [ClipItem] {
         if searchText.isEmpty {
             return clipboardManager.clipHistory
@@ -247,45 +251,40 @@ struct RecentClipsColumn: View {
     }
     
     private func pasteToActiveApp() {
-        // TEMPORARY: Skip permission check and just try to paste
-        // If permissions are missing, executePaste() will fail gracefully
-        print("🔵 Attempting paste (permission check bypassed for testing)")
-        
-        // STEP 2: Get the previously active application that was captured when SimpleCP opened
+        // Get the previously active application that was captured when SimpleCP opened
         let targetApp = MenuBarManager.shared.previouslyActiveApp
-        
+
         if let app = targetApp {
-            print("🎯 Target app (captured): \(app.localizedName ?? "unknown")")
+            print("🎯 Target app: \(app.localizedName ?? "unknown")")
         } else {
             print("⚠️ No target app captured - will try to find frontmost app")
         }
-        
-        // STEP 3: Hide the SimpleCP window first
+
+        // Hide the SimpleCP window first
         MenuBarManager.shared.hidePopover()
-        
-        // STEP 4: Give a moment for the window to hide
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+
+        // Give a moment for the window to hide (configurable)
+        DispatchQueue.main.asyncAfter(deadline: .now() + pasteHideDelay) {
             // Activate the target app to restore focus
             if let app = targetApp, !app.isTerminated {
                 app.activate(options: [.activateIgnoringOtherApps])
                 print("✅ Activated: \(app.localizedName ?? "unknown")")
 
-                // Wait for focus to fully shift - increased delay for apps like Pages
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [self] in
-                    print("🔄 About to execute paste...")
+                // Wait for focus to fully shift (configurable)
+                DispatchQueue.main.asyncAfter(deadline: .now() + self.pasteActivateDelay) { [self] in
                     self.executePaste()
                 }
             } else {
                 // Fallback: try to find any frontmost app
                 let workspace = NSWorkspace.shared
-                if let frontmost = workspace.runningApplications.first(where: { 
-                    $0.activationPolicy == .regular && 
+                if let frontmost = workspace.runningApplications.first(where: {
+                    $0.activationPolicy == .regular &&
                     $0.bundleIdentifier != Bundle.main.bundleIdentifier &&
                     !$0.isTerminated
                 }) {
                     frontmost.activate(options: [.activateIgnoringOtherApps])
                     print("✅ Activated (fallback): \(frontmost.localizedName ?? "unknown")")
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + self.pasteActivateDelay) {
                         self.executePaste()
                     }
                 } else {

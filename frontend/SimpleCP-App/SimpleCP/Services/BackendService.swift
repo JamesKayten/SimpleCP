@@ -52,7 +52,8 @@ class BackendService: ObservableObject {
     @Published var dependenciesVerified: Bool = false  // Tracks if dependencies have been verified this session
     
     // Port 49917 derived from "SimpleCP" hash (private port range 49152-65535)
-    @AppStorage("backendPort") var port: Int = 49917
+    // Single source of truth: "apiPort" is used by both BackendService and APIClient
+    @AppStorage("apiPort") var port: Int = 49917
 
     var backendProcess: Process?
     let logger = Logger(subsystem: "com.simplecp.app", category: "backend")
@@ -78,13 +79,8 @@ class BackendService: ObservableObject {
 
     init() {
         logger.info("BackendService initialized with monitoring capabilities")
-        
-        // Synchronize apiPort with backendPort to ensure consistency
-        // APIClient uses "apiPort" while BackendService uses "backendPort"
-        // They must always be the same value
-        UserDefaults.standard.set(self.port, forKey: "apiPort")
-        logger.info("Port configuration synchronized: backendPort=\(self.port), apiPort=\(self.port)")
-        
+        logger.info("Using port: \(self.port)")
+
         startMonitoring()
 
         // Auto-start backend on initialization with proper state management

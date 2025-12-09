@@ -143,16 +143,16 @@ private struct MenuBarSetupView: View {
         AppDelegate.sharedBackendService = backendService
         
         // Kill any process on our port before starting
-        let backendPort = UserDefaults.standard.integer(forKey: "backendPort")
-        let port = backendPort == 0 ? 49917 : backendPort
+        let port = UserDefaults.standard.integer(forKey: "apiPort")
+        let effectivePort = port > 0 ? port : 49917
         
         #if DEBUG
         print("🚀 SimpleCP starting...")
-        print("   Backend port: \(port)")
+        print("   Backend port: \(effectivePort)")
         #endif
-        
-        if backendService.isPortInUse(port) {
-            _ = backendService.killProcessOnPort(port)
+
+        if backendService.isPortInUse(effectivePort) {
+            _ = backendService.killProcessOnPort(effectivePort)
         }
         
         // Register the openSettings action for WindowManager

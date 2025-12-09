@@ -74,7 +74,9 @@ class ClipboardManager: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             
             // Try a quick health check - use IPv4 explicitly to avoid resolution issues
-            if let url = URL(string: "http://127.0.0.1:49917/health"),
+            let port = UserDefaults.standard.integer(forKey: "apiPort")
+            let effectivePort = port > 0 ? port : 49917
+            if let url = URL(string: "http://127.0.0.1:\(effectivePort)/health"),
                let (_, response) = try? await URLSession.shared.data(from: url),
                let httpResponse = response as? HTTPURLResponse,
                httpResponse.statusCode == 200 {
