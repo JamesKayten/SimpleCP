@@ -9,7 +9,7 @@ import SwiftUI
 import ApplicationServices
 
 struct AccessibilityStatusBanner: View {
-    @StateObject private var permissionMonitor = AccessibilityPermissionMonitor.shared
+    @ObservedObject private var permissionMonitor = AccessibilityPermissionMonitor.shared
     @Environment(\.fontPreferences) private var fontPrefs
     
     var body: some View {
@@ -88,12 +88,15 @@ class AccessibilityPermissionMonitor: ObservableObject {
     
     func checkPermission() {
         let wasGranted = isGranted
-        
-        // ONLY use AXIsProcessTrusted - it's the official and reliable check
-        // CGEventSource creation is NOT a permission indicator (always succeeds)
-        // Only actual event POSTING requires permissions
-        isGranted = AXIsProcessTrusted()
-        
+
+        // Use AXIsProcessTrusted as the primary check
+        // Also check if we've successfully pasted before (stored flag)
+        let axTrusted = AXIsProcessTrusted()
+        let hasWorkedBefore = UserDefaults.standard.bool(forKey: "accessibilityHasWorked")
+
+        // Trust either the API or our own successful paste history
+        isGranted = axTrusted || hasWorkedBefore
+
         // If permission was just granted, reset dismissed state
         if !wasGranted && isGranted {
             isDismissed = false
@@ -102,6 +105,21 @@ class AccessibilityPermissionMonitor: ObservableObject {
         } else if wasGranted && !isGranted {
             print("❌ Accessibility permission revoked!")
         }
+    }
+
+    /// Call this when a paste operation succeeds to mark permission as working
+    func markPermissionAsWorking() {
+        UserDefaults.standard.set(true, forKey: "accessibilityHasWorked")
+        if !isGranted {
+            isGranted = true
+            isDismissed = false
+            print("✅ Accessibility permission marked as working (paste succeeded)")
+        }
+    }
+
+    /// Reset the "has worked" flag (e.g., when user revokes permission)
+    func resetWorkingFlag() {
+        UserDefaults.standard.removeObject(forKey: "accessibilityHasWorked")
     }
     
     func startMonitoring() {

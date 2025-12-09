@@ -54,7 +54,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Kill backend before launch"
-               scriptText = "lsof -ti:49917 | xargs kill -9 2&gt;/dev/null || true&#10;sleep 0.5"
+               scriptText = "# Kill any process on port 49917 (backend port)&#10;lsof -ti:49917 | xargs kill -9 2&gt;/dev/null || true&#10;# Wait for OS to fully release the port&#10;sleep 1&#10;# Double-check and kill again if needed&#10;lsof -ti:49917 | xargs kill -9 2&gt;/dev/null || true&#10;sleep 0.3"
                shellToInvoke = "/bin/bash">
             </ActionContent>
          </ExecutionAction>

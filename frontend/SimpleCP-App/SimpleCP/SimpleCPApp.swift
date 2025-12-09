@@ -39,7 +39,11 @@ struct SimpleCPApp: App {
     private func checkAccessibilityPermissionsSilent() {
         // Check without showing prompt - user can enable manually if needed
         let trusted = AXIsProcessTrusted()
-        
+
+        // Update the shared permission monitor immediately on launch
+        // This ensures UI reflects correct state after rebuild/restart
+        AccessibilityPermissionMonitor.shared.checkPermission()
+
         #if DEBUG
         if !trusted {
             print("ℹ️  Accessibility permissions not granted (optional for 'Paste Immediately' feature)")

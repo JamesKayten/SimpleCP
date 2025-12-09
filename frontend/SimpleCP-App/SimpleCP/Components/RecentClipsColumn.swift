@@ -283,9 +283,10 @@ struct RecentClipsColumn: View {
             if let app = targetApp, !app.isTerminated {
                 app.activate(options: [.activateIgnoringOtherApps])
                 print("✅ Activated: \(app.localizedName ?? "unknown")")
-                
+
                 // Wait for focus to fully shift - increased delay for apps like Pages
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [self] in
+                    print("🔄 About to execute paste...")
                     self.executePaste()
                 }
             } else {

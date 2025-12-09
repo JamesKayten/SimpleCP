@@ -95,38 +95,58 @@ class BackendService: ObservableObject {
     
     // MARK: - Exponential Backoff Startup
     
-    /// Starts backend with exponential backoff retry logic
+    /// Starts backend with fast retry logic - let forceKillAndRestart handle port conflicts
     func startBackendWithExponentialBackoff() async {
-        for attempt in 0..<5 {
-            let delay = min(0.1 * pow(2.0, Double(attempt)), 2.0) // Max 2 seconds
-            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-            
-            if !isRunning {
+        // Quick first attempt - port might already be free
+        if !isRunning {
+            startBackend()
+
+            // Wait briefly to verify startup
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+
+            if isRunning || connectionState == .connecting {
+                // Either started or handlePortOccupied is handling it
+                logger.info("✅ Backend startup initiated on first attempt")
+                await MainActor.run {
+                    self.dependenciesVerified = true
+                }
+                return
+            }
+        } else {
+            // Already running - mark as verified
+            await MainActor.run {
+                self.dependenciesVerified = true
+            }
+            return
+        }
+
+        // If first attempt failed completely (not port conflict), try a couple more times
+        for attempt in 1..<3 {
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+
+            if !isRunning && connectionState != .connecting {
+                logger.info("Retry attempt \(attempt + 1)...")
                 startBackend()
-                
-                // Wait to verify startup
-                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-                
-                if isRunning {
-                    logger.info("✅ Backend started successfully on attempt \(attempt + 1)")
-                    // Mark dependencies as verified since backend started successfully
+
+                try? await Task.sleep(nanoseconds: 300_000_000)
+
+                if isRunning || connectionState == .connecting {
+                    logger.info("✅ Backend started on attempt \(attempt + 1)")
                     await MainActor.run {
                         self.dependenciesVerified = true
                     }
                     return
                 }
             } else {
-                // Already running - mark as verified
                 await MainActor.run {
                     self.dependenciesVerified = true
                 }
                 return
             }
         }
-        
-        logger.error("❌ Failed to start backend after 5 attempts")
+
+        logger.error("❌ Failed to start backend after 3 attempts")
         connectionState = .error("Failed to start after multiple attempts")
-        // Don't mark as verified if we failed to start
     }
 
     // MARK: - Port Management
@@ -206,7 +226,7 @@ class BackendService: ObservableObject {
     func handlePortOccupied() {
         logger.warning("Port \(self.port) is already in use.")
         connectionState = .connecting
-        
+
         // Try to connect to the existing backend - use explicit IPv4 to avoid IPv6 issues
         Task {
             let url = URL(string: "http://127.0.0.1:\(self.port)/health")!
@@ -224,15 +244,45 @@ class BackendService: ObservableObject {
                     return
                 }
             } catch {
-                self.logger.warning("❌ Port occupied but backend not responding, may need manual cleanup")
+                self.logger.warning("❌ Port occupied but backend not responding, killing and retrying")
             }
-            
+
+            // Port is occupied but not responding - kill it and start fresh
             await MainActor.run {
-                self.backendError = "Backend port \(self.port) is occupied by unresponsive process. " +
-                    "Please kill the process manually: lsof -ti:\(self.port) | xargs kill -9"
-                self.connectionState = .error("Port \(self.port) occupied")
+                self.forceKillAndRestart()
             }
         }
+    }
+
+    /// Forcefully kill any process on the port and restart backend
+    private func forceKillAndRestart() {
+        let portNum = self.port
+        logger.info("🔪 Force killing process on port \(portNum) and restarting...")
+
+        // Try multiple times to kill the process
+        for attempt in 1...3 {
+            if killProcessOnPort(portNum) {
+                logger.info("✅ Port \(portNum) freed on attempt \(attempt)")
+
+                // Wait a moment for the OS to fully release the port
+                Thread.sleep(forTimeInterval: 0.3)
+
+                // Verify it's actually free
+                if !isPortInUse(portNum) {
+                    logger.info("✅ Port verified free, starting backend...")
+                    startBackend()
+                    return
+                }
+            }
+
+            logger.warning("⚠️ Kill attempt \(attempt) - port still in use, waiting...")
+            Thread.sleep(forTimeInterval: 0.5)
+        }
+
+        // If we still can't free the port, report the error
+        backendError = "Could not free port \(portNum) after 3 attempts"
+        connectionState = .error("Port \(portNum) stuck")
+        logger.error("❌ Failed to free port \(portNum) after 3 kill attempts")
     }
 
     func validateStartupEnvironment() -> BackendStartupConfig? {

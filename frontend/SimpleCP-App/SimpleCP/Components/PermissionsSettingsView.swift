@@ -9,7 +9,7 @@ import SwiftUI
 import ApplicationServices
 
 struct PermissionsSettingsView: View {
-    @StateObject private var permissionMonitor = AccessibilityPermissionMonitor.shared
+    @ObservedObject private var permissionMonitor = AccessibilityPermissionMonitor.shared
     @Environment(\.fontPreferences) private var fontPrefs
     
     var body: some View {
