@@ -112,6 +112,13 @@ struct RecentClipsColumn: View {
                                     selectedClipIds.insert(clip.id)
                                 }
                             },
+                            onSelectMultiple: { upToIndex in
+                                // Select all clips from 0 to upToIndex
+                                let clipsToSelect = Array(recentClips.prefix(upToIndex))
+                                for clipItem in clipsToSelect {
+                                    selectedClipIds.insert(clipItem.id)
+                                }
+                            },
                             onSave: {
                                 onSaveAsSnippet(clip)
                             }
@@ -266,6 +273,7 @@ struct ClipItemRow: View {
     let isSelected: Bool
     let onCopy: () -> Void
     let onToggleSelect: () -> Void
+    let onSelectMultiple: (Int) -> Void
     let onSave: () -> Void
     
     @State private var showPopover = false
@@ -273,17 +281,18 @@ struct ClipItemRow: View {
     @Environment(\.fontPreferences) private var fontPrefs
     @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
     @AppStorage("clipPreviewDelay") private var clipPreviewDelay = 0.7
+    @EnvironmentObject var clipboardManager: ClipboardManager
 
     var body: some View {
         HStack(spacing: 8) {
-            // Selection checkbox
-            Button(action: onToggleSelect) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isSelected ? .accentColor : .secondary)
-                    .font(.system(size: 14))
-            }
-            .buttonStyle(.plain)
-            .fixedSize()
+            // Selection checkbox with Option+Click support
+            SelectionButton(
+                isSelected: isSelected,
+                index: index,
+                clipboardManager: clipboardManager,
+                onToggleSelect: onToggleSelect,
+                onSelectMultiple: onSelectMultiple
+            )
 
             // Content preview (more compact - no timestamp shown)
             Text(clip.preview)
@@ -300,6 +309,7 @@ struct ClipItemRow: View {
         .background(isSelected ? Color.accentColor.opacity(0.1) : (isHovered ? Color(NSColor.controlBackgroundColor) : Color.clear))
         .contentShape(Rectangle())
         .onTapGesture {
+            // Regular click: Copy just this clip
             onCopy()
         }
         .popover(isPresented: $showPopover, arrowEdge: .trailing) {
@@ -318,6 +328,39 @@ struct ClipItemRow: View {
                 showPopover = false
             }
         }
+    }
+}
+
+// MARK: - Selection Button with Option+Click
+
+struct SelectionButton: View {
+    let isSelected: Bool
+    let index: Int
+    let clipboardManager: ClipboardManager
+    let onToggleSelect: () -> Void
+    let onSelectMultiple: (Int) -> Void
+    
+    @State private var isHovering = false
+    
+    var body: some View {
+        Button(action: {
+            // Check if Option key is held
+            if NSEvent.modifierFlags.contains(.option) {
+                onSelectMultiple(index)
+            } else {
+                onToggleSelect()
+            }
+        }) {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .foregroundColor(isSelected ? .accentColor : .secondary)
+                .font(.system(size: 14))
+        }
+        .buttonStyle(.plain)
+        .fixedSize()
+        .onHover { hovering in
+            isHovering = hovering
+        }
+        .help(NSEvent.modifierFlags.contains(.option) ? "Select all clips up to #\(index)" : "Select this clip")
     }
 }
 
@@ -501,6 +544,13 @@ struct HistoryGroupDisclosure: View {
                                     selectedClipIds.remove(clip.id)
                                 } else {
                                     selectedClipIds.insert(clip.id)
+                                }
+                            },
+                            onSelectMultiple: { upToIndex in
+                                // Select all clips from history up to the specified index
+                                let clipsToSelect = Array(clipboardManager.clipHistory.prefix(upToIndex))
+                                for clipItem in clipsToSelect {
+                                    selectedClipIds.insert(clipItem.id)
                                 }
                             },
                             onSave: {

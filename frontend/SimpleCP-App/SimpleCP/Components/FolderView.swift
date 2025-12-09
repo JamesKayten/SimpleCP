@@ -301,46 +301,59 @@ struct FolderSnippetsFlyout: View {
     }
     
     private func pasteToActiveApp() {
-        // Check if we have accessibility permissions
-        let trusted = AXIsProcessTrusted()
+        // Check accessibility permissions using the proper API with prompt option
+        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
+        let trusted = AXIsProcessTrustedWithOptions(options)
         
         if !trusted {
-            // Show alert and open System Settings
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = "Accessibility Permission Required"
-                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
-                alert.addButton(withTitle: "Open Settings")
-                alert.addButton(withTitle: "Cancel")
-                alert.alertStyle = .informational
-                
-                // Ensure alert appears in front
-                if let window = NSApp.keyWindow ?? NSApp.windows.first {
-                    alert.beginSheetModal(for: window) { response in
-                        if response == .alertFirstButtonReturn {
-                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }
-                    }
-                } else {
-                    if alert.runModal() == .alertFirstButtonReturn {
+            // Show our custom dialog instead of system prompt
+            showAccessibilityPermissionDialog()
+            return
+        }
+        
+        // We have permissions, proceed with paste
+        let source = CGEventSource(stateID: .hidSystemState)
+        
+        // Create and post Cmd+V
+        guard let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true),
+              let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false) else {
+            print("❌ Failed to create keyboard events")
+            return
+        }
+        
+        keyVDown.flags = .maskCommand
+        keyVUp.flags = .maskCommand
+        
+        keyVDown.post(tap: .cghidEventTap)
+        keyVUp.post(tap: .cghidEventTap)
+    }
+    
+    private func showAccessibilityPermissionDialog() {
+        DispatchQueue.main.async {
+            let alert = NSAlert()
+            alert.messageText = "Accessibility Permission Required"
+            alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
+            alert.addButton(withTitle: "Open Settings")
+            alert.addButton(withTitle: "Cancel")
+            alert.alertStyle = .informational
+            
+            // Ensure alert appears in front
+            if let window = NSApp.keyWindow ?? NSApp.windows.first {
+                alert.beginSheetModal(for: window) { response in
+                    if response == .alertFirstButtonReturn {
                         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
                             NSWorkspace.shared.open(url)
                         }
                     }
                 }
+            } else {
+                if alert.runModal() == .alertFirstButtonReturn {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
             }
-            return
         }
-        
-        let source = CGEventSource(stateID: .hidSystemState)
-        let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
-        keyVDown?.flags = .maskCommand
-        let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
-        keyVUp?.flags = .maskCommand
-        keyVDown?.post(tap: .cghidEventTap)
-        keyVUp?.post(tap: .cghidEventTap)
     }
 }
 

@@ -203,14 +203,14 @@ class ClipboardManager: ObservableObject {
         // Skip if we're ignoring programmatic changes
         if ignoreNextChange {
             ignoreNextChange = false
-            logger.debug("📋 Ignoring programmatic clipboard change")
+            logger.debug("📋 Ignoring programmatic clipboard change (from copyToClipboard)")
             return
         }
 
         if let content = pasteboard.string(forType: .string), !content.isEmpty {
             // Check if content should be stored (basic validation)
             guard shouldStoreContent(content) else {
-                logger.info("📋 Skipped storing sensitive or invalid clipboard content")
+                logger.info("📋 Skipped storing clipboard content (filtered)")
                 return
             }
             
@@ -264,22 +264,60 @@ class ClipboardManager: ObservableObject {
     }
 
     func copyToClipboard(_ content: String) {
+        // MUST be synchronous to ensure clipboard is set before any other operation
+        guard Thread.isMainThread else {
+            // If not on main thread, dispatch sync to main thread
+            DispatchQueue.main.sync {
+                self.copyToClipboard(content)
+            }
+            return
+        }
+        
+        logger.info("🔵 COPY REQUESTED: \(content.count) chars")
+        
+        // Set flag BEFORE getting pasteboard to prevent race condition
         ignoreNextChange = true
         
         let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
+        let beforeCount = pasteboard.changeCount
         
-        // Try to set the string and verify it worked
+        // Clear and set in one operation
+        pasteboard.clearContents()
         let success = pasteboard.setString(content, forType: .string)
         
+        let afterCount = pasteboard.changeCount
+        logger.info("🔵 Pasteboard changeCount: \(beforeCount) -> \(afterCount)")
+        
         if success {
-            // Verify the content was actually written
-            if let readBack = pasteboard.string(forType: .string), readBack == content {
-                lastChangeCount = pasteboard.changeCount
-                currentClipboard = content
-                logger.debug("📋 Successfully copied to clipboard (\(content.count) chars): \(content.prefix(50))...")
+            // Update tracking immediately
+            lastChangeCount = pasteboard.changeCount
+            currentClipboard = content
+            
+            // Verify it actually worked
+            if let readBack = pasteboard.string(forType: .string) {
+                if readBack == content {
+                    logger.info("✅ COPIED TO CLIPBOARD (\(content.count) chars): \(content.prefix(50))...")
+                    
+                    // Double-check after a brief delay to see if it's still there
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if let stillThere = NSPasteboard.general.string(forType: .string) {
+                            if stillThere == content {
+                                self.logger.info("✅ Clipboard content verified after 0.1s")
+                            } else {
+                                self.logger.error("❌ CLIPBOARD WAS OVERWRITTEN! Now contains: \(stillThere.prefix(50))...")
+                            }
+                        } else {
+                            self.logger.error("❌ CLIPBOARD WAS CLEARED!")
+                        }
+                    }
+                } else {
+                    logger.error("❌ Clipboard verification failed - readback mismatch")
+                    logger.error("   Expected: \(content.prefix(50))...")
+                    logger.error("   Got: \(readBack.prefix(50))...")
+                    ignoreNextChange = false
+                }
             } else {
-                logger.error("❌ Clipboard verification failed - content mismatch")
+                logger.error("❌ Clipboard readback returned nil")
                 ignoreNextChange = false
             }
         } else {
