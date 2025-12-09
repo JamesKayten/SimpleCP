@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Kill Backend Process on Port 8000
+# Kill Backend Process on Port 49917
 # Run this if SimpleCP shows "Port occupied" error
 
-PORT=8000
+PORT=49917
 
 echo "🔍 Checking port $PORT..."
 

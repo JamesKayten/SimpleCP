@@ -73,10 +73,13 @@ class SaveSnippetWindowManager: ObservableObject {
         // Close existing window if any
         closeDialog()
         
-        // CRITICAL: For menu bar apps, we need to temporarily change activation policy
-        // to allow the window to receive keyboard events
+        // CRITICAL: For menu bar apps in accessory mode, we need to temporarily change 
+        // activation policy to allow the window to receive keyboard events
+        // This is coordinated with AppDelegate's activation policy management
         let wasAccessory = NSApp.activationPolicy() == .accessory
-        if wasAccessory {
+        let needsTemporaryPromotion = wasAccessory && !UserDefaults.standard.bool(forKey: "showInDock")
+        
+        if needsTemporaryPromotion {
             NSApp.setActivationPolicy(.regular)
         }
         
@@ -84,8 +87,8 @@ class SaveSnippetWindowManager: ObservableObject {
         let dialogView = SaveSnippetDialogContent(
             content: content,
             onDismiss: {
-                // Restore activation policy when closing
-                if wasAccessory {
+                // Restore activation policy when closing (if needed)
+                if needsTemporaryPromotion {
                     NSApp.setActivationPolicy(.accessory)
                 }
                 self.closeDialog()
@@ -141,6 +144,7 @@ struct SaveSnippetDialogContent: View {
     @State private var newFolderName: String = ""
     @State private var tags: String = ""
     @State private var contentPreview: String = ""
+    @State private var folderListRefreshID = UUID() // Force folder list refresh
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -191,21 +195,21 @@ struct SaveSnippetDialogContent: View {
                 ScrollView {
                     VStack(spacing: 2) {
                         folderRow(label: "None", folderId: nil)
-                        ForEach(clipboardManager.folders) { folder in
+                        ForEach(clipboardManager.folders, id: \.id) { folder in
                             folderRow(label: "\(folder.icon) \(folder.name)", folderId: folder.id)
+                                .id(folder.id) // Ensure unique identity per folder
                         }
                     }
+                    .id(folderListRefreshID) // Force refresh when this ID changes
                 }
                 .frame(height: 80)
                 .background(Color(NSColor.controlBackgroundColor))
                 .cornerRadius(4)
-                .id(clipboardManager.folders.count) // Force refresh when folder count changes
             }
             
             // New Folder Toggle
             Button(action: {
                 createNewFolder.toggle()
-                print("🔵 Create new folder toggled: \(createNewFolder)")
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: createNewFolder ? "checkmark.square.fill" : "square")
@@ -223,17 +227,10 @@ struct SaveSnippetDialogContent: View {
                 HStack(spacing: 8) {
                     AppKitTextField(text: $newFolderName, placeholder: "Folder name", onCommit: createFolder)
                         .frame(height: 22)
-                        .onChange(of: newFolderName) { newValue in
-                            print("🔵 newFolderName changed to: '\(newValue)' (isEmpty: \(newValue.isEmpty))")
-                        }
                     
                     Button(action: {
-                        print("➕ Create folder button tapped. Folder name: '\(newFolderName)'")
-                        print("➕ isEmpty check: \(newFolderName.isEmpty)")
                         if !newFolderName.isEmpty {
                             createFolder()
-                        } else {
-                            print("➕ Button was disabled, folder name is empty!")
                         }
                     }) {
                         Image(systemName: "plus.circle.fill")
@@ -308,27 +305,33 @@ struct SaveSnippetDialogContent: View {
     }
     
     private func createFolder() {
-        print("🔵 createFolder() called")
-        print("🔵 newFolderName: '\(newFolderName)'")
-        
         guard !newFolderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            print("🔵 Folder name is empty, returning")
             return
         }
         
         let trimmedName = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("🔵 Creating folder with name: '\(trimmedName)'")
         
-        let newFolderID = clipboardManager.createFolder(name: trimmedName)
-        print("🔵 Folder created with ID: \(newFolderID)")
-        print("🔵 Total folders now: \(clipboardManager.folders.count)")
+        // Create folder synchronously
+        let newFolder = clipboardManager.createFolder(name: trimmedName)
         
-        // Update UI state - force refresh
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.selectedFolderId = newFolderID
-            self.createNewFolder = false
-            self.newFolderName = ""
-            print("🔵 Folder creation complete, UI state updated")
+        // Force immediate UI update on main thread
+        DispatchQueue.main.async {
+            // Force folder list to refresh by changing its ID
+            self.folderListRefreshID = UUID()
+            
+            // Small delay to ensure the list has refreshed before selecting
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                // Update UI state with animation
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    self.selectedFolderId = newFolder.id
+                }
+                
+                // Clear input after showing the result
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.createNewFolder = false
+                    self.newFolderName = ""
+                }
+            }
         }
     }
     

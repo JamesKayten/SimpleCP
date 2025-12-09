@@ -9,14 +9,16 @@ import SwiftUI
 import AppKit
 import ApplicationServices
 
+@available(macOS 14.0, *)
 @main
 struct SimpleCPApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var clipboardManager = ClipboardManager()
     @StateObject private var backendService = BackendService()
-    @AppStorage("windowSize") private var windowSize = "compact"  // Default to compact for simplicity
+    @AppStorage("windowWidth") private var windowWidth = 400
+    @AppStorage("windowHeight") private var windowHeight = 450
     @AppStorage("theme") private var theme = "auto"
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     
     // Font preferences
     @AppStorage("interfaceFont") private var interfaceFont: String = "SF Pro"
@@ -25,160 +27,21 @@ struct SimpleCPApp: App {
     @AppStorage("clipFontSize") private var clipFontSize: Double = 12.0
 
     init() {
-        // Register shared instances for WindowManager
-        clipboardManager.makeShared()
-        backendService.makeShared()
-        
         // Check accessibility permissions silently (no prompt)
         checkAccessibilityPermissionsSilent()
-        
-        // Enhanced debug logging for backend issues
-        print("\n" + String(repeating: "=", count: 60))
-        print("🚀 SIMPLECP STARTUP DIAGNOSTICS")
-        print(String(repeating: "=", count: 60))
-        
-        let backendPort = UserDefaults.standard.integer(forKey: "backendPort")
-        let port = backendPort == 0 ? 8000 : backendPort
-        print("🔍 Backend Port: \(port)")
-        print("🔍 Current Directory: \(FileManager.default.currentDirectoryPath)")
-        print("🔍 Bundle Path: \(Bundle.main.bundlePath)")
-        
-        // ALWAYS kill anything on port 8000 - no mercy
-        print("\n🔴 FORCE KILLING PORT \(port)")
-        let killed = forceKillPort(port)
-        if killed {
-            print("✅ Port \(port) freed successfully")
-        } else {
-            print("⚠️ Port \(port) was already free or couldn't be killed")
-        }
-        
-        // Check venv permissions
-        let projectPath = "/Volumes/User_Smallfavor/Users/Smallfavor/Code/ACTIVE/SimpleCP"
-        let venvConfig = "\(projectPath)/.venv/pyvenv.cfg"
-        let venvPython = "\(projectPath)/.venv/bin/python3"
-        let backendMain = "\(projectPath)/backend/main.py"
-        
-        print("\n📁 FILE SYSTEM CHECKS:")
-        print("   - venv python exists: \(FileManager.default.fileExists(atPath: venvPython) ? "✅" : "❌")")
-        print("   - pyvenv.cfg exists: \(FileManager.default.fileExists(atPath: venvConfig) ? "✅" : "❌")")
-        print("   - pyvenv.cfg readable: \(FileManager.default.isReadableFile(atPath: venvConfig) ? "✅" : "❌")")
-        print("   - backend/main.py exists: \(FileManager.default.fileExists(atPath: backendMain) ? "✅" : "❌")")
-        
-        // Check sandbox status
-        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        let isSandboxed = homeDir.contains("Containers")
-        print("\n🔒 SANDBOX STATUS:")
-        print("   - Home directory: \(homeDir)")
-        print("   - App is sandboxed: \(isSandboxed ? "⚠️ YES" : "✅ No")")
-        
-        // Try to actually read the file
-        checkFileAccessPermissions()
-        
-        print(String(repeating: "=", count: 60) + "\n")
-    }
-    
-    private func forceKillPort(_ port: Int) -> Bool {
-        print("🔪 Executing: lsof -ti:\(port) | xargs kill -9")
-        
-        let task = Process()
-        task.launchPath = "/bin/sh"
-        task.arguments = ["-c", "lsof -ti:\(port) | xargs kill -9 2>/dev/null; exit 0"]
-        
-        do {
-            try task.run()
-            task.waitUntilExit()
-            
-            // Wait for port to fully release
-            Thread.sleep(forTimeInterval: 0.5)
-            
-            // Verify port is free
-            return !isPortInUse(port)
-        } catch {
-            print("⚠️ Failed to execute kill command: \(error.localizedDescription)")
-            return false
-        }
-    }
-    
-    private func isPortInUse(_ port: Int) -> Bool {
-        let task = Process()
-        task.launchPath = "/usr/sbin/lsof"
-        task.arguments = ["-t", "-i:\(port)"]
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        task.standardError = Pipe()
-        
-        do {
-            try task.run()
-            task.waitUntilExit()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return !output.isEmpty
-        } catch {
-            return false
-        }
     }
     
     private func checkAccessibilityPermissionsSilent() {
         // Check without showing prompt - user can enable manually if needed
         let trusted = AXIsProcessTrusted()
         
+        #if DEBUG
         if !trusted {
             print("ℹ️  Accessibility permissions not granted (optional for 'Paste Immediately' feature)")
-            print("   To enable: System Settings > Privacy & Security > Accessibility")
         } else {
             print("✅ Accessibility permissions granted")
         }
-    }
-    
-    private func checkAccessibilityPermissions() {
-        // Create options dictionary to show system prompt
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        let trusted = AXIsProcessTrustedWithOptions(options)
-        
-        if !trusted {
-            print("⚠️ Accessibility permissions required for 'Paste Immediately' feature")
-            print("A system prompt should appear. If not, go to:")
-            print("System Settings > Privacy & Security > Accessibility")
-        } else {
-            print("✅ Accessibility permissions granted")
-        }
-    }
-    
-    private func checkFileAccessPermissions() {
-        let projectPath = "/Volumes/User_Smallfavor/Users/Smallfavor/Code/ACTIVE/SimpleCP"
-        let venvConfig = "\(projectPath)/.venv/pyvenv.cfg"
-        
-        // Try to read the file
-        if let contents = try? String(contentsOfFile: venvConfig, encoding: .utf8) {
-            print("✅ Successfully read pyvenv.cfg (first 200 chars):")
-            print(String(contents.prefix(200)))
-        } else {
-            print("❌ Cannot read pyvenv.cfg - file access permission denied")
-            print("   You may need to grant Full Disk Access or disable App Sandbox")
-        }
-    }
-    
-    // MARK: - Terminal Commands for Manual Cleanup
-    
-    /// Run this in Terminal to kill zombie backend processes:
-    /// lsof -ti:8000 | xargs kill -9
-    ///
-    /// Or to check what's using the port:
-    /// lsof -i:8000
-    
-    // MARK: - Window Size Calculation
-    
-    private var windowDimensions: (width: CGFloat, height: CGFloat) {
-        switch windowSize {
-        case "compact":
-            return (400, 450)
-        case "normal":
-            return (450, 500)
-        case "large":
-            return (550, 650)
-        default:
-            return (450, 500) // fallback to normal
-        }
+        #endif
     }
     
     // MARK: - Font Preferences
@@ -213,8 +76,8 @@ struct SimpleCPApp: App {
                 backendService: backendService,
                 fontPreferences: fontPreferences,
                 colorScheme: colorScheme,
-                windowDimensions: windowDimensions,
-                windowSize: $windowSize,
+                windowWidth: $windowWidth,
+                windowHeight: $windowHeight,
                 theme: $theme
             )
             .frame(width: 0, height: 0)
@@ -222,87 +85,83 @@ struct SimpleCPApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 0, height: 0)
         
-        // Settings window - only opens when explicitly requested  
-        Window("Settings", id: "settings") {
+        // Settings scene - native macOS settings window
+        Settings {
             SettingsWindow()
                 .environmentObject(clipboardManager)
                 .environmentObject(backendService)
                 .fontPreferences(fontPreferences)
                 .preferredColorScheme(colorScheme)
-                .onAppear {
-                    // Make the window behave like an auxiliary window
-                    if let window = NSApp.windows.first(where: { $0.title == "Settings" }) {
-                        window.level = .floating
-                        window.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
-                        
-                        // Add escape key handler
-                        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                            if event.keyCode == 53 { // Escape key
-                                window.close()
-                                return nil
-                            }
-                            return event
-                        }
-                    }
-                }
         }
-        .windowResizability(.contentSize)
-        .defaultSize(width: 500, height: 400)
     }
     
 }
 
 // MARK: - Menu Bar Setup View
 
+@available(macOS 14.0, *)
 private struct MenuBarSetupView: View {
     @ObservedObject var clipboardManager: ClipboardManager
     @ObservedObject var backendService: BackendService
     let fontPreferences: FontPreferences
     let colorScheme: ColorScheme?
-    let windowDimensions: (width: CGFloat, height: CGFloat)
-    @Binding var windowSize: String
+    @Binding var windowWidth: Int
+    @Binding var windowHeight: Int
     @Binding var theme: String
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     
     var body: some View {
         Color.clear
             .onAppear {
-                // Register the openWindow action for WindowManager
-                WindowManager.openWindowAction = { id in
-                    openWindow(id: id)
-                }
-                
-                self.setupMenuBarContent()
-                self.hideInitialWindows()
+                setupApp()
             }
-            .onChange(of: windowSize) { newSize in
-                print("🔵 Window size setting changed to: \(newSize)")
-                print("🔵 New dimensions: \(windowDimensions)")
-                self.setupMenuBarContent()
-                MenuBarManager.shared.updateWindowSize()
-            }
-            .onChange(of: theme) { newTheme in
-                print("🎨 Theme changed to: \(newTheme)")
-                self.setupMenuBarContent()
+            .onChange(of: theme) { newValue in
+                // Update the window appearance
+                updateWindowAppearance()
             }
     }
     
-    private func setupMenuBarContent() {
+    private func updateWindowAppearance() {
+        getMenuBarManager().updatePopoverAppearance()
+    }
+    
+    private func setupApp() {
+        // Register shared instances
+        clipboardManager.makeShared()
+        backendService.makeShared()
+        
+        // Set up shared reference for cleanup
+        AppDelegate.sharedBackendService = backendService
+        
+        // Kill any process on our port before starting
+        let backendPort = UserDefaults.standard.integer(forKey: "backendPort")
+        let port = backendPort == 0 ? 49917 : backendPort
+        
+        #if DEBUG
+        print("🚀 SimpleCP starting...")
+        print("   Backend port: \(port)")
+        #endif
+        
+        if backendService.isPortInUse(port) {
+            _ = backendService.killProcessOnPort(port)
+        }
+        
+        // Register the openSettings action for WindowManager
+        WindowManager.openSettingsAction = {
+            openSettings()
+        }
+        
+        // Set up the menu bar with content
         let contentView = ContentView()
             .environmentObject(clipboardManager)
             .environmentObject(backendService)
             .fontPreferences(fontPreferences)
             .preferredColorScheme(colorScheme)
-            .task {
-                // Set up shared reference for cleanup
-                AppDelegate.sharedBackendService = backendService
-                // Backend is auto-started in BackendService.init() with exponential backoff
-            }
         
-        MenuBarManager.shared.setContentView(contentView)
-    }
-    
-    private func hideInitialWindows() {
+        // Set up the menu bar manager with content
+        setupMenuBar(with: contentView)
+        
+        // Hide the hidden SwiftUI window
         DispatchQueue.main.async {
             NSApp.windows.forEach { window in
                 if window.title.isEmpty || window.title == "SimpleCP" {
@@ -310,6 +169,17 @@ private struct MenuBarSetupView: View {
                 }
             }
         }
+    }
+    
+    private func setupMenuBar(with contentView: some View) {
+        // Set up the menu bar manager with the content view
+        getMenuBarManager().setContentView(contentView)
+    }
+    
+    // Helper function to get the correct MenuBarManager instance
+    // This provides explicit type context to resolve ambiguity
+    private func getMenuBarManager() -> MenuBarManager {
+        return MenuBarManager.shared
     }
 }
 

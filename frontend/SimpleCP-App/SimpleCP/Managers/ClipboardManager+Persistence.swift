@@ -74,7 +74,29 @@ extension ClipboardManager {
         if let data = userDefaults.data(forKey: foldersKey) {
             do {
                 folders = try JSONDecoder().decode([SnippetFolder].self, from: data)
-                logger.info("✅ Loaded \(self.folders.count) folders from storage")
+                
+                // Validate folder names - only reject empty names
+                let validFolders = folders.filter { folder in
+                    !folder.name.isEmpty
+                }
+                
+                // If we removed invalid folders, save the cleaned list
+                if validFolders.count != folders.count {
+                    logger.warning("⚠️ Removed \(self.folders.count - validFolders.count) folders with empty names")
+                    folders = validFolders
+                    
+                    // If no valid folders left, create defaults
+                    if folders.isEmpty {
+                        logger.info("ℹ️ No valid folders remaining, creating defaults")
+                        folders = SnippetFolder.defaultFolders()
+                    }
+                    
+                    saveFolders()
+                } else {
+                    folders = validFolders
+                }
+                
+                logger.info("✅ Loaded \(self.folders.count) valid folders from storage")
             } catch {
                 logger.error("⚠️ Failed to load folders: \(error.localizedDescription). Creating defaults.")
                 folders = SnippetFolder.defaultFolders()

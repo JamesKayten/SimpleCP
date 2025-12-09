@@ -29,6 +29,29 @@ class ClipboardManager: ObservableObject {
     let historyKey = "clipboardHistory"
     let snippetsKey = "savedSnippets"
     let foldersKey = "snippetFolders"
+    
+    // MARK: - Flyout Delay Settings
+    
+    /// Delay in seconds before showing clip preview popovers (default: 0.7s)
+    var clipPreviewDelay: TimeInterval {
+        get { userDefaults.double(forKey: "clipPreviewDelay") == 0 ? 0.7 : userDefaults.double(forKey: "clipPreviewDelay") }
+        set { userDefaults.set(newValue, forKey: "clipPreviewDelay") }
+    }
+    
+    /// Delay in seconds before showing clip group flyouts (default: 0.5s)
+    var clipGroupFlyoutDelay: TimeInterval {
+        get { userDefaults.double(forKey: "clipGroupFlyoutDelay") == 0 ? 0.5 : userDefaults.double(forKey: "clipGroupFlyoutDelay") }
+        set { userDefaults.set(newValue, forKey: "clipGroupFlyoutDelay") }
+    }
+    
+    /// Delay in seconds before showing folder flyouts (default: 1.0s)
+    var folderFlyoutDelay: TimeInterval {
+        get { 
+            let value = userDefaults.double(forKey: "folderFlyoutDelay")
+            return value == 0 ? 1.0 : value
+        }
+        set { userDefaults.set(newValue, forKey: "folderFlyoutDelay") }
+    }
 
     init() {
         loadData()
@@ -50,8 +73,8 @@ class ClipboardManager: ObservableObject {
             let delay = min(0.5 * pow(1.5, Double(attempt)), 5.0) // Max 5 seconds per attempt
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             
-            // Try a quick health check
-            if let url = URL(string: "http://localhost:49917/health"),
+            // Try a quick health check - use IPv4 explicitly to avoid resolution issues
+            if let url = URL(string: "http://127.0.0.1:49917/health"),
                let (_, response) = try? await URLSession.shared.data(from: url),
                let httpResponse = response as? HTTPURLResponse,
                httpResponse.statusCode == 200 {
@@ -101,22 +124,44 @@ class ClipboardManager: ObservableObject {
                 // Update existing folders and add new ones while preserving IDs
                 var updatedFolders = self.folders
 
-                // Remove folders that no longer exist in backend
-                updatedFolders.removeAll { folder in
+                // FIXED: Don't remove local-only folders - push them to backend instead!
+                // Check for local-only folders that need to be synced to backend
+                let localOnlyFolders = updatedFolders.filter { folder in
                     !backendFolders.contains(folder.name)
                 }
+                
+                // Push local-only folders to backend
+                if !localOnlyFolders.isEmpty {
+                    self.logger.info("📤 Found \(localOnlyFolders.count) local-only folders to sync to backend")
+                    Task {
+                        for folder in localOnlyFolders {
+                            do {
+                                try await APIClient.shared.createFolder(name: folder.name)
+                                self.logger.info("✅ Synced local folder '\(folder.name)' to backend")
+                            } catch APIError.httpError(let statusCode, _) where statusCode == 409 {
+                                // 409 conflict means folder already exists - that's fine
+                                self.logger.debug("ℹ️ Folder '\(folder.name)' already exists on backend")
+                            } catch {
+                                self.logger.warning("⚠️ Failed to sync folder '\(folder.name)' to backend: \(error.localizedDescription)")
+                                // Keep the local folder even if sync fails
+                            }
+                        }
+                    }
+                }
 
-                // Add new folders from backend
+                // Add new folders from backend that don't exist locally
                 for (index, folderName) in backendFolders.enumerated() {
                     if !updatedFolders.contains(where: { $0.name == folderName }) {
                         // Create new folder for backend-only folders
-                        print("🟡🟡🟡 SYNC: Adding folder from backend: '\(folderName)'")
+                        #if DEBUG
+                        logger.debug("📥 SYNC: Adding folder from backend: '\(folderName, privacy: .public)'")
+                        #endif
                         let newFolder = SnippetFolder(name: folderName, icon: "📁", order: index)
                         updatedFolders.append(newFolder)
                     }
                 }
 
-                // Update folder order to match backend order
+                // Update folder order to match backend order for folders that exist in backend
                 for (index, folderName) in backendFolders.enumerated() {
                     if let folderIndex = updatedFolders.firstIndex(where: { $0.name == folderName }) {
                         var folder = updatedFolders[folderIndex]
@@ -260,6 +305,32 @@ class ClipboardManager: ObservableObject {
             return false
         }
         
+        // Filter out Xcode console output patterns
+        let lines = content.components(separatedBy: .newlines)
+        _ = lines.first ?? ""
+        
+        // Check for console/log output patterns
+        let consolePatterns = [
+            "📡 API:",
+            "❌ API Error:",
+            "✅ Snippet",
+            "💾 save",
+            "🗑️ Removed",
+            "Backend stdout:",
+            "nw_socket_handle_socket_event",
+            "nw_endpoint_flow",
+            "INFO:     127.0.0.1:",
+            "⚠️ Create snippet",
+            "🎨 Applying window"
+        ]
+        
+        for pattern in consolePatterns {
+            if content.contains(pattern) {
+                logger.info("📋 Skipped console/log output from clipboard")
+                return false
+            }
+        }
+        
         // Basic sensitive pattern detection
         let lowercased = content.lowercased()
         let sensitiveKeywords = ["password:", "api_key", "bearer ", "-----begin private key-----"]
@@ -280,5 +351,65 @@ class ClipboardManager: ObservableObject {
             return "\(content.prefix(50))..."
         }
         return content
+    }
+    
+    // MARK: - Folder Management
+    
+    @discardableResult
+    func createFolder(name: String) -> SnippetFolder {
+        let maxOrder = folders.map { $0.order }.max() ?? -1
+        let newFolder = SnippetFolder(name: name, icon: "📁", order: maxOrder + 1)
+        folders.append(newFolder)
+        saveFolders()
+        logger.info("📁 Created folder: \(name)")
+        
+        Task {
+            do {
+                try await APIClient.shared.createFolder(name: name)
+                logger.info("✅ Folder synced with backend: \(name)")
+            } catch {
+                logger.warning("⚠️ Failed to sync folder with backend: \(error.localizedDescription)")
+            }
+        }
+        
+        return newFolder
+    }
+    
+    func updateFolder(_ folder: SnippetFolder) {
+        if let index = folders.firstIndex(where: { $0.id == folder.id }) {
+            let oldName = folders[index].name
+            folders[index] = folder
+            saveFolders()
+            logger.info("✏️ Updated folder: \(folder.name)")
+            
+            // If name changed, sync with backend
+            if oldName != folder.name {
+                Task {
+                    do {
+                        try await APIClient.shared.renameFolder(oldName: oldName, newName: folder.name)
+                        logger.info("✅ Folder rename synced with backend")
+                    } catch {
+                        logger.warning("⚠️ Failed to sync folder rename with backend: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+    }
+    
+    func deleteFolder(_ folder: SnippetFolder) {
+        folders.removeAll { $0.id == folder.id }
+        snippets.removeAll { $0.folderId == folder.id }
+        saveFolders()
+        saveSnippets()
+        logger.info("🗑️ Deleted folder: \(folder.name)")
+        
+        Task {
+            do {
+                try await APIClient.shared.deleteFolder(name: folder.name)
+                logger.info("✅ Folder deletion synced with backend")
+            } catch {
+                logger.warning("⚠️ Failed to sync folder deletion: \(error.localizedDescription)")
+            }
+        }
     }
 }

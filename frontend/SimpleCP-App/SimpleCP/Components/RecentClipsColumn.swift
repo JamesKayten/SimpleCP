@@ -21,8 +21,11 @@ struct RecentClipsColumn: View {
         if searchText.isEmpty {
             return clipboardManager.clipHistory
         }
-        let (clips, _) = clipboardManager.search(query: searchText)
-        return clips
+        // Filter clips based on search text
+        return clipboardManager.clipHistory.filter { clip in
+            clip.content.localizedCaseInsensitiveContains(searchText) ||
+            clip.preview.localizedCaseInsensitiveContains(searchText)
+        }
     }
 
     private var recentClips: [ClipItem] {
@@ -117,6 +120,15 @@ struct RecentClipsColumn: View {
                             hoveredClipId = isHovered ? clip.id : nil
                         }
                         .contextMenu {
+                            Button("Paste Immediately") {
+                                clipboardManager.copyToClipboard(clip.content)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    pasteToActiveApp()
+                                }
+                            }
+                            
+                            Divider()
+                            
                             Button("Copy") {
                                 clipboardManager.copyToClipboard(clip.content)
                             }
@@ -158,7 +170,8 @@ struct RecentClipsColumn: View {
                                 hoveredClipId: $hoveredClipId,
                                 selectedClipIds: $selectedClipIds,
                                 onSaveAsSnippet: onSaveAsSnippet,
-                                clipboardManager: clipboardManager
+                                clipboardManager: clipboardManager,
+                                onPasteToActiveApp: pasteToActiveApp
                             )
                         }
                     }
@@ -199,6 +212,49 @@ struct RecentClipsColumn: View {
         
         selectedClipIds.removeAll()
     }
+    
+    private func pasteToActiveApp() {
+        // Check if we have accessibility permissions
+        let trusted = AXIsProcessTrusted()
+        
+        if !trusted {
+            // Show alert and open System Settings
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
+                alert.addButton(withTitle: "Open Settings")
+                alert.addButton(withTitle: "Cancel")
+                alert.alertStyle = .informational
+                
+                // Ensure alert appears in front
+                if let window = NSApp.keyWindow ?? NSApp.windows.first {
+                    alert.beginSheetModal(for: window) { response in
+                        if response == .alertFirstButtonReturn {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                } else {
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                }
+            }
+            return
+        }
+        
+        let source = CGEventSource(stateID: .hidSystemState)
+        let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
+        keyVDown?.flags = .maskCommand
+        let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
+        keyVUp?.flags = .maskCommand
+        keyVDown?.post(tap: .cghidEventTap)
+        keyVUp?.post(tap: .cghidEventTap)
+    }
 }
 
 // MARK: - Clip Item Row
@@ -216,6 +272,7 @@ struct ClipItemRow: View {
     @State private var hoverTimer: Timer?
     @Environment(\.fontPreferences) private var fontPrefs
     @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
+    @AppStorage("clipPreviewDelay") private var clipPreviewDelay = 0.7
 
     var body: some View {
         HStack(spacing: 8) {
@@ -250,8 +307,8 @@ struct ClipItemRow: View {
         }
         .onHover { hovering in
             if hovering && showSnippetPreviews {
-                // Show popover after a delay (0.7 seconds)
-                hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.7, repeats: false) { _ in
+                // Show popover after user-configured delay
+                hoverTimer = Timer.scheduledTimer(withTimeInterval: clipPreviewDelay, repeats: false) { _ in
                     showPopover = true
                 }
             } else {
@@ -345,11 +402,13 @@ struct HistoryGroupDisclosure: View {
     @Binding var selectedClipIds: Set<UUID>
     let onSaveAsSnippet: (ClipItem) -> Void
     let clipboardManager: ClipboardManager
+    let onPasteToActiveApp: () -> Void
     
     @State private var isHovered: Bool = false
     @State private var showFlyout: Bool = false
     @State private var hoverTimer: Timer?
     @State private var flyoutHovered: Bool = false
+    @AppStorage("clipGroupFlyoutDelay") private var clipGroupFlyoutDelay = 0.5
 
     var body: some View {
         VStack(spacing: 0) {
@@ -386,7 +445,7 @@ struct HistoryGroupDisclosure: View {
                 isHovered = hovering
                 if hovering {
                     hoverTimer?.invalidate()
-                    hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+                    hoverTimer = Timer.scheduledTimer(withTimeInterval: clipGroupFlyoutDelay, repeats: false) { _ in
                         print("🟦 SHOWING GROUP FLYOUT for range: \(range)")
                         showFlyout = true
                     }
@@ -407,6 +466,7 @@ struct HistoryGroupDisclosure: View {
                     clips: clips,
                     clipboardManager: clipboardManager,
                     onSaveAsSnippet: onSaveAsSnippet,
+                    onPasteToActiveApp: onPasteToActiveApp,
                     onHoverChange: { hovering in
                         flyoutHovered = hovering
                     },
@@ -451,6 +511,15 @@ struct HistoryGroupDisclosure: View {
                             hoveredClipId = isHovered ? clip.id : nil
                         }
                         .contextMenu {
+                            Button("Paste Immediately") {
+                                clipboardManager.copyToClipboard(clip.content)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    onPasteToActiveApp()
+                                }
+                            }
+                            
+                            Divider()
+                            
                             Button("Copy") {
                                 clipboardManager.copyToClipboard(clip.content)
                             }
@@ -519,6 +588,7 @@ struct ClipGroupFlyout: View {
     let clips: [ClipItem]
     let clipboardManager: ClipboardManager
     let onSaveAsSnippet: (ClipItem) -> Void
+    let onPasteToActiveApp: () -> Void
     let onHoverChange: (Bool) -> Void
     let onClose: () -> Void
     
@@ -569,7 +639,7 @@ struct ClipGroupFlyout: View {
                                 onPaste: {
                                     clipboardManager.copyToClipboard(clip.content)
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        pasteToActiveApp()
+                                        onPasteToActiveApp()
                                         onClose()
                                     }
                                 },
@@ -597,49 +667,6 @@ struct ClipGroupFlyout: View {
         .onHover { hovering in
             onHoverChange(hovering)
         }
-    }
-    
-    private func pasteToActiveApp() {
-        // Check if we have accessibility permissions
-        let trusted = AXIsProcessTrusted()
-        
-        if !trusted {
-            // Show alert and open System Settings
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = "Accessibility Permission Required"
-                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
-                alert.addButton(withTitle: "Open Settings")
-                alert.addButton(withTitle: "Cancel")
-                alert.alertStyle = .informational
-                
-                // Ensure alert appears in front
-                if let window = NSApp.keyWindow ?? NSApp.windows.first {
-                    alert.beginSheetModal(for: window) { response in
-                        if response == .alertFirstButtonReturn {
-                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }
-                    }
-                } else {
-                    if alert.runModal() == .alertFirstButtonReturn {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-            }
-            return
-        }
-        
-        let source = CGEventSource(stateID: .hidSystemState)
-        let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
-        keyVDown?.flags = .maskCommand
-        let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
-        keyVUp?.flags = .maskCommand
-        keyVDown?.post(tap: .cghidEventTap)
-        keyVUp?.post(tap: .cghidEventTap)
     }
 }
 

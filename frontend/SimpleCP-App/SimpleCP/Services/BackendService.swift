@@ -49,6 +49,7 @@ class BackendService: ObservableObject {
     @Published var backendError: String?
     @Published var restartCount: Int = 0
     @Published var isMonitoring: Bool = false
+    @Published var dependenciesVerified: Bool = false  // Tracks if dependencies have been verified this session
     
     // Port 49917 derived from "SimpleCP" hash (private port range 49152-65535)
     @AppStorage("backendPort") var port: Int = 49917
@@ -77,11 +78,18 @@ class BackendService: ObservableObject {
 
     init() {
         logger.info("BackendService initialized with monitoring capabilities")
+        
+        // Synchronize apiPort with backendPort to ensure consistency
+        // APIClient uses "apiPort" while BackendService uses "backendPort"
+        // They must always be the same value
+        UserDefaults.standard.set(self.port, forKey: "apiPort")
+        logger.info("Port configuration synchronized: backendPort=\(self.port), apiPort=\(self.port)")
+        
         startMonitoring()
 
         // Auto-start backend on initialization with proper state management
         Task { @MainActor in
-            await startBackendWithExponentialBackoff()
+            await self.startBackendWithExponentialBackoff()
         }
     }
     
@@ -101,15 +109,24 @@ class BackendService: ObservableObject {
                 
                 if isRunning {
                     logger.info("✅ Backend started successfully on attempt \(attempt + 1)")
+                    // Mark dependencies as verified since backend started successfully
+                    await MainActor.run {
+                        self.dependenciesVerified = true
+                    }
                     return
                 }
             } else {
+                // Already running - mark as verified
+                await MainActor.run {
+                    self.dependenciesVerified = true
+                }
                 return
             }
         }
         
         logger.error("❌ Failed to start backend after 5 attempts")
         connectionState = .error("Failed to start after multiple attempts")
+        // Don't mark as verified if we failed to start
     }
 
     // MARK: - Port Management
@@ -190,30 +207,30 @@ class BackendService: ObservableObject {
         logger.warning("Port \(self.port) is already in use.")
         connectionState = .connecting
         
-        // Try to connect to the existing backend
+        // Try to connect to the existing backend - use explicit IPv4 to avoid IPv6 issues
         Task {
-            let url = URL(string: "http://localhost:\(port)/health")!
+            let url = URL(string: "http://127.0.0.1:\(self.port)/health")!
             do {
                 let (_, response) = try await URLSession.shared.data(from: url)
                 if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                     await MainActor.run {
-                        logger.info("✅ Existing backend on port \(self.port) is healthy, using it")
-                        isRunning = true
-                        isReady = true
-                        connectionState = .connected
-                        backendError = nil
-                        startHealthChecks()
+                        self.logger.info("✅ Existing backend on port \(self.port) is healthy, using it")
+                        self.isRunning = true
+                        self.isReady = true
+                        self.connectionState = .connected
+                        self.backendError = nil
+                        self.startHealthChecks()
                     }
                     return
                 }
             } catch {
-                logger.warning("❌ Port occupied but backend not responding, may need manual cleanup")
+                self.logger.warning("❌ Port occupied but backend not responding, may need manual cleanup")
             }
             
             await MainActor.run {
-                backendError = "Backend port \(self.port) is occupied by unresponsive process. " +
+                self.backendError = "Backend port \(self.port) is occupied by unresponsive process. " +
                     "Please kill the process manually: lsof -ti:\(self.port) | xargs kill -9"
-                connectionState = .error("Port \(self.port) occupied")
+                self.connectionState = .error("Port \(self.port) occupied")
             }
         }
     }
@@ -255,11 +272,12 @@ class BackendService: ObservableObject {
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: config.python3Path)
-        process.arguments = [config.mainPyPath.path]
+        process.arguments = [config.mainPyPath.path, "--port", "\(port)"]  // Pass port as argument
         process.currentDirectoryURL = config.backendPath
 
         var environment = ProcessInfo.processInfo.environment
         environment["PYTHONUNBUFFERED"] = "1"
+        environment["SIMPLECP_PORT"] = "\(port)"  // Pass port via environment variable
         process.environment = environment
 
         setupProcessPipes(process: process)
@@ -290,7 +308,9 @@ class BackendService: ObservableObject {
             let pid = process.processIdentifier
             try? "\(pid)".write(toFile: pidFilePath, atomically: true, encoding: .utf8)
 
-            Thread.sleep(forTimeInterval: 1.0)
+            // Give backend a bit more time to fully initialize before health check
+            // This reduces "connection refused" messages in logs
+            Thread.sleep(forTimeInterval: 1.5)
 
             Task {
                 await verifyBackendHealth()
@@ -394,5 +414,246 @@ class BackendService: ObservableObject {
     func cleanup() {
         stopMonitoring()
         stopBackend()
+    }
+    
+    // MARK: - Monitoring & Health Checks
+    
+    func startMonitoring() {
+        guard !isMonitoring else {
+            logger.info("Monitoring already active")
+            return
+        }
+        
+        isMonitoring = true
+        logger.info("Starting backend monitoring")
+        
+        // Start periodic health checks
+        startHealthChecks()
+    }
+    
+    func stopMonitoring() {
+        logger.info("Stopping backend monitoring")
+        isMonitoring = false
+        
+        monitoringTimer?.invalidate()
+        monitoringTimer = nil
+        
+        healthCheckTimer?.invalidate()
+        healthCheckTimer = nil
+    }
+    
+    func startHealthChecks() {
+        // Cancel existing timer
+        healthCheckTimer?.invalidate()
+        
+        // Start periodic health checks
+        healthCheckTimer = Timer.scheduledTimer(withTimeInterval: self.healthCheckInterval, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.performHealthCheck()
+            }
+        }
+        
+        logger.info("Health checks started (interval: \(self.healthCheckInterval)s)")
+    }
+    
+    func performHealthCheck() async {
+        guard isRunning else {
+            logger.debug("Skipping health check - backend not running")
+            return
+        }
+        
+        // Use explicit IPv4 address to avoid IPv6 resolution issues
+        let url = URL(string: "http://127.0.0.1:\(port)/health")!
+        
+        do {
+            let (_, response) = try await URLSession.shared.data(from: url)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                if !isReady {
+                    logger.info("✅ Backend health check passed - marking as ready")
+                    await MainActor.run {
+                        self.isReady = true
+                        self.connectionState = .connected
+                        self.consecutiveFailures = 0
+                    }
+                }
+            } else {
+                await MainActor.run {
+                    self.handleHealthCheckFailure()
+                }
+            }
+        } catch {
+            await MainActor.run {
+                self.handleHealthCheckFailure()
+            }
+        }
+    }
+    
+
+    
+    private func handleHealthCheckFailure() {
+        self.consecutiveFailures += 1
+        logger.warning("❌ Health check failed (consecutive: \(self.consecutiveFailures))")
+        
+        if self.consecutiveFailures >= 3 {
+            logger.error("Backend appears unhealthy after \(self.consecutiveFailures) failed checks")
+            isReady = false
+            connectionState = .error("Backend not responding")
+            
+            // Attempt auto-restart if enabled
+            if autoRestartEnabled && self.consecutiveFailures >= 3 {
+                attemptAutoRestart()
+            }
+        }
+    }
+    
+    private func attemptAutoRestart() {
+        // Check if we've exceeded max restart attempts
+        if self.restartCount >= self.maxRestartAttempts {
+            logger.error("❌ Max restart attempts (\(self.maxRestartAttempts)) exceeded")
+            connectionState = .error("Max restarts exceeded")
+            return
+        }
+        
+        // Check if we're restarting too frequently
+        if let lastRestart = self.lastRestartTime, Date().timeIntervalSince(lastRestart) < 10.0 {
+            logger.warning("⚠️ Skipping restart - too soon after last restart")
+            return
+        }
+        
+        logger.info("🔄 Attempting auto-restart (attempt \(self.restartCount + 1)/\(self.maxRestartAttempts))")
+        
+        self.lastRestartTime = Date()
+        self.restartCount += 1
+        
+        Task { @MainActor in
+            self.stopBackend()
+            try? await Task.sleep(nanoseconds: UInt64(self.restartDelay * 1_000_000_000))
+            self.startBackend()
+        }
+    }
+    
+    func resetRestartCounter() {
+        restartCount = 0
+        consecutiveFailures = 0
+        restartDelay = 2.0
+        lastRestartTime = nil
+        autoRestartEnabled = true
+        logger.info("Restart counter reset")
+    }
+    
+    // MARK: - Path Discovery
+    
+    func findProjectRoot() -> URL? {
+        // Try multiple strategies to find project root
+        
+        // Strategy 1: Check bundle's resource path (for development)
+        if let resourcePath = Bundle.main.resourcePath {
+            let resourceURL = URL(fileURLWithPath: resourcePath)
+            let projectRoot = resourceURL.deletingLastPathComponent()
+            let backendPath = projectRoot.appendingPathComponent("backend/main.py")
+            
+            if FileManager.default.fileExists(atPath: backendPath.path) {
+                logger.info("Found project root via bundle resources: \(projectRoot.path)")
+                return projectRoot
+            }
+        }
+        
+        // Strategy 2: Check current working directory
+        let currentDir = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let backendInCurrent = currentDir.appendingPathComponent("backend/main.py")
+        
+        if FileManager.default.fileExists(atPath: backendInCurrent.path) {
+            logger.info("Found project root in current directory: \(currentDir.path)")
+            return currentDir
+        }
+        
+        // Strategy 3: Check parent directories
+        var searchURL = currentDir
+        for _ in 0..<5 {
+            searchURL = searchURL.deletingLastPathComponent()
+            let backendPath = searchURL.appendingPathComponent("backend/main.py")
+            
+            if FileManager.default.fileExists(atPath: backendPath.path) {
+                logger.info("Found project root in parent directory: \(searchURL.path)")
+                return searchURL
+            }
+        }
+        
+        // Strategy 4: Check common development paths
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let commonPaths = [
+            "Code/ACTIVE/SimpleCP",
+            "Projects/SimpleCP",
+            "Developer/SimpleCP",
+            "SimpleCP"
+        ]
+        
+        for path in commonPaths {
+            let testURL = homeDir.appendingPathComponent(path)
+            let backendPath = testURL.appendingPathComponent("backend/main.py")
+            
+            if FileManager.default.fileExists(atPath: backendPath.path) {
+                logger.info("Found project root in common path: \(testURL.path)")
+                return testURL
+            }
+        }
+        
+        logger.error("❌ Could not find project root - backend/main.py not found in any location")
+        return nil
+    }
+    
+    func findPython3() -> String? {
+        // Priority 1: Check for virtual environment
+        if let projectRoot = findProjectRoot() {
+            let venvPython = projectRoot.appendingPathComponent(".venv/bin/python3")
+            if FileManager.default.fileExists(atPath: venvPython.path) {
+                logger.info("Found Python in venv: \(venvPython.path)")
+                return venvPython.path
+            }
+        }
+        
+        // Priority 2: Common Python 3 locations
+        let commonPaths = [
+            "/usr/local/bin/python3",
+            "/opt/homebrew/bin/python3",
+            "/usr/bin/python3",
+            "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3",
+        ]
+        
+        for path in commonPaths {
+            if FileManager.default.fileExists(atPath: path) {
+                logger.info("Found Python at: \(path)")
+                return path
+            }
+        }
+        
+        // Priority 3: Use 'which python3'
+        let task = Process()
+        task.launchPath = "/usr/bin/which"
+        task.arguments = ["python3"]
+        
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = Pipe()
+        
+        do {
+            try task.run()
+            task.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !path.isEmpty,
+               FileManager.default.fileExists(atPath: path) {
+                logger.info("Found Python via 'which': \(path)")
+                return path
+            }
+        } catch {
+            logger.error("Failed to run 'which python3': \(error.localizedDescription)")
+        }
+        
+        logger.error("❌ Python 3 not found")
+        return nil
     }
 }

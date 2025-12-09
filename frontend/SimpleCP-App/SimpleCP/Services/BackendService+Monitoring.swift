@@ -11,12 +11,16 @@ extension BackendService {
     // MARK: - Health Check
 
     func verifyBackendHealth() async {
-        print("🏥 Starting health check on http://localhost:\(port)/health")
+        #if DEBUG
+        print("🏥 Health check starting on http://localhost:\(port)/health")
+        #endif
         
         // First check if process is even running
         await MainActor.run {
             if let process = self.backendProcess, process.isRunning {
-                print("✅ Backend process is running (PID: \(process.processIdentifier))")
+                #if DEBUG
+                print("   Process running (PID: \(process.processIdentifier))")
+                #endif
             } else {
                 print("⚠️ Backend process is NOT running or is nil")
             }
@@ -24,7 +28,11 @@ extension BackendService {
         
         // Retry health check up to 3 times with delays
         for attempt in 1...3 {
-            print("🏥 Health check attempt \(attempt)/3...")
+            #if DEBUG
+            if attempt > 1 {
+                print("🏥 Health check retry attempt \(attempt)/3...")
+            }
+            #endif
             
             do {
                 let url = URL(string: "http://localhost:\(port)/health")!
@@ -34,11 +42,11 @@ extension BackendService {
                 let (data, response) = try await URLSession.shared.data(for: request)
 
                 if let httpResponse = response as? HTTPURLResponse {
-                    print("🏥 Health check response: HTTP \(httpResponse.statusCode)")
-                    
                     if httpResponse.statusCode == 200 {
                         if let responseText = String(data: data, encoding: .utf8) {
-                            print("🏥 Response body: \(responseText)")
+                            #if DEBUG
+                            print("🏥 Response: \(responseText)")
+                            #endif
                         }
                         await MainActor.run {
                             logger.info("Backend health check passed")
@@ -46,23 +54,24 @@ extension BackendService {
                             self.backendError = nil
                             self.isReady = true  // Backend is now ready for API calls
                             self.connectionState = .connected
-                            print("✅ Backend is CONNECTED and READY!")
+                            print("✅ Backend connected and ready")
                         }
                         return // Success! Exit the retry loop
                     } else {
-                        print("⚠️ Health check returned unexpected status: \(httpResponse.statusCode)")
+                        print("⚠️ Health check returned status: \(httpResponse.statusCode)")
                         if attempt < 3 {
-                            print("⏳ Waiting 1 second before retry...")
                             try? await Task.sleep(nanoseconds: 1_000_000_000)
                             continue
                         }
                     }
                 }
             } catch let error as URLError {
-                print("❌ Health check attempt \(attempt) failed: \(error.code.rawValue) - \(error.localizedDescription)")
+                // Only log connection refused on first attempt or last attempt
+                if attempt == 1 || attempt == 3 {
+                    print("⚠️ Health check attempt \(attempt): Connection not ready yet")
+                }
                 
                 if attempt < 3 {
-                    print("⏳ Waiting 1 second before retry...")
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
                     continue
                 }
@@ -80,18 +89,18 @@ extension BackendService {
                     diagnostic = error.localizedDescription
                 }
                 
-                print("🔍 Diagnostic: \(diagnostic)")
+                print("❌ Health check failed: \(diagnostic)")
                 logger.error("Backend health check failed: \(diagnostic)")
             } catch {
-                print("❌ Health check attempt \(attempt) failed: \(error.localizedDescription)")
+                if attempt == 3 {
+                    print("❌ Health check failed: \(error.localizedDescription)")
+                    logger.error("Backend health check failed: \(error.localizedDescription)")
+                }
                 
                 if attempt < 3 {
-                    print("⏳ Waiting 1 second before retry...")
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
                     continue
                 }
-                
-                logger.error("Backend health check failed: \(error.localizedDescription)")
             }
         }
         
@@ -108,53 +117,16 @@ extension BackendService {
         await MainActor.run {
             self.consecutiveFailures += 1
             logger.warning("Health check failure #\(self.consecutiveFailures)")
-            print("📊 Health check failure #\(self.consecutiveFailures)")
 
             if self.consecutiveFailures >= 3 && self.autoRestartEnabled {
-                logger.error("Multiple health check failures detected, triggering restart")
-                print("🔄 Multiple health check failures detected, triggering restart")
+                logger.error("Multiple health check failures, triggering restart")
+                print("🔄 Multiple health check failures, triggering restart")
                 triggerAutoRestart(reason: "Health check failures")
             }
         }
     }
 
     // MARK: - Process Monitoring
-
-    func startMonitoring() {
-        guard monitoringTimer == nil else { return }
-
-        logger.info("Starting backend process monitoring")
-        isMonitoring = true
-
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.checkBackendStatus()
-            }
-        }
-
-        startHealthChecks()
-    }
-
-    func stopMonitoring() {
-        logger.info("Stopping backend process monitoring")
-        isMonitoring = false
-
-        monitoringTimer?.invalidate()
-        monitoringTimer = nil
-
-        healthCheckTimer?.invalidate()
-        healthCheckTimer = nil
-    }
-
-    func startHealthChecks() {
-        guard healthCheckTimer == nil else { return }
-
-        healthCheckTimer = Timer.scheduledTimer(withTimeInterval: healthCheckInterval, repeats: true) { [weak self] _ in
-            Task { [weak self] in
-                await self?.verifyBackendHealth()
-            }
-        }
-    }
 
     func checkBackendStatus() {
         guard let process = backendProcess else {
@@ -231,17 +203,15 @@ extension BackendService {
     func triggerAutoRestart(reason: String) {
         guard autoRestartEnabled else {
             logger.info("Auto-restart disabled, not restarting")
-            print("⏸️ Auto-restart disabled, not restarting")
             return
         }
 
         guard restartCount < maxRestartAttempts else {
-            logger.error("Maximum restart attempts (\(self.maxRestartAttempts)) reached, disabling auto-restart")
-            print("🛑 Maximum restart attempts (\(self.maxRestartAttempts)) reached, disabling auto-restart")
-            print("💡 Manual intervention required. Try:")
+            logger.error("Maximum restart attempts (\(self.maxRestartAttempts)) reached")
+            print("🛑 Maximum restart attempts reached. Manual intervention required:")
             print("   1. Check Console.app for backend errors")
-            print("   2. Run: lsof -ti:8000 | xargs kill -9")
-            print("   3. Manually restart the backend from Settings")
+            print("   2. Run: lsof -ti:\(port) | xargs kill -9")
+            print("   3. Manually restart from Settings")
             autoRestartEnabled = false
             backendError = "Backend failed to restart after \(self.maxRestartAttempts) attempts. Please check logs."
             return
@@ -283,14 +253,5 @@ extension BackendService {
     func setAutoRestartEnabled(_ enabled: Bool) {
         autoRestartEnabled = enabled
         logger.info("Auto-restart \(enabled ? "enabled" : "disabled")")
-    }
-
-    func resetRestartCounter() {
-        restartCount = 0
-        consecutiveFailures = 0
-        restartDelay = 2.0
-        lastRestartTime = nil
-        autoRestartEnabled = true
-        logger.info("Restart counter reset")
     }
 }

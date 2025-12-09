@@ -20,8 +20,12 @@ struct SavedSnippetsColumn: View {
         if searchText.isEmpty {
             return clipboardManager.snippets
         }
-        let (_, snippets) = clipboardManager.search(query: searchText)
-        return snippets
+        // Filter snippets based on search text
+        return clipboardManager.snippets.filter { snippet in
+            snippet.name.localizedCaseInsensitiveContains(searchText) ||
+            snippet.content.localizedCaseInsensitiveContains(searchText) ||
+            snippet.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+        }
     }
 
     private var sortedFolders: [SnippetFolder] {
@@ -83,17 +87,21 @@ struct SavedSnippetsColumn: View {
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     ForEach(sortedFolders) { folder in
-                        FolderView(
-                            folder: folder,
-                            snippets: getSnippets(for: folder.id),
-                            searchText: searchText,
-                            isSelected: selectedFolderId == folder.id,
-                            hoveredSnippetId: $hoveredSnippetId,
-                            editingSnippetId: $editingSnippetId,
-                            onSelect: {
-                                selectedFolderId = folder.id
-                            }
-                        )
+                        let folderSnippets = getSnippets(for: folder.id)
+                        // Only show folder if it has snippets (especially during search)
+                        if !folderSnippets.isEmpty {
+                            FolderView(
+                                folder: folder,
+                                snippets: folderSnippets,
+                                searchText: searchText,
+                                isSelected: selectedFolderId == folder.id,
+                                hoveredSnippetId: $hoveredSnippetId,
+                                editingSnippetId: $editingSnippetId,
+                                onSelect: {
+                                    selectedFolderId = folder.id
+                                }
+                            )
+                        }
                     }
                 }
                 .padding(.vertical, 4)

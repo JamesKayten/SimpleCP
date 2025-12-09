@@ -7,12 +7,15 @@
 
 import SwiftUI
 
+@available(macOS 14.0, *)
 struct SettingsWindow: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("startMinimized") private var startMinimized = false
     @AppStorage("windowPosition") private var windowPosition = "center"
-    @AppStorage("windowSize") private var windowSize = "normal"
+    @AppStorage("windowSize") private var windowSize = "medium"
+    @AppStorage("windowWidth") private var windowWidth = 400
+    @AppStorage("windowHeight") private var windowHeight = 450
     @AppStorage("maxHistorySize") private var maxHistorySize = 50
     @AppStorage("theme") private var theme = "auto"
     @AppStorage("windowOpacity") private var windowOpacity = 0.95
@@ -21,11 +24,14 @@ struct SettingsWindow: View {
     @AppStorage("clipFont") private var clipFont = "SF Mono"
     @AppStorage("clipFontSize") private var clipFontSize = 12.0
     @AppStorage("showSnippetPreviews") private var showSnippetPreviews = false
+    @AppStorage("clipPreviewDelay") private var clipPreviewDelay = 0.7
+    @AppStorage("clipGroupFlyoutDelay") private var clipGroupFlyoutDelay = 0.5
+    @AppStorage("folderFlyoutDelay") private var folderFlyoutDelay = 1.0
     @AppStorage("apiHost") private var apiHost = "localhost"
     @AppStorage("apiPort") private var apiPort = 49917
 
     enum Tab {
-        case general, appearance, clips, snippets
+        case general, appearance, clips
     }
 
     @State private var selectedTab: Tab = .general
@@ -33,7 +39,7 @@ struct SettingsWindow: View {
     var body: some View {
         VStack(spacing: 0) {
             // Tab Bar
-            HStack(spacing: 20) {
+            HStack(spacing: 15) {
                 TabButton(
                     title: "General",
                     icon: "gearshape",
@@ -57,16 +63,9 @@ struct SettingsWindow: View {
                 ) {
                     selectedTab = .clips
                 }
-
-                TabButton(
-                    title: "Snippets",
-                    icon: "folder",
-                    isSelected: selectedTab == .snippets
-                ) {
-                    selectedTab = .snippets
-                }
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
 
             Divider()
@@ -78,32 +77,34 @@ struct SettingsWindow: View {
                     case .general:
                         GeneralSettingsView(
                             launchAtLogin: $launchAtLogin,
-                            startMinimized: $startMinimized,
-                            windowPosition: $windowPosition,
-                            windowSize: $windowSize,
+                            theme: $theme,
                             apiHost: $apiHost,
                             apiPort: $apiPort
                         )
                     case .appearance:
                         AppearanceSettingsView(
-                            theme: $theme,
+                            windowWidth: $windowWidth,
+                            windowHeight: $windowHeight,
                             windowOpacity: $windowOpacity,
                             interfaceFont: $interfaceFont,
                             interfaceFontSize: $interfaceFontSize,
                             clipFont: $clipFont,
-                            clipFontSize: $clipFontSize,
-                            showSnippetPreviews: $showSnippetPreviews
+                            clipFontSize: $clipFontSize
                         )
                     case .clips:
-                        ClipsSettingsView(
-                            maxHistorySize: $maxHistorySize
+                        DataSettingsView(
+                            maxHistorySize: $maxHistorySize,
+                            showSnippetPreviews: $showSnippetPreviews,
+                            clipPreviewDelay: $clipPreviewDelay,
+                            folderFlyoutDelay: $folderFlyoutDelay
                         )
-                    case .snippets:
-                        SnippetsSettingsView()
                     }
                 }
-                .padding()
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
+            .id(selectedTab) // Reset scroll position when tab changes
+            .defaultScrollAnchor(.top)
 
             Divider()
 
@@ -120,7 +121,72 @@ struct SettingsWindow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+        }
+        .frame(width: 360, height: 480)
+        .onAppear {
+            // Configure compact window with 1:2 aspect ratio like other preference windows
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Find the settings window - try multiple methods
+                var settingsWindow: NSWindow?
+                
+                // Method 1: Look for "Settings" title
+                settingsWindow = NSApp.windows.first(where: { $0.title == "Settings" })
+                
+                // Method 2: Look for any window that's not the main menubar window
+                if settingsWindow == nil {
+                    settingsWindow = NSApp.windows.first(where: { 
+                        $0 != MenuBarManager.shared.menuBarWindow && 
+                        $0.isVisible &&
+                        $0.contentViewController != nil
+                    })
+                }
+                
+                // Method 3: Look for the most recently ordered window
+                if settingsWindow == nil {
+                    settingsWindow = NSApp.orderedWindows.first(where: { 
+                        $0 != MenuBarManager.shared.menuBarWindow 
+                    })
+                }
+                
+                guard let window = settingsWindow else {
+                    #if DEBUG
+                    print("⚠️ Could not find settings window to configure")
+                    print("Available windows: \(NSApp.windows.map { "\($0.title) - \(type(of: $0))" })")
+                    #endif
+                    return
+                }
+                
+                #if DEBUG
+                print("🔧 Configuring settings window: \(window.title)")
+                #endif
+                
+                // Set initial size - tall and narrow (1:2 ratio)
+                window.setContentSize(NSSize(width: 360, height: 480))
+                
+                // Set minimum size
+                window.minSize = NSSize(width: 360, height: 480)
+                
+                // Set maximum size
+                window.maxSize = NSSize(width: 450, height: 600)
+                
+                // Make it resizable
+                window.styleMask.insert(.resizable)
+                
+                // Set window level to appear above the floating menu bar window
+                window.level = .modalPanel
+                
+                // Ensure it's visible
+                window.isReleasedWhenClosed = false
+                
+                // Center the window
+                window.center()
+                
+                // Bring to front
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
         }
     }
 
@@ -128,13 +194,18 @@ struct SettingsWindow: View {
         launchAtLogin = false
         startMinimized = false
         windowPosition = "center"
-        windowSize = "normal"
+        windowSize = "medium"
+        windowWidth = 400
+        windowHeight = 450
         maxHistorySize = 50
         theme = "auto"
         windowOpacity = 0.95
         interfaceFontSize = 13.0
         clipFontSize = 12.0
         showSnippetPreviews = false
+        clipPreviewDelay = 0.7
+        clipGroupFlyoutDelay = 0.5
+        folderFlyoutDelay = 1.0
     }
 }
 
@@ -148,14 +219,14 @@ struct TabButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 18))
+                    .font(.system(size: 16))
                 Text(title)
-                    .font(.system(size: 11))
+                    .font(.system(size: 10))
             }
             .foregroundColor(isSelected ? .accentColor : .secondary)
-            .frame(minWidth: 80)
+            .frame(minWidth: 70)
         }
         .buttonStyle(.plain)
     }
@@ -164,7 +235,13 @@ struct TabButton: View {
 // MARK: - Preview
 
 #Preview {
-    SettingsWindow()
-        .environmentObject(ClipboardManager())
-        .frame(width: 500, height: 400)
+    if #available(macOS 14.0, *) {
+        SettingsWindow()
+            .environmentObject(ClipboardManager())
+            .frame(width: 500, height: 400)
+    } else {
+        // Fallback on earlier versions
+    }
 }
+
+

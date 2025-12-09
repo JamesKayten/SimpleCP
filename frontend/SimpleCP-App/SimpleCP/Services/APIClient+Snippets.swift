@@ -10,7 +10,7 @@ import Foundation
 extension APIClient {
     // MARK: - Snippet Operations
 
-    func createSnippet(name: String, content: String, folder: String, tags: [String]) async throws {
+    func createSnippet(name: String, content: String, folder: String, tags: [String], clipId: String? = nil) async throws {
         return try await executeWithRetry(operation: "Create snippet '\(name)' in folder '\(folder)'") {
             let urlString = "\(self.baseURL)/api/snippets"
 
@@ -24,15 +24,23 @@ extension APIClient {
             request.setValue("keep-alive", forHTTPHeaderField: "Connection")
             request.timeoutInterval = 30.0  // Increased timeout for potentially large snippets
 
-            let body: [String: Any] = [
+            // Build request body - only include clip_id if provided
+            var body: [String: Any] = [
                 "name": name,
                 "content": content,
                 "folder": folder,
                 "tags": tags
             ]
+            
+            // Only include clip_id if it exists (from clipboard history)
+            if let clipId = clipId {
+                body["clip_id"] = clipId
+                self.logger.info("📡 API: Creating snippet '\(name)' in folder '\(folder)' with clip_id '\(clipId)'")
+            } else {
+                self.logger.info("📡 API: Creating snippet '\(name)' in folder '\(folder)' (no clip_id - direct creation)")
+            }
+            
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-            self.logger.info("📡 API: Creating snippet '\(name)' in folder '\(folder)'")
 
             do {
                 let (data, response) = try await URLSession.shared.data(for: request)

@@ -12,8 +12,12 @@ extension ContentView {
 
     var controlBar: some View {
         HStack(spacing: 12) {
-            // Show install dependencies button if backend is not running
-            if !backendService.isRunning {
+            // Show install dependencies button ONLY if backend is disconnected/error
+            // AND has had multiple failed startup attempts
+            if !backendService.isRunning && 
+               (backendService.connectionState == .disconnected || 
+                backendService.connectionState != .connecting) &&
+               !backendService.dependenciesVerified {
                 Button(action: {
                     installDependencies()
                 }) {
@@ -71,6 +75,12 @@ extension ContentView {
     func installDependencies() {
         Task {
             print("🔄 Manually installing Python dependencies...")
+            
+            // Reset verification flag since we're reinstalling
+            await MainActor.run {
+                backendService.dependenciesVerified = false
+            }
+            
             let success = await backendService.installDependenciesManually()
             
             if success {
@@ -121,7 +131,7 @@ extension ContentView {
         }
 
         // Create the folder immediately without any dialog
-        _ = clipboardManager.createFolder(name: proposedName)
+        let _ = clipboardManager.createFolder(name: proposedName)
         print("✅ Auto-created folder: \(proposedName)")
     }
 

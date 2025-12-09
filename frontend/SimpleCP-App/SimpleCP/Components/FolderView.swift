@@ -23,6 +23,8 @@ struct FolderView: View {
     @State private var showFlyout = false
     @State private var hoverTimer: Timer?
     @State private var isFlyoutHovered = false
+    @State private var hideWorkItem: DispatchWorkItem?
+    @AppStorage("folderFlyoutDelay") private var folderFlyoutDelay = 1.0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -70,8 +72,13 @@ struct FolderView: View {
             .onHover { hovering in
                 isHovered = hovering
                 if hovering {
-                    // Start timer to show flyout after 1 second
-                    hoverTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                    // Cancel any pending hide operations
+                    hideWorkItem?.cancel()
+                    hideWorkItem = nil
+                    
+                    // Start timer to show flyout after user-configured delay
+                    hoverTimer?.invalidate()
+                    hoverTimer = Timer.scheduledTimer(withTimeInterval: folderFlyoutDelay, repeats: false) { _ in
                         if !snippets.isEmpty {
                             showFlyout = true
                         }
@@ -80,12 +87,16 @@ struct FolderView: View {
                     // Cancel timer if we stop hovering
                     hoverTimer?.invalidate()
                     hoverTimer = nil
+                    
                     // Hide flyout after a short delay, unless hovering over flyout
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        if !isFlyoutHovered {
-                            showFlyout = false
+                    let workItem = DispatchWorkItem { [weak hoverTimer] in
+                        guard hoverTimer == nil else { return } // Timer is still active, abort
+                        if !self.isFlyoutHovered {
+                            self.showFlyout = false
                         }
                     }
+                    hideWorkItem = workItem
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: workItem)
                 }
             }
             .popover(isPresented: $showFlyout, arrowEdge: .trailing) {
@@ -97,11 +108,18 @@ struct FolderView: View {
                         isFlyoutHovered = hovering
                         if !hovering {
                             // Hide flyout when mouse leaves
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                if !isHovered && !isFlyoutHovered {
-                                    showFlyout = false
+                            let workItem = DispatchWorkItem {
+                                if !self.isHovered && !self.isFlyoutHovered {
+                                    self.showFlyout = false
                                 }
                             }
+                            self.hideWorkItem?.cancel()
+                            self.hideWorkItem = workItem
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: workItem)
+                        } else {
+                            // Cancel hide if hovering back over flyout
+                            self.hideWorkItem?.cancel()
+                            self.hideWorkItem = nil
                         }
                     },
                     onClose: {
@@ -130,6 +148,13 @@ struct FolderView: View {
                     deleteFolder()
                 }
             }
+        }
+        .onDisappear {
+            // Clean up timers and work items when view disappears
+            hoverTimer?.invalidate()
+            hoverTimer = nil
+            hideWorkItem?.cancel()
+            hideWorkItem = nil
         }
     }
 
@@ -177,93 +202,7 @@ struct FolderView: View {
         )
     }
     
-    private func pasteToActiveApp() {
-        // Check if we have accessibility permissions
-        let trusted = AXIsProcessTrusted()
-        
-        if !trusted {
-            // Show alert and open System Settings
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = "Accessibility Permission Required"
-                alert.informativeText = "SimpleCP needs Accessibility permissions to paste automatically.\n\nClick 'Open Settings' to grant permission, then restart SimpleCP."
-                alert.addButton(withTitle: "Open Settings")
-                alert.addButton(withTitle: "Cancel")
-                alert.alertStyle = .informational
-                
-                // Ensure alert appears in front
-                if let window = NSApp.keyWindow ?? NSApp.windows.first {
-                    alert.beginSheetModal(for: window) { response in
-                        if response == .alertFirstButtonReturn {
-                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }
-                    }
-                } else {
-                    if alert.runModal() == .alertFirstButtonReturn {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-            }
-            return
-        }
-        
-        // Create a paste event (Cmd+V)
-        let source = CGEventSource(stateID: .hidSystemState)
-        
-        // Key down event for Cmd+V
-        let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
-        keyVDown?.flags = .maskCommand
-        
-        // Key up event for Cmd+V
-        let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
-        keyVUp?.flags = .maskCommand
-        
-        // Post the events
-        keyVDown?.post(tap: .cghidEventTap)
-        keyVUp?.post(tap: .cghidEventTap)
-    }
-    
-    private func applyFlyoutAppearance() {
-        // Find the flyout popover window among all windows
-        // The flyout should be the most recently created popover
-        for window in NSApp.windows {
-            // Check if this is a popover window that's not the main menubar popover
-            if let popoverWindow = window as? NSPanel,
-               popoverWindow.styleMask.contains(.nonactivatingPanel),
-               window.isVisible {
-                
-                // Make the flyout fully opaque regardless of main window opacity
-                popoverWindow.isOpaque = true
-                popoverWindow.alphaValue = 1.0
-                popoverWindow.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(1.0)
-                
-                // Apply proper appearance based on theme
-                let theme = UserDefaults.standard.string(forKey: "theme") ?? "auto"
-                switch theme {
-                case "light":
-                    popoverWindow.appearance = NSAppearance(named: .aqua)
-                case "dark":
-                    popoverWindow.appearance = NSAppearance(named: .darkAqua)
-                default: // "auto"
-                    popoverWindow.appearance = nil // Use system default
-                }
-                
-                // Ensure proper shadow and corner radius
-                popoverWindow.hasShadow = true
-                if let contentView = popoverWindow.contentView {
-                    contentView.wantsLayer = true
-                    contentView.layer?.cornerRadius = 3.0
-                    contentView.layer?.masksToBounds = true
-                }
-                
-                break // Only apply to the first matching window
-            }
-        }
-    }
+
 }
 
 // MARK: - Folder Snippets Flyout

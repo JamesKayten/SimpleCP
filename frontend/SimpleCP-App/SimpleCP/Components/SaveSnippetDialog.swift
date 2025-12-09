@@ -47,15 +47,20 @@ struct SaveSnippetDialog: View {
                 .textFieldStyle(.roundedBorder)
 
             Text("Folder:").font(.caption)
-            VStack(spacing: 2) {
-                folderRow(label: "None", folderId: nil)
-                ForEach(clipboardManager.folders) { folder in
-                    folderRow(label: "\(folder.icon) \(folder.name)", folderId: folder.id)
+            ScrollView {
+                VStack(spacing: 2) {
+                    folderRow(label: "None", folderId: nil)
+                    ForEach(clipboardManager.folders) { folder in
+                        folderRow(label: "\(folder.icon) \(folder.name)", folderId: folder.id)
+                            .id(folder.id) // Ensure unique IDs for proper updates
+                    }
                 }
+                .padding(4)
             }
-            .frame(maxHeight: 60)
+            .frame(maxHeight: 100)
             .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(4)
+            .border(Color.gray.opacity(0.3), width: 1)
 
             Button(action: {
                 createNewFolder.toggle()
@@ -73,18 +78,10 @@ struct SaveSnippetDialog: View {
                         .textFieldStyle(.roundedBorder)
                         .font(.caption)
                         .onSubmit {
-                            guard !newFolderName.isEmpty else { return }
-                            let newFolderID = clipboardManager.createFolder(name: newFolderName)
-                            selectedFolderId = newFolderID
-                            createNewFolder = false
-                            newFolderName = ""
+                            createFolderAndSelect()
                         }
                     Button(action: {
-                        guard !newFolderName.isEmpty else { return }
-                        let newFolderID = clipboardManager.createFolder(name: newFolderName)
-                        selectedFolderId = newFolderID
-                        createNewFolder = false
-                        newFolderName = ""
+                        createFolderAndSelect()
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(newFolderName.isEmpty ? .gray : .blue)
@@ -169,5 +166,23 @@ struct SaveSnippetDialog: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+    
+    private func createFolderAndSelect() {
+        guard !newFolderName.isEmpty else { return }
+        
+        // Create the folder (it will be inserted at the top of the list)
+        let newFolder = clipboardManager.createFolder(name: newFolderName)
+        
+        // Wait a tiny bit for the UI to update, then select it
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation {
+                selectedFolderId = newFolder.id
+            }
+        }
+        
+        // Clear the text field and hide the create folder UI
+        newFolderName = ""
+        createNewFolder = false
     }
 }

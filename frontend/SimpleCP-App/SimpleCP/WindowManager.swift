@@ -12,47 +12,56 @@ import AppKit
 class WindowManager: ObservableObject {
     static let shared = WindowManager()
     
-    // Store a reference to the environment's openWindow action
-    static var openWindowAction: ((String) -> Void)?
+    // Store a reference to the environment's openSettings action
+    static var openSettingsAction: (() -> Void)?
     
     @MainActor func openSettingsWindow() {
-        // Activate the app first
-        NSApp.activate(ignoringOtherApps: true)
+        // DON'T hide the main window - we want to see it resize in real-time
         
-        // Find existing settings window and bring it to front
-        if let settingsWindow = NSApp.windows.first(where: { $0.title == "Settings" }) {
-            settingsWindow.makeKeyAndOrderFront(nil)
-            settingsWindow.center()
-            return
+        #if DEBUG
+        print("🔧 Opening Settings window (keeping main window visible)")
+        #endif
+        
+        // Temporarily ensure app is in regular mode to show settings window
+        let currentPolicy = NSApp.activationPolicy()
+        let wasAccessory = (currentPolicy == .accessory)
+        
+        if wasAccessory {
+            NSApp.setActivationPolicy(.regular)
         }
         
-        // If no window exists, try to open it via the stored action
-        if let openWindow = WindowManager.openWindowAction {
-            openWindow("settings")
+        // Open settings
+        if let openSettings = WindowManager.openSettingsAction {
+            openSettings()
         } else {
-            // Fallback: manually create the settings window
-            let settingsView = SettingsWindow()
-                .environmentObject(ClipboardManager.shared)
-                .environmentObject(BackendService.shared)
-            
-            let hostingController = NSHostingController(rootView: settingsView)
-            let window = NSWindow(contentViewController: hostingController)
-            window.title = "Settings"
-            window.setContentSize(NSSize(width: 500, height: 400))
-            window.center()
-            window.makeKeyAndOrderFront(nil)
-            window.level = .floating
+            #if DEBUG
+            print("⚠️ WindowManager.openSettingsAction not set")
+            #endif
+        }
+        
+        // Restore accessory mode after a delay if needed
+        if wasAccessory {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                // Only restore if user still has "Show in Dock" disabled
+                let showInDock = UserDefaults.standard.bool(forKey: "showInDock")
+                if !showInDock {
+                    NSApp.setActivationPolicy(.accessory)
+                }
+            }
         }
     }
 }
 
 // Add shared instances to ClipboardManager and BackendService
 extension ClipboardManager {
+    private static var _shared: ClipboardManager?
+    
     static var shared: ClipboardManager {
-        // This will be set by the App
-        return _shared ?? ClipboardManager()
+        guard let instance = _shared else {
+            fatalError("ClipboardManager.shared accessed before makeShared() was called")
+        }
+        return instance
     }
-    private static weak var _shared: ClipboardManager?
     
     func makeShared() {
         ClipboardManager._shared = self
@@ -60,11 +69,14 @@ extension ClipboardManager {
 }
 
 extension BackendService {
+    private static var _shared: BackendService?
+    
     static var shared: BackendService {
-        // This will be set by the App
-        return _shared ?? BackendService()
+        guard let instance = _shared else {
+            fatalError("BackendService.shared accessed before makeShared() was called")
+        }
+        return instance
     }
-    private static weak var _shared: BackendService?
     
     func makeShared() {
         BackendService._shared = self

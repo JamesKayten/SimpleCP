@@ -4,156 +4,27 @@ import SwiftUI
 // MARK: - General Settings View
 struct GeneralSettingsView: View {
     @Binding var launchAtLogin: Bool
-    @Binding var startMinimized: Bool
-    @Binding var windowPosition: String
-    @Binding var windowSize: String
+    @Binding var theme: String
     @Binding var apiHost: String
     @Binding var apiPort: Int
     @AppStorage("showInDock") private var showInDock = true
+    
+    @State private var hasAppeared = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("GENERAL SETTINGS")
-                .font(.headline)
+                .font(.subheadline)
+                .fontWeight(.semibold)
 
             // Startup
             GroupBox(label: Text("Startup")) {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
                     Toggle("Launch at login", isOn: $launchAtLogin)
-                    Toggle("Start minimized", isOn: $startMinimized)
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, 4)
             }
             
-            // Menu Bar Behavior
-            GroupBox(label: Text("Menu Bar")) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Show app icon in Dock", isOn: $showInDock)
-                        .onChange(of: showInDock) { newValue in
-                            // Update activation policy immediately
-                            NSApp.setActivationPolicy(newValue ? .regular : .accessory)
-                        }
-                    
-                    Text("Showing in Dock fixes keyboard input issues in dialogs")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            }
-
-            // Window
-            GroupBox(label: Text("Window")) {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Position:")
-                        Picker("", selection: $windowPosition) {
-                            Text("Center").tag("center")
-                            Text("Remember last position").tag("remember")
-                        }
-                        .pickerStyle(.radioGroup)
-                    }
-
-                    HStack {
-                        Text("Size:")
-                        Picker("", selection: $windowSize) {
-                            Text("Compact").tag("compact")
-                            Text("Normal").tag("normal")
-                            Text("Large").tag("large")
-                        }
-                        .pickerStyle(.radioGroup)
-                    }
-                    
-                    Text("Size changes apply immediately")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            }
-
-            // API Configuration
-            GroupBox(label: Text("Backend API")) {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Host:")
-                        TextField("localhost", text: $apiHost)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(width: 150)
-                            .disabled(true) // Localhost only for now
-                    }
-
-                    HStack {
-                        Text("Port:")
-                        TextField("49917", value: $apiPort, format: .number)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(width: 100)
-                        
-                        Text("(Changes require restart)")
-                            .font(.caption2)
-                            .foregroundColor(.orange)
-                    }
-
-                    Text("⚠️ Backend must be manually reconfigured to use a different port")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            }
-
-            // Shortcuts
-            GroupBox(label: Text("Keyboard Shortcuts")) {
-                VStack(alignment: .leading, spacing: 12) {
-                    ShortcutRow(label: "Open SimpleCP:", shortcut: "⌘⌥V")
-                    ShortcutRow(label: "Quick search:", shortcut: "⌘⌥F")
-                    ShortcutRow(label: "Paste #1:", shortcut: "⌘⌥1")
-                }
-                .padding(.vertical, 8)
-            }
-
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-// MARK: - Shortcut Row Helper
-
-struct ShortcutRow: View {
-    let label: String
-    let shortcut: String
-
-    var body: some View {
-        HStack {
-            Text(label)
-            Spacer()
-            Text(shortcut)
-                .font(.system(.body, design: .monospaced))
-                .padding(4)
-                .background(Color.secondary.opacity(0.1))
-                .cornerRadius(4)
-            Button("Set") {
-                // TODO: Implement shortcut customization
-            }
-            .buttonStyle(.bordered)
-        }
-    }
-}
-
-// MARK: - Appearance Settings View
-
-struct AppearanceSettingsView: View {
-    @Binding var theme: String
-    @Binding var windowOpacity: Double
-    @Binding var interfaceFont: String
-    @Binding var interfaceFontSize: Double
-    @Binding var clipFont: String
-    @Binding var clipFontSize: Double
-    @Binding var showSnippetPreviews: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("APPEARANCE SETTINGS")
-                .font(.headline)
-
             // Theme
             GroupBox(label: Text("Theme")) {
                 HStack {
@@ -164,11 +35,155 @@ struct AppearanceSettingsView: View {
                     }
                     .pickerStyle(.radioGroup)
                     .onChange(of: theme) { newValue in
+                        guard hasAppeared else { return }
                         // Apply theme change immediately to main window and settings window
                         applyThemeToAllWindows(newValue)
                     }
 
                     Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            
+            // Menu Bar Behavior
+            GroupBox(label: Text("Menu Bar")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Show app icon in Dock", isOn: $showInDock)
+                        .onChange(of: showInDock) { newValue in
+                            guard hasAppeared else { return }
+                            // Update activation policy immediately
+                            NSApp.setActivationPolicy(newValue ? .regular : .accessory)
+                        }
+                    
+                    Text("Showing in Dock fixes keyboard input issues in dialogs")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+
+            // API Configuration
+            GroupBox(label: Text("Backend API")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Host:")
+                        TextField("localhost", text: $apiHost)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 150)
+                            .disabled(true) // Localhost only for now
+                    }
+
+                    HStack {
+                        Text("Port:")
+                        TextField("49917", value: $apiPort, formatter: NumberFormatter())
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 100)
+                    }
+
+                    Text("Default port is 49917. Restart the app after changing.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            hasAppeared = true
+        }
+        .onDisappear {
+            hasAppeared = false
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func applyThemeToAllWindows(_ theme: String) {
+        // Update the main popover window
+        DispatchQueue.main.async {
+            MenuBarManager.shared.updatePopoverAppearance()
+            
+            // Update the settings window
+            if let settingsWindow = NSApp.windows.first(where: { $0.title == "Settings" }) {
+                switch theme {
+                case "light":
+                    settingsWindow.appearance = NSAppearance(named: .aqua)
+                case "dark":
+                    settingsWindow.appearance = NSAppearance(named: .darkAqua)
+                default: // "auto"
+                    settingsWindow.appearance = nil // Use system default
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Appearance Settings View
+
+struct AppearanceSettingsView: View {
+    @Binding var windowWidth: Int
+    @Binding var windowHeight: Int
+    @Binding var windowOpacity: Double
+    @Binding var interfaceFont: String
+    @Binding var interfaceFontSize: Double
+    @Binding var clipFont: String
+    @Binding var clipFontSize: Double
+    
+    // Debouncing state for opacity changes
+    @State private var opacityDebounceTask: Task<Void, Never>?
+    @State private var lastAppliedOpacity: Double = 0.0
+    @State private var hasAppeared = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Window Size
+            GroupBox(label: Text("Window Size")) {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Width Slider
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Width:")
+                                    .frame(width: 50, alignment: .leading)
+                                
+                                Slider(value: Binding(
+                                    get: { Double(windowWidth) },
+                                    set: { windowWidth = Int($0) }
+                                ), in: 250...800, step: 10)
+                                .onChange(of: windowWidth) { newValue in
+                                    guard hasAppeared else { return }
+                                    MenuBarManager.shared.updateWindowSize(width: newValue, height: windowHeight)
+                                }
+                                
+                                Text("\(windowWidth)px")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 60, alignment: .trailing)
+                            }
+                        }
+                        
+                        // Height Slider
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Height:")
+                                    .frame(width: 50, alignment: .leading)
+                                
+                                Slider(value: Binding(
+                                    get: { Double(windowHeight) },
+                                    set: { windowHeight = Int($0) }
+                                ), in: 300...800, step: 10)
+                                .onChange(of: windowHeight) { newValue in
+                                    guard hasAppeared else { return }
+                                    MenuBarManager.shared.updateWindowSize(width: windowWidth, height: newValue)
+                                }
+                                
+                                Text("\(windowHeight)px")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 60, alignment: .trailing)
+                            }
+                        }
                 }
                 .padding(.vertical, 8)
             }
@@ -186,8 +201,15 @@ struct AppearanceSettingsView: View {
                             Text("Opacity")
                         }
                         .onChange(of: windowOpacity) { newValue in
-                            // Apply opacity change immediately to main window
-                            applyOpacityToMainWindow(newValue)
+                            guard hasAppeared else { return }
+                            // Debounce opacity changes to avoid excessive updates while sliding
+                            opacityDebounceTask?.cancel()
+                            opacityDebounceTask = Task { @MainActor in
+                                // Wait a brief moment to see if more changes are coming
+                                try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+                                guard !Task.isCancelled else { return }
+                                applyOpacityToMainWindow(newValue)
+                            }
                         }
                         
                         Text("100%")
@@ -249,12 +271,141 @@ struct AppearanceSettingsView: View {
                 .padding(.vertical, 8)
             }
 
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            // Initialize the tracking variable to prevent initial spurious updates
+            lastAppliedOpacity = windowOpacity
+            // Mark that the view has appeared - now we can process changes
+            hasAppeared = true
+        }
+        .onDisappear {
+            // Cancel any pending tasks when view disappears
+            opacityDebounceTask?.cancel()
+            opacityDebounceTask = nil
+            hasAppeared = false
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func applyOpacityToMainWindow(_ opacity: Double) {
+        // Prevent redundant updates - only apply if the value has actually changed
+        guard abs(lastAppliedOpacity - opacity) > 0.001 else {
+            return
+        }
+        
+        // Only apply if the window actually exists and is visible
+        guard MenuBarManager.shared.isWindowVisible() else { 
+            return 
+        }
+        
+        // Update tracking variable
+        lastAppliedOpacity = opacity
+        
+        // Update the main popover window
+        MenuBarManager.shared.updatePopoverOpacity(opacity)
+    }
+}
+
+// MARK: - Data Settings View (Combined Clips + Snippets)
+
+struct DataSettingsView: View {
+    @EnvironmentObject var clipboardManager: ClipboardManager
+    @Binding var maxHistorySize: Int
+    @Binding var showSnippetPreviews: Bool
+    @Binding var clipPreviewDelay: Double
+    @Binding var folderFlyoutDelay: Double
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("CLIPS & SNIPPETS")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+
             // Display Options
-            GroupBox(label: Text("Display Options")) {
+            GroupBox {
                 VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Show snippet previews on hover", isOn: $showSnippetPreviews)
+                    Toggle("Preview on Hover", isOn: $showSnippetPreviews)
                     
-                    Text("Snippet previews appear after hovering for 1.5 seconds. Folders show their contents in a flyout after hovering for 1 second.")
+                    Divider()
+                        .padding(.vertical, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Clip Preview Delay
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Clip preview:")
+                                    .frame(width: 110, alignment: .leading)
+                                
+                                Slider(value: $clipPreviewDelay, in: 0.3...2.0, step: 0.1) {
+                                    Text("Delay")
+                                }
+                                
+                                Text("\(String(format: "%.1f", clipPreviewDelay))s")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 40, alignment: .trailing)
+                            }
+                        }
+                        
+                        // Folder Contents Delay
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Folder contents:")
+                                    .frame(width: 110, alignment: .leading)
+                                
+                                Slider(value: $folderFlyoutDelay, in: 0.3...2.0, step: 0.1) {
+                                    Text("Delay")
+                                }
+                                
+                                Text("\(String(format: "%.1f", folderFlyoutDelay))s")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 40, alignment: .trailing)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+
+            // Snippets Statistics
+            GroupBox(label: Text("Snippets")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Total snippets:")
+                        Spacer()
+                        Text("\(clipboardManager.snippets.count)")
+                            .foregroundColor(.secondary)
+                    }
+
+                    HStack {
+                        Text("Total folders:")
+                        Spacer()
+                        Text("\(clipboardManager.folders.count)")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+
+            // Clips History
+            GroupBox(label: Text("Clipboard History")) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Maximum history size:")
+                        Picker("", selection: $maxHistorySize) {
+                            Text("25").tag(25)
+                            Text("50").tag(50)
+                            Text("100").tag(100)
+                            Text("200").tag(200)
+                        }
+                        .frame(width: 100)
+                    }
+
+                    Text("Number of clipboard items to keep in history")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -265,37 +416,9 @@ struct AppearanceSettingsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-    // MARK: - Helper Functions
-    
-    private func applyOpacityToMainWindow(_ opacity: Double) {
-        // Find and update the main SimpleCP popover window
-        DispatchQueue.main.async {
-            MenuBarManager.shared.updatePopoverOpacity(opacity)
-        }
-    }
-    
-    private func applyThemeToAllWindows(_ theme: String) {
-        // Update the main popover window
-        DispatchQueue.main.async {
-            MenuBarManager.shared.updatePopoverAppearance()
-            
-            // Update the settings window
-            if let settingsWindow = NSApp.windows.first(where: { $0.title == "Settings" }) {
-                switch theme {
-                case "light":
-                    settingsWindow.appearance = NSAppearance(named: .aqua)
-                case "dark":
-                    settingsWindow.appearance = NSAppearance(named: .darkAqua)
-                default: // "auto"
-                    settingsWindow.appearance = nil // Use system default
-                }
-            }
-        }
-    }
 }
 
-// MARK: - Clips Settings View
+// MARK: - Clips Settings View (Legacy - kept for compatibility)
 
 struct ClipsSettingsView: View {
     @Binding var maxHistorySize: Int
@@ -325,26 +448,13 @@ struct ClipsSettingsView: View {
                 .padding(.vertical, 8)
             }
 
-            GroupBox(label: Text("Content Detection")) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Auto-detect URLs", isOn: .constant(true))
-                    Toggle("Auto-detect email addresses", isOn: .constant(true))
-                    Toggle("Auto-detect code snippets", isOn: .constant(true))
-
-                    Text("Automatically categorize clipboard content by type")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            }
-
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-// MARK: - Snippets Settings View
+// MARK: - Snippets Settings View (Legacy - kept for compatibility)
 
 struct SnippetsSettingsView: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
@@ -353,19 +463,6 @@ struct SnippetsSettingsView: View {
         VStack(alignment: .leading, spacing: 20) {
             Text("SNIPPETS SETTINGS")
                 .font(.headline)
-
-            GroupBox(label: Text("Snippet Behavior")) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Enable smart name suggestions", isOn: .constant(true))
-                    Toggle("Auto-suggest tags", isOn: .constant(true))
-                    Toggle("Confirm before deleting snippets", isOn: .constant(true))
-
-                    Text("Configure how snippets are created and managed")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            }
 
             GroupBox(label: Text("Statistics")) {
                 VStack(alignment: .leading, spacing: 8) {

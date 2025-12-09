@@ -12,8 +12,10 @@ struct ContentView: View {
     @EnvironmentObject var backendService: BackendService
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
+    @State private var isSearching = false
     @State private var selectedClipForSave: ClipItem?
     @State private var selectedFolderId: UUID?
+    @FocusState private var isSearchFieldFocused: Bool
 
     var body: some View {
         ZStack {
@@ -83,9 +85,18 @@ struct ContentView: View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
+                .font(.system(size: 14))
 
             TextField("Search clips and snippets...", text: $searchText)
                 .textFieldStyle(.plain)
+                .font(.system(size: 13))
+                .focused($isSearchFieldFocused)
+                .onChange(of: isSearchFieldFocused) { focused in
+                    if focused {
+                        // Make the window key so it can receive keyboard input
+                        MenuBarManager.shared.makeWindowKey()
+                    }
+                }
 
             if !searchText.isEmpty {
                 Button(action: {
@@ -97,11 +108,22 @@ struct ContentView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(8)
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(6)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(NSColor.textBackgroundColor))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isSearchFieldFocused = true
+        }
         .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
     }
 }
 

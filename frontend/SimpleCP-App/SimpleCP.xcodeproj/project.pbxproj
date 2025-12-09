@@ -8,18 +8,44 @@
 
 /* Begin PBXBuildFile section */
 		2809343A2EE3961E007FFA9E /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280934392EE3961E007FFA9E /* WindowManager.swift */; };
-		28494E662EE3A5AE00CA89AE /* ClipboardManager+Folders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28494E652EE3A5AE00CA89AE /* ClipboardManager+Folders.swift */; };
+		2811D1872EE7175200F0E743 /* FLYOUT_DELAY_FEATURE.md in Resources */ = {isa = PBXBuildFile; fileRef = 2811D1862EE7175200F0E743 /* FLYOUT_DELAY_FEATURE.md */; };
+		2811D1892EE7177100F0E743 /* FLYOUT_DELAY_UI_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 2811D1882EE7177100F0E743 /* FLYOUT_DELAY_UI_GUIDE.md */; };
+		28134EF72EE7A13F00353A53 /* BACKEND_FIX_INSTRUCTIONS.md in Resources */ = {isa = PBXBuildFile; fileRef = 28134EF62EE7A13F00353A53 /* BACKEND_FIX_INSTRUCTIONS.md */; };
+		28134EF92EE7A61500353A53 /* BACKEND_FIX_SIMPLE.md in Resources */ = {isa = PBXBuildFile; fileRef = 28134EF82EE7A61500353A53 /* BACKEND_FIX_SIMPLE.md */; };
+		28151F132EE62F9200797750 /* BUG_FIXES_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 28151F122EE62F9200797750 /* BUG_FIXES_DEC7.md */; };
+		28151F152EE6330F00797750 /* IMMEDIATE_FIX_NEEDED.md in Resources */ = {isa = PBXBuildFile; fileRef = 28151F142EE6330F00797750 /* IMMEDIATE_FIX_NEEDED.md */; };
+		285441422EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 285441412EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md */; };
+		285441442EE5D74D006B8CC9 /* PORT_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 285441432EE5D74D006B8CC9 /* PORT_FIX_DEC7.md */; };
+		285441462EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 285441452EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md */; };
 		287378EF2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */; };
 		287378F12EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */; };
 		287378F32EE4ACA5003DC457 /* check_backend_structure.sh in Resources */ = {isa = PBXBuildFile; fileRef = 287378F22EE4ACA5003DC457 /* check_backend_structure.sh */; };
 		287378F52EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 287378F42EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md */; };
+		287574682EE4FC6D001F548B /* UI_UX_IMPROVEMENTS_DEC6.md in Resources */ = {isa = PBXBuildFile; fileRef = 287574672EE4FC6D001F548B /* UI_UX_IMPROVEMENTS_DEC6.md */; };
+		287667722EE505B100871224 /* MenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287667712EE505B100871224 /* MenuBarManager.swift */; };
+		288341342EE635550087B708 /* FOLDER_SYNC_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 288341332EE635550087B708 /* FOLDER_SYNC_FIX.md */; };
+		288341362EE636CE0087B708 /* SNIPPET_SAVE_404_FIX_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 288341352EE636CE0087B708 /* SNIPPET_SAVE_404_FIX_DEC7.md */; };
+		2885B66C2EE5CFE000048E0A /* configure_backend_port.sh in Resources */ = {isa = PBXBuildFile; fileRef = 2885B66B2EE5CFE000048E0A /* configure_backend_port.sh */; };
+		2885B66E2EE5D00600048E0A /* PORT_49917_SETUP.md in Resources */ = {isa = PBXBuildFile; fileRef = 2885B66D2EE5D00600048E0A /* PORT_49917_SETUP.md */; };
+		2885B6702EE5D01600048E0A /* test_port_setup.sh in Resources */ = {isa = PBXBuildFile; fileRef = 2885B66F2EE5D01600048E0A /* test_port_setup.sh */; };
+		2885B6722EE5D02800048E0A /* check_backend_port_config.sh in Resources */ = {isa = PBXBuildFile; fileRef = 2885B6712EE5D02800048E0A /* check_backend_port_config.sh */; };
+		2885B6742EE5D04F00048E0A /* PORT_49917_QUICKSTART.md in Resources */ = {isa = PBXBuildFile; fileRef = 2885B6732EE5D04F00048E0A /* PORT_49917_QUICKSTART.md */; };
+		2885B6762EE5D05500048E0A /* make_scripts_executable.sh in Resources */ = {isa = PBXBuildFile; fileRef = 2885B6752EE5D05500048E0A /* make_scripts_executable.sh */; };
+		2885B6782EE5D19D00048E0A /* FIX_VERIFICATION_REPORT.md in Resources */ = {isa = PBXBuildFile; fileRef = 2885B6772EE5D19D00048E0A /* FIX_VERIFICATION_REPORT.md */; };
+		2885B67A2EE5D38200048E0A /* BACKEND_API_404_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 2885B6792EE5D38200048E0A /* BACKEND_API_404_FIX.md */; };
+		2885B67C2EE5D39600048E0A /* HTTP_404_ERROR_FIXED.md in Resources */ = {isa = PBXBuildFile; fileRef = 2885B67B2EE5D39600048E0A /* HTTP_404_ERROR_FIXED.md */; };
+		2885B67E2EE5D44600048E0A /* AccessibilityPermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2885B67D2EE5D44600048E0A /* AccessibilityPermissionManager.swift */; };
 		28862C7C2EE4A1F500DD250B /* install_dependencies.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28862C7B2EE4A1F500DD250B /* install_dependencies.sh */; };
 		28862C7E2EE4A53400DD250B /* backend_requirements.txt in Resources */ = {isa = PBXBuildFile; fileRef = 28862C7D2EE4A53400DD250B /* backend_requirements.txt */; };
+		28ABB5832EE610A600DB7427 /* WINDOW_SIZE_REDESIGN.md in Resources */ = {isa = PBXBuildFile; fileRef = 28ABB5822EE610A600DB7427 /* WINDOW_SIZE_REDESIGN.md */; };
 		28B7BC7C2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC7B2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md */; };
 		28B7BC7E2EE4B644007A1982 /* CHANGELOG_DEC6.md in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC7D2EE4B644007A1982 /* CHANGELOG_DEC6.md */; };
 		28B7BC802EE4B732007A1982 /* kill_backend.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC7F2EE4B732007A1982 /* kill_backend.sh */; };
 		28B7BC822EE4B757007A1982 /* PORT_CONFLICT_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 28B7BC812EE4B757007A1982 /* PORT_CONFLICT_FIX.md */; };
-		28E7E5702EE39C0B006728EC /* FileMenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E7E56F2EE39C0B006728EC /* FileMenuBarManager.swift */; };
+		28B97A252EE5E76A00E239EF /* WindowConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B97A242EE5E76900E239EF /* WindowConfiguration.swift */; };
+		28CDEE2D2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 28CDEE2C2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md */; };
+		28CDEE2F2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md in Resources */ = {isa = PBXBuildFile; fileRef = 28CDEE2E2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md */; };
+		28CDEE312EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md in Resources */ = {isa = PBXBuildFile; fileRef = 28CDEE302EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md */; };
 		28F1D7842EE48FFA0088E267 /* diagnose_backend.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */; };
 		28F1D7862EE491210088E267 /* clear_sandbox.sh in Resources */ = {isa = PBXBuildFile; fileRef = 28F1D7852EE491210088E267 /* clear_sandbox.sh */; };
 		F0000001230001 /* SimpleCPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000001230000 /* SimpleCPApp.swift */; };
@@ -61,18 +87,44 @@
 
 /* Begin PBXFileReference section */
 		280934392EE3961E007FFA9E /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
-		28494E652EE3A5AE00CA89AE /* ClipboardManager+Folders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Folders.swift"; sourceTree = "<group>"; };
+		2811D1862EE7175200F0E743 /* FLYOUT_DELAY_FEATURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FLYOUT_DELAY_FEATURE.md; sourceTree = "<group>"; };
+		2811D1882EE7177100F0E743 /* FLYOUT_DELAY_UI_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FLYOUT_DELAY_UI_GUIDE.md; sourceTree = "<group>"; };
+		28134EF62EE7A13F00353A53 /* BACKEND_FIX_INSTRUCTIONS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_FIX_INSTRUCTIONS.md; sourceTree = "<group>"; };
+		28134EF82EE7A61500353A53 /* BACKEND_FIX_SIMPLE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_FIX_SIMPLE.md; sourceTree = "<group>"; };
+		28151F122EE62F9200797750 /* BUG_FIXES_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUG_FIXES_DEC7.md; sourceTree = "<group>"; };
+		28151F142EE6330F00797750 /* IMMEDIATE_FIX_NEEDED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = IMMEDIATE_FIX_NEEDED.md; sourceTree = "<group>"; };
+		285441412EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CRASH_FIX_DEC7.md; sourceTree = "<group>"; };
+		285441432EE5D74D006B8CC9 /* PORT_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PORT_FIX_DEC7.md; sourceTree = "<group>"; };
+		285441452EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SAVE_SNIPPET_FIX_DEC7.md; sourceTree = "<group>"; };
 		287378EE2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_STARTUP_FIX.md; sourceTree = "<group>"; };
 		287378F02EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_STATUS_REPORT.md; sourceTree = "<group>"; };
 		287378F22EE4ACA5003DC457 /* check_backend_structure.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_backend_structure.sh; sourceTree = "<group>"; };
 		287378F42EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_IMPORT_ERROR_FIX.md; sourceTree = "<group>"; };
+		287574672EE4FC6D001F548B /* UI_UX_IMPROVEMENTS_DEC6.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = UI_UX_IMPROVEMENTS_DEC6.md; sourceTree = "<group>"; };
+		287667712EE505B100871224 /* MenuBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarManager.swift; sourceTree = "<group>"; };
+		288341332EE635550087B708 /* FOLDER_SYNC_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FOLDER_SYNC_FIX.md; sourceTree = "<group>"; };
+		288341352EE636CE0087B708 /* SNIPPET_SAVE_404_FIX_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SNIPPET_SAVE_404_FIX_DEC7.md; sourceTree = "<group>"; };
+		2885B66B2EE5CFE000048E0A /* configure_backend_port.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = configure_backend_port.sh; sourceTree = "<group>"; };
+		2885B66D2EE5D00600048E0A /* PORT_49917_SETUP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PORT_49917_SETUP.md; sourceTree = "<group>"; };
+		2885B66F2EE5D01600048E0A /* test_port_setup.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = test_port_setup.sh; sourceTree = "<group>"; };
+		2885B6712EE5D02800048E0A /* check_backend_port_config.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_backend_port_config.sh; sourceTree = "<group>"; };
+		2885B6732EE5D04F00048E0A /* PORT_49917_QUICKSTART.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PORT_49917_QUICKSTART.md; sourceTree = "<group>"; };
+		2885B6752EE5D05500048E0A /* make_scripts_executable.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = make_scripts_executable.sh; sourceTree = "<group>"; };
+		2885B6772EE5D19D00048E0A /* FIX_VERIFICATION_REPORT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FIX_VERIFICATION_REPORT.md; sourceTree = "<group>"; };
+		2885B6792EE5D38200048E0A /* BACKEND_API_404_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BACKEND_API_404_FIX.md; sourceTree = "<group>"; };
+		2885B67B2EE5D39600048E0A /* HTTP_404_ERROR_FIXED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = HTTP_404_ERROR_FIXED.md; sourceTree = "<group>"; };
+		2885B67D2EE5D44600048E0A /* AccessibilityPermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermissionManager.swift; sourceTree = "<group>"; };
 		28862C7B2EE4A1F500DD250B /* install_dependencies.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_dependencies.sh; sourceTree = "<group>"; };
 		28862C7D2EE4A53400DD250B /* backend_requirements.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = backend_requirements.txt; sourceTree = "<group>"; };
+		28ABB5822EE610A600DB7427 /* WINDOW_SIZE_REDESIGN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = WINDOW_SIZE_REDESIGN.md; sourceTree = "<group>"; };
 		28B7BC7B2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = STARTUP_FIX_DEC6_FINAL.md; sourceTree = "<group>"; };
 		28B7BC7D2EE4B644007A1982 /* CHANGELOG_DEC6.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG_DEC6.md; sourceTree = "<group>"; };
 		28B7BC7F2EE4B732007A1982 /* kill_backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = kill_backend.sh; sourceTree = "<group>"; };
 		28B7BC812EE4B757007A1982 /* PORT_CONFLICT_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PORT_CONFLICT_FIX.md; sourceTree = "<group>"; };
-		28E7E56F2EE39C0B006728EC /* FileMenuBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMenuBarManager.swift; sourceTree = "<group>"; };
+		28B97A242EE5E76900E239EF /* WindowConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowConfiguration.swift; sourceTree = "<group>"; };
+		28CDEE2C2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODE_CLEANUP_DEC7.md; sourceTree = "<group>"; };
+		28CDEE2E2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION_ERRORS_DEC7.md; sourceTree = "<group>"; };
+		28CDEE302EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROJECT_STATUS_REPORT_FINAL.md; sourceTree = "<group>"; };
 		28F1D7832EE48FFA0088E267 /* diagnose_backend.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = diagnose_backend.sh; sourceTree = "<group>"; };
 		28F1D7852EE491210088E267 /* clear_sandbox.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clear_sandbox.sh; sourceTree = "<group>"; };
 		F0000000100000 /* SimpleCP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleCP.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -137,7 +189,6 @@
 		F0000000300000 /* SimpleCP */ = {
 			isa = PBXGroup;
 			children = (
-				28494E652EE3A5AE00CA89AE /* ClipboardManager+Folders.swift */,
 				F0000001230000 /* SimpleCPApp.swift */,
 				F0000002230000 /* AppDelegate.swift */,
 				F0000000310000 /* Components */,
@@ -161,6 +212,8 @@
 				28B7BC7D2EE4B644007A1982 /* CHANGELOG_DEC6.md */,
 				28B7BC7F2EE4B732007A1982 /* kill_backend.sh */,
 				28B7BC812EE4B757007A1982 /* PORT_CONFLICT_FIX.md */,
+				28B97A242EE5E76900E239EF /* WindowConfiguration.swift */,
+				28ABB5822EE610A600DB7427 /* WINDOW_SIZE_REDESIGN.md */,
 			);
 			path = SimpleCP;
 			sourceTree = "<group>";
@@ -174,6 +227,22 @@
 				F0000005230000 /* SaveSnippetDialog.swift */,
 				F0000006230000 /* SavedSnippetsColumn.swift */,
 				F0000007230000 /* SnippetDialogs.swift */,
+				287574672EE4FC6D001F548B /* UI_UX_IMPROVEMENTS_DEC6.md */,
+				287667712EE505B100871224 /* MenuBarManager.swift */,
+				2885B66B2EE5CFE000048E0A /* configure_backend_port.sh */,
+				2885B66D2EE5D00600048E0A /* PORT_49917_SETUP.md */,
+				2885B66F2EE5D01600048E0A /* test_port_setup.sh */,
+				2885B6712EE5D02800048E0A /* check_backend_port_config.sh */,
+				2885B6732EE5D04F00048E0A /* PORT_49917_QUICKSTART.md */,
+				2885B6752EE5D05500048E0A /* make_scripts_executable.sh */,
+				2885B6772EE5D19D00048E0A /* FIX_VERIFICATION_REPORT.md */,
+				2885B6792EE5D38200048E0A /* BACKEND_API_404_FIX.md */,
+				2885B67B2EE5D39600048E0A /* HTTP_404_ERROR_FIXED.md */,
+				2885B67D2EE5D44600048E0A /* AccessibilityPermissionManager.swift */,
+				285441412EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md */,
+				285441432EE5D74D006B8CC9 /* PORT_FIX_DEC7.md */,
+				285441452EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md */,
+				28151F122EE62F9200797750 /* BUG_FIXES_DEC7.md */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -181,10 +250,13 @@
 		F0000000320000 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
-				28E7E56F2EE39C0B006728EC /* FileMenuBarManager.swift */,
 				F0000009230000 /* ClipboardManager+Persistence.swift */,
 				F0000010230000 /* ClipboardManager+Snippets.swift */,
 				F0000011230000 /* ClipboardManager.swift */,
+				28151F142EE6330F00797750 /* IMMEDIATE_FIX_NEEDED.md */,
+				288341332EE635550087B708 /* FOLDER_SYNC_FIX.md */,
+				2811D1862EE7175200F0E743 /* FLYOUT_DELAY_FEATURE.md */,
+				2811D1882EE7177100F0E743 /* FLYOUT_DELAY_UI_GUIDE.md */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -213,6 +285,9 @@
 				F0000023230000 /* CreateFolderWindowManager.swift */,
 				F0000024230000 /* EditSnippetWindowManager.swift */,
 				F0000025230000 /* RenameFolderWindowManager.swift */,
+				28CDEE2C2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md */,
+				28CDEE2E2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md */,
+				28CDEE302EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -238,6 +313,9 @@
 				F0000034230000 /* SaveSnippetWindowManager.swift */,
 				F0000035230000 /* SettingsViews.swift */,
 				F0000036230000 /* SettingsWindow.swift */,
+				288341352EE636CE0087B708 /* SNIPPET_SAVE_404_FIX_DEC7.md */,
+				28134EF62EE7A13F00353A53 /* BACKEND_FIX_INSTRUCTIONS.md */,
+				28134EF82EE7A61500353A53 /* BACKEND_FIX_SIMPLE.md */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -308,18 +386,43 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2811D1872EE7175200F0E743 /* FLYOUT_DELAY_FEATURE.md in Resources */,
+				2885B67A2EE5D38200048E0A /* BACKEND_API_404_FIX.md in Resources */,
+				2885B6762EE5D05500048E0A /* make_scripts_executable.sh in Resources */,
 				287378F12EE4AB93003DC457 /* PROJECT_STATUS_REPORT.md in Resources */,
+				28CDEE2D2EE5E0A5009D68C1 /* CODE_CLEANUP_DEC7.md in Resources */,
 				28B7BC7E2EE4B644007A1982 /* CHANGELOG_DEC6.md in Resources */,
+				285441442EE5D74D006B8CC9 /* PORT_FIX_DEC7.md in Resources */,
 				28B7BC802EE4B732007A1982 /* kill_backend.sh in Resources */,
+				28CDEE312EE5E1DD009D68C1 /* PROJECT_STATUS_REPORT_FINAL.md in Resources */,
+				2885B6742EE5D04F00048E0A /* PORT_49917_QUICKSTART.md in Resources */,
+				288341362EE636CE0087B708 /* SNIPPET_SAVE_404_FIX_DEC7.md in Resources */,
+				28134EF92EE7A61500353A53 /* BACKEND_FIX_SIMPLE.md in Resources */,
+				2885B6782EE5D19D00048E0A /* FIX_VERIFICATION_REPORT.md in Resources */,
 				28862C7C2EE4A1F500DD250B /* install_dependencies.sh in Resources */,
+				285441422EE5D57F006B8CC9 /* CRASH_FIX_DEC7.md in Resources */,
+				2811D1892EE7177100F0E743 /* FLYOUT_DELAY_UI_GUIDE.md in Resources */,
+				28151F132EE62F9200797750 /* BUG_FIXES_DEC7.md in Resources */,
 				287378EF2EE4AAC5003DC457 /* BACKEND_STARTUP_FIX.md in Resources */,
 				287378F52EE4ACC8003DC457 /* BACKEND_IMPORT_ERROR_FIX.md in Resources */,
+				288341342EE635550087B708 /* FOLDER_SYNC_FIX.md in Resources */,
+				2885B6722EE5D02800048E0A /* check_backend_port_config.sh in Resources */,
 				28862C7E2EE4A53400DD250B /* backend_requirements.txt in Resources */,
+				285441462EE5D8F7006B8CC9 /* SAVE_SNIPPET_FIX_DEC7.md in Resources */,
+				2885B66E2EE5D00600048E0A /* PORT_49917_SETUP.md in Resources */,
 				28B7BC822EE4B757007A1982 /* PORT_CONFLICT_FIX.md in Resources */,
+				287574682EE4FC6D001F548B /* UI_UX_IMPROVEMENTS_DEC6.md in Resources */,
+				28CDEE2F2EE5E15C009D68C1 /* COMPILATION_ERRORS_DEC7.md in Resources */,
+				28ABB5832EE610A600DB7427 /* WINDOW_SIZE_REDESIGN.md in Resources */,
 				28B7BC7C2EE4B5C1007A1982 /* STARTUP_FIX_DEC6_FINAL.md in Resources */,
 				28F1D7862EE491210088E267 /* clear_sandbox.sh in Resources */,
+				28151F152EE6330F00797750 /* IMMEDIATE_FIX_NEEDED.md in Resources */,
 				28F1D7842EE48FFA0088E267 /* diagnose_backend.sh in Resources */,
 				287378F32EE4ACA5003DC457 /* check_backend_structure.sh in Resources */,
+				28134EF72EE7A13F00353A53 /* BACKEND_FIX_INSTRUCTIONS.md in Resources */,
+				2885B66C2EE5CFE000048E0A /* configure_backend_port.sh in Resources */,
+				2885B6702EE5D01600048E0A /* test_port_setup.sh in Resources */,
+				2885B67C2EE5D39600048E0A /* HTTP_404_ERROR_FIXED.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,11 +445,10 @@
 				F0000011230001 /* ClipboardManager.swift in Sources */,
 				F0000012230001 /* AppError.swift in Sources */,
 				F0000013230001 /* AppState.swift in Sources */,
+				28B97A252EE5E76A00E239EF /* WindowConfiguration.swift in Sources */,
 				F0000014230001 /* ClipItem.swift in Sources */,
-				28E7E5702EE39C0B006728EC /* FileMenuBarManager.swift in Sources */,
 				F0000015230001 /* Snippet.swift in Sources */,
 				F0000016230001 /* SnippetFolder.swift in Sources */,
-				28494E662EE3A5AE00CA89AE /* ClipboardManager+Folders.swift in Sources */,
 				2809343A2EE3961E007FFA9E /* WindowManager.swift in Sources */,
 				F0000017230001 /* APIClient+Folders.swift in Sources */,
 				F0000018230001 /* APIClient+Snippets.swift in Sources */,
@@ -357,6 +459,7 @@
 				F0000023230001 /* CreateFolderWindowManager.swift in Sources */,
 				F0000024230001 /* EditSnippetWindowManager.swift in Sources */,
 				F0000025230001 /* RenameFolderWindowManager.swift in Sources */,
+				2885B67E2EE5D44600048E0A /* AccessibilityPermissionManager.swift in Sources */,
 				F0000026230001 /* Constants.swift in Sources */,
 				F0000027230001 /* DateUtils.swift in Sources */,
 				F0000028230001 /* StringUtils.swift in Sources */,
@@ -366,6 +469,7 @@
 				F0000032230001 /* ContentViewSheets.swift in Sources */,
 				F0000033230001 /* FontPreferences.swift in Sources */,
 				F0000034230001 /* SaveSnippetWindowManager.swift in Sources */,
+				287667722EE505B100871224 /* MenuBarManager.swift in Sources */,
 				F0000035230001 /* SettingsViews.swift in Sources */,
 				F0000036230001 /* SettingsWindow.swift in Sources */,
 			);

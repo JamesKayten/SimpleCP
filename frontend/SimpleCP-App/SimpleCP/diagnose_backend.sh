@@ -8,14 +8,14 @@ echo "SimpleCP Backend Diagnostics"
 echo "=============================================="
 echo ""
 
-# Check if port 8000 is in use
-echo "1. Checking if port 8000 is in use..."
-PORT_PID=$(lsof -ti:8000 2>/dev/null)
+# Check if port 49917 is in use
+echo "1. Checking if port 49917 is in use..."
+PORT_PID=$(lsof -ti:49917 2>/dev/null)
 
 if [ -z "$PORT_PID" ]; then
-    echo "   ✅ Port 8000 is available"
+    echo "   ✅ Port 49917 is available"
 else
-    echo "   ⚠️  Port 8000 is in use by process: $PORT_PID"
+    echo "   ⚠️  Port 49917 is in use by process: $PORT_PID"
     ps -p $PORT_PID -o pid,command
     echo ""
     echo "   Would you like to kill this process? (y/n)"
@@ -25,7 +25,7 @@ else
         echo "   ✅ Process killed"
         sleep 1
         # Verify it's gone
-        if lsof -ti:8000 >/dev/null 2>&1; then
+        if lsof -ti:49917 >/dev/null 2>&1; then
             echo "   ❌ Process still running, may need sudo:"
             echo "      sudo kill -9 $PORT_PID"
         fi
