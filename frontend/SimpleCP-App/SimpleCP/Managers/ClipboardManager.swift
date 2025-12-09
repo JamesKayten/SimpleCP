@@ -265,12 +265,27 @@ class ClipboardManager: ObservableObject {
 
     func copyToClipboard(_ content: String) {
         ignoreNextChange = true
+        
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(content, forType: .string)
-        lastChangeCount = pasteboard.changeCount
-        currentClipboard = content
-        logger.debug("📋 Copied to clipboard: \(content.prefix(50))...")
+        
+        // Try to set the string and verify it worked
+        let success = pasteboard.setString(content, forType: .string)
+        
+        if success {
+            // Verify the content was actually written
+            if let readBack = pasteboard.string(forType: .string), readBack == content {
+                lastChangeCount = pasteboard.changeCount
+                currentClipboard = content
+                logger.debug("📋 Successfully copied to clipboard (\(content.count) chars): \(content.prefix(50))...")
+            } else {
+                logger.error("❌ Clipboard verification failed - content mismatch")
+                ignoreNextChange = false
+            }
+        } else {
+            logger.error("❌ Failed to set clipboard content")
+            ignoreNextChange = false
+        }
     }
 
     func detectContentType(_ content: String) -> ClipItem.ContentType {
