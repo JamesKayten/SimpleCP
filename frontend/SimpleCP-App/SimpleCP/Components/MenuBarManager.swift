@@ -428,16 +428,11 @@ class MenuBarManager: NSObject {
     func recreateWindow(andShow: Bool = false) {
         // Check if window was visible before closing
         let wasVisible = menuBarWindow?.isVisible ?? false
-        
-        #if DEBUG
-        let dims = WindowConfiguration.currentDimensions
-        print("🔄 Recreating window: \(dims.width)x\(dims.height), wasVisible: \(wasVisible), andShow: \(andShow)")
-        #endif
-        
+
         // Close and destroy the existing window
         menuBarWindow?.orderOut(nil)
         menuBarWindow = nil
-        
+
         // Show the panel immediately if it was visible before, or if explicitly requested
         if wasVisible || andShow {
             showPanel()
