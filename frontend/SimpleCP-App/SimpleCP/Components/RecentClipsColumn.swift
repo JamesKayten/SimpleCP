@@ -210,21 +210,7 @@ struct RecentClipsColumn: View {
     }
     
     // MARK: - Actions
-    
-    private func checkAccessibilityPermissions() -> Bool {
-        // Use AXIsProcessTrusted - the official and reliable permission check
-        // Note: This may return false immediately after granting in System Settings
-        // until the app is restarted. That's a macOS limitation we document.
-        let trusted = AXIsProcessTrusted()
-        
-        if !trusted {
-            print("⚠️ Accessibility permission not granted (AXIsProcessTrusted = false)")
-            print("ℹ️ If you just granted permission, restart SimpleCP (⌘Q)")
-        }
-        
-        return trusted
-    }
-    
+
     private func deleteSelectedClips() {
         guard !selectedClipIds.isEmpty else { return }
         
