@@ -298,27 +298,28 @@ class MenuBarManager: NSObject {
     
     /// Capture the currently active app (for "Paste Immediately" feature)
     private func capturePreviouslyActiveApp() {
-        // Only capture if we haven't already captured an app (prevent re-capturing)
-        guard previouslyActiveApp == nil || previouslyActiveApp?.isTerminated == true else {
-            print("📱 Already have captured app: \(previouslyActiveApp?.localizedName ?? "unknown")")
-            return
-        }
-        
         let workspace = NSWorkspace.shared
-        
+
         // Find the frontmost regular app that's not SimpleCP
-        previouslyActiveApp = workspace.runningApplications.first { app in
-            app.isActive && 
+        let newActiveApp = workspace.runningApplications.first { app in
+            app.isActive &&
             app.activationPolicy == .regular &&
             app.bundleIdentifier != Bundle.main.bundleIdentifier &&
             !app.isTerminated
         }
-        
-        if let app = previouslyActiveApp {
-            print("📱 Captured previous app: \(app.localizedName ?? "unknown")")
-        } else {
+
+        // Always update if we found a valid app (user may have switched apps)
+        if let app = newActiveApp {
+            if previouslyActiveApp?.processIdentifier != app.processIdentifier {
+                print("📱 Captured previous app: \(app.localizedName ?? "unknown")")
+            } else {
+                print("📱 Same app still active: \(app.localizedName ?? "unknown")")
+            }
+            previouslyActiveApp = app
+        } else if previouslyActiveApp == nil {
             print("⚠️ No previous app captured")
         }
+        // If no new app found but we have one, keep the existing one
     }
     
     func destroyWindow() {
