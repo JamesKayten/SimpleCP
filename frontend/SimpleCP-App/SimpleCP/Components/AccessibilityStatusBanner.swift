@@ -89,13 +89,9 @@ class AccessibilityPermissionMonitor: ObservableObject {
     func checkPermission() {
         let wasGranted = isGranted
 
-        // Use AXIsProcessTrusted as the primary check
-        // Also check if we've successfully pasted before (stored flag)
-        let axTrusted = AXIsProcessTrusted()
-        let hasWorkedBefore = UserDefaults.standard.bool(forKey: "accessibilityHasWorked")
-
-        // Trust either the API or our own successful paste history
-        isGranted = axTrusted || hasWorkedBefore
+        // ONLY trust AXIsProcessTrusted() - don't cache permission state
+        // Caching caused issues when rebuilding (code signature changes invalidate permission)
+        isGranted = AXIsProcessTrusted()
 
         // If permission was just granted, reset dismissed state
         if !wasGranted && isGranted {
@@ -103,23 +99,8 @@ class AccessibilityPermissionMonitor: ObservableObject {
             UserDefaults.standard.removeObject(forKey: dismissedKey)
             print("✅ Accessibility permission granted!")
         } else if wasGranted && !isGranted {
-            print("❌ Accessibility permission revoked!")
+            print("❌ Accessibility permission revoked or invalidated!")
         }
-    }
-
-    /// Call this when a paste operation succeeds to mark permission as working
-    func markPermissionAsWorking() {
-        UserDefaults.standard.set(true, forKey: "accessibilityHasWorked")
-        if !isGranted {
-            isGranted = true
-            isDismissed = false
-            print("✅ Accessibility permission marked as working (paste succeeded)")
-        }
-    }
-
-    /// Reset the "has worked" flag (e.g., when user revokes permission)
-    func resetWorkingFlag() {
-        UserDefaults.standard.removeObject(forKey: "accessibilityHasWorked")
     }
     
     func startMonitoring() {

@@ -447,26 +447,20 @@ struct FlyoutSnippetRow: View {
         )
         .contentShape(Rectangle())
         .onTapGesture {
-            onCopy()
+            // Single click = paste immediately
+            onPaste()
         }
         .contextMenu {
-            Button("Paste Immediately") {
-                onPaste()
-            }
-            .keyboardShortcut(.return)
-            
-            Divider()
-            
-            Button("Copy to Clipboard") {
+            Button("Copy Only (No Paste)") {
                 onCopy()
             }
-            
+
             Button("Edit...") {
                 onEdit()
             }
-            
+
             Divider()
-            
+
             Button("Delete") {
                 onDelete()
             }

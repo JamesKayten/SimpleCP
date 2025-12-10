@@ -109,7 +109,11 @@ struct RecentClipsColumn: View {
                             isHovered: hoveredClipId == clip.id,
                             isSelected: selectedClipIds.contains(clip.id),
                             onCopy: {
-                                copyAndRestoreFocus(clip.content)
+                                // Single click = copy and paste immediately
+                                clipboardManager.copyToClipboard(clip.content)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    pasteToActiveApp()
+                                }
                             },
                             onToggleSelect: {
                                 if selectedClipIds.contains(clip.id) {
@@ -133,16 +137,7 @@ struct RecentClipsColumn: View {
                             hoveredClipId = isHovered ? clip.id : nil
                         }
                         .contextMenu {
-                            Button("Paste Immediately") {
-                                clipboardManager.copyToClipboard(clip.content)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                    pasteToActiveApp()
-                                }
-                            }
-                            
-                            Divider()
-                            
-                            Button("Copy") {
+                            Button("Copy Only (No Paste)") {
                                 clipboardManager.copyToClipboard(clip.content)
                             }
                             Button("Save as Snippet...") {
@@ -630,7 +625,11 @@ struct HistoryGroupDisclosure: View {
                             isHovered: hoveredClipId == clip.id,
                             isSelected: selectedClipIds.contains(clip.id),
                             onCopy: {
-                                onCopyAndRestoreFocus(clip.content)
+                                // Single click = copy and paste immediately
+                                clipboardManager.copyToClipboard(clip.content)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    onPasteToActiveApp()
+                                }
                             },
                             onToggleSelect: {
                                 if selectedClipIds.contains(clip.id) {
@@ -858,32 +857,26 @@ struct FlyoutClipRow: View {
         )
         .contentShape(Rectangle())
         .onTapGesture {
-            onCopy()
+            // Single click = paste immediately (the whole point of a clipboard manager)
+            onPaste()
         }
         .contextMenu {
-            Button("Paste Immediately") {
-                onPaste()
-            }
-            .keyboardShortcut(.return)
-            
-            Divider()
-            
-            Button("Copy to Clipboard") {
+            Button("Copy Only (No Paste)") {
                 onCopy()
             }
-            
+
             Button("Save as Snippet...") {
                 onSave()
             }
-            
+
             Divider()
-            
+
             Button("Remove from History") {
                 onDelete()
             }
         }
     }
-    
+
     private var contentTypeIcon: String {
         switch clip.contentType {
         case .text: return "doc.text"
