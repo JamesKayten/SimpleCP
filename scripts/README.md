@@ -41,7 +41,7 @@ Check if the API is healthy.
 ./scripts/healthcheck.sh
 
 # Custom URL
-API_URL=http://localhost:8080 ./scripts/healthcheck.sh
+API_URL=http://localhost:49917 ./scripts/healthcheck.sh
 ```
 
 ### `clean.sh`
