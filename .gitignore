@@ -124,3 +124,5 @@ htmlcov/
 *.temp
 *.bak
 *.orig
+claude-worktrees
+worktrees/
