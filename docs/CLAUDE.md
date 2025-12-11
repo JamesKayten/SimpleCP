@@ -1,141 +1,102 @@
-# CLAUDE.md - Mandatory Session Instructions
+# CLAUDE.md - AI Development Workflow
 
-**This file is read automatically at session start. These rules are NON-NEGOTIABLE.**
+## Overview
 
----
+SimpleCP uses a **dual-AI development workflow** with two Claude instances collaborating on a shared development branch:
 
-## CRITICAL: Always Include Context
+| Instance | Name | Environment | Role |
+|----------|------|-------------|------|
+| **XC** | Xcode Claude | Xcode AI assistant | Swift/frontend development |
+| **DC** | Desktop Claude | Claude Code CLI | Python/backend, scripts, infrastructure |
 
-Every message to the user MUST include:
+## Workflow
 
-| Required | Example |
-|----------|---------|
-| **Repository** | "In **SimpleCP**..." or "In **AI-Collaboration-Management**..." |
-| **Branch** | "On branch `claude/fix-xyz-01abc...`" |
-| **File paths** | "Updated **SimpleCP/docs/BOARD.md**" |
+### Shared Development Branch
 
-**NEVER say vague things like:**
-- "Two merges remain" (WHERE?)
-- "The branch is ready" (WHICH ONE? WHICH REPO?)
-- "Check the board" (WHICH BOARD?)
+Both AIs work on the same `dev` branch (or feature branches as needed). The branch is always accessible to both:
 
----
+- **XC** sees changes via Xcode's source control
+- **DC** sees changes via git in the terminal
 
-## MANDATORY: Completion Reports
+### Coordination
 
-When you finish ANY task, give the user this report directly:
+1. **Pull before working** - Always fetch latest changes before starting work
+2. **Commit frequently** - Small, focused commits with clear messages
+3. **Push when done** - Make changes available to the other AI immediately
+4. **Communicate via commits** - Commit messages should explain intent
 
-```
-## WORK COMPLETED
-
-**Repository:** [exact repo name]
-**Branch:** [full branch name]
-
-### What was done:
-- [action 1]
-- [action 2]
-
-### Merged to main:
-- [branches merged, or "None"]
-- **Commit hash:** [hash of merged commit - REQUIRED for verification]
-
-### Sent back for refactoring:
-- [items needing work, or "None"]
-
-### Next action needed:
-- [WHO] needs to [DO WHAT] in [WHICH REPO]
-```
-
-**Do NOT just write to BOARD.md and leave. TELL THE USER DIRECTLY.**
-
----
-
-## Role Reminder
-
-- **OCC** = Developer (writes code, commits to feature branches)
-- **TCC** = Project Manager (tests, merges to main, manages workflow)
-
-OCC cannot push to main. TCC should not write implementation code.
-
----
-
-## TCC: Merge Verification (CRITICAL)
-
-Before reporting a merge complete, TCC MUST:
-1. `git fetch origin [branch]` to get latest
-2. Check branch HEAD hash
-3. Merge
-4. Report the **exact commit hash** that was merged
-
-This prevents stale merges where OCC pushed new commits during TCC's work.
-
----
-
-## TCC: Sync Confirmation (CRITICAL)
-
-After ANY merge or sync operation, TCC MUST explicitly confirm:
+### Typical Flow
 
 ```
-✅ SYNC STATUS
-- Local main:  [commit hash]
-- Remote main: [commit hash]
-- Status: IN SYNC ✓ (or OUT OF SYNC ✗)
+DC: git pull origin dev
+DC: [makes backend changes]
+DC: git commit -m "Add new API endpoint for X"
+DC: git push origin dev
+
+XC: [pulls latest]
+XC: [updates Swift code to use new endpoint]
+XC: [commits and pushes]
+
+DC: git pull origin dev
+DC: [continues work...]
 ```
 
-**Run these commands to verify:**
+## Responsibilities
+
+### XC (Xcode Claude)
+- Swift/SwiftUI frontend code
+- Xcode project configuration
+- macOS-specific features
+- UI/UX implementation
+
+### DC (Desktop Claude)
+- Python backend code
+- FastAPI endpoints
+- Shell scripts and tooling
+- Documentation
+- Git operations and branch management
+- CI/CD configuration
+
+## Guidelines
+
+### For Both AIs
+
+1. **Read before writing** - Understand existing code before modifying
+2. **Keep commits atomic** - One logical change per commit
+3. **Test your changes** - Run relevant tests before pushing
+4. **Don't break the build** - Ensure code compiles/runs before pushing
+
+### Conflict Resolution
+
+If merge conflicts occur:
+1. The AI encountering the conflict resolves it
+2. Prefer the most recent intentional change
+3. When uncertain, preserve both changes and note in commit message
+
+## Project Context
+
+### Backend (Python)
+- Entry point: `backend/daemon.py` or `backend/main.py`
+- API runs on port 8000 by default
+- Uses FastAPI with Pydantic models
+
+### Frontend (Swift)
+- Xcode project: `frontend/SimpleCP-App/SimpleCP.xcodeproj`
+- Menu bar app using SwiftUI
+- Communicates with backend via REST API
+
+### Key Commands
+
 ```bash
-git rev-parse HEAD              # Local HEAD
-git rev-parse origin/main       # Remote HEAD (after fetch)
-git status                      # Should show "up to date with origin/main"
+# Backend
+cd backend && python daemon.py          # Run backend daemon
+cd backend && python -m pytest          # Run backend tests
+
+# Frontend
+open frontend/SimpleCP-App/SimpleCP.xcodeproj  # Open in Xcode
+./scripts/build-and-run.sh              # Build and launch app
+
+# General
+make test                               # Run all tests
+make lint                               # Check code quality
 ```
-
-**The user MUST see clear confirmation that local and remote are synchronized.**
-Do NOT assume sync is complete - VERIFY and REPORT explicitly.
-
----
-
-## TCC: Board Update Required
-
-After completing ANY task from the board, TCC MUST:
-1. Update BOARD.md - mark task as ✅ COMPLETED or remove it
-2. Commit and push to main
-3. This triggers the board watcher alert so OCC knows work is done
-
-**Do not leave stale tasks on the board.** Close the loop.
-
----
-
-## AICM Sync Rule (Bidirectional)
-
-AICM framework files must stay synchronized between repositories:
-
-**Working in SimpleCP → sync TO main AICM repo:**
-- Any AICM improvements discovered during project work
-- Copy changes to AI-Collaboration-Management and commit
-
-**Working in AICM repo → sync TO SimpleCP:**
-- Any updates to CLAUDE.md, hooks, scripts, or BOARD.md
-- Copy changes to SimpleCP's AICM copy and commit
-
-**TCC is responsible for both sync directions.**
-
-After AICM work in either repo, TCC must update the other and report:
-```
-✅ AICM SYNC
-- Source: [repo where changes were made]
-- Target: [repo that was updated]
-- Files synced: [list]
-```
-
----
-
-## Session Start Checklist
-
-1. Read this file (you just did)
-2. Check `docs/BOARD.md` for current status
-3. Identify which repository you're in
-4. Acknowledge your role (OCC or TCC)
-
----
-
-**If you don't follow these rules, you're wasting the user's time.**

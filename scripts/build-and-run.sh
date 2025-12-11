@@ -6,21 +6,7 @@ set -e
 
 echo "=== SimpleCP Build & Run ==="
 
-# Find the right directory (worktree or main)
-if [ -d "/Volumes/User_Smallfavor/Users/Smallfavor/.claude-worktrees/SimpleCP" ]; then
-    # Use most recent worktree if it exists
-    WORKTREE=$(ls -td /Volumes/User_Smallfavor/Users/Smallfavor/.claude-worktrees/SimpleCP/*/ 2>/dev/null | head -1)
-    if [ -n "$WORKTREE" ] && [ -d "$WORKTREE/frontend/SimpleCP-App" ]; then
-        PROJECT_DIR="$WORKTREE"
-        echo "Using worktree: $(basename $WORKTREE)"
-    else
-        PROJECT_DIR="$HOME/Code/ACTIVE/SimpleCP"
-        echo "Using main repo"
-    fi
-else
-    PROJECT_DIR="$HOME/Code/ACTIVE/SimpleCP"
-    echo "Using main repo"
-fi
+PROJECT_DIR="$HOME/Code/ACTIVE/SimpleCP"
 
 APP_DIR="$PROJECT_DIR/frontend/SimpleCP-App"
 DERIVED="$APP_DIR/DerivedData"
@@ -36,12 +22,8 @@ sleep 0.5
 echo "2. Cleaning build artifacts..."
 rm -rf "$DERIVED"
 
-# 3. Prune stale worktrees
-echo "3. Pruning stale worktrees..."
-cd "$HOME/Code/ACTIVE/SimpleCP" && git worktree prune 2>/dev/null || true
-
-# 4. Build
-echo "4. Building..."
+# 3. Build
+echo "3. Building..."
 cd "$APP_DIR"
 xcodebuild -project SimpleCP.xcodeproj \
     -scheme SimpleCP \
@@ -58,15 +40,15 @@ fi
 echo ""
 echo "✅ Build succeeded"
 
-# 5. Check accessibility permission
+# 4. Check accessibility permission
 echo ""
-echo "5. Checking accessibility permission..."
+echo "4. Checking accessibility permission..."
 echo "   Make sure SimpleCP is enabled in:"
 echo "   System Settings → Privacy & Security → Accessibility"
 
-# 6. Launch
+# 5. Launch
 echo ""
-echo "6. Launching SimpleCP..."
+echo "5. Launching SimpleCP..."
 open "$APP_PATH"
 
 echo ""
