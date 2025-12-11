@@ -31,8 +31,6 @@ SimpleCP/
 │   │   ├── history_store.py     # Clipboard history management
 │   │   └── snippet_store.py     # Snippet/folder management
 │   ├── tests/                   # Backend-specific tests
-│   ├── ui/                      # UI utilities
-│   │   └── menu_builder.py
 │   ├── clipboard_manager.py     # Core clipboard orchestration
 │   ├── daemon.py                # Background daemon (main entry)
 │   ├── main.py                  # API-only entry point
@@ -57,8 +55,7 @@ SimpleCP/
 │           └── Info.plist             # App configuration
 │
 ├── scripts/                      # Utility scripts
-│   ├── build-and-run.sh         # Build and launch app
-│   ├── build.sh                 # General build script
+│   ├── build.sh                 # Distribution build script
 │   ├── build_python.sh          # Python package build
 │   ├── install.sh               # Installation script
 │   ├── setup_dev.sh             # Development environment setup
@@ -67,11 +64,9 @@ SimpleCP/
 │   ├── clean.sh                 # Cleanup build artifacts
 │   ├── backup.sh                # Data backup utility
 │   ├── restore.sh               # Data restore utility
-│   ├── release.sh               # Release script
+│   ├── release.sh               # GitHub release script
 │   ├── ai-tag-release.sh        # AI-assisted release tagging
 │   ├── checkpoint.sh            # Create development checkpoint
-│   ├── kill_backend.sh          # Stop backend process
-│   ├── watch-build.sh           # File watcher for builds
 │   ├── version_manager.sh       # Version management
 │   ├── validation/              # Validation scripts
 │   │   ├── common.sh            # Shared test utilities
@@ -143,11 +138,11 @@ SimpleCP/
 
 | Category | Scripts |
 |----------|---------|
-| **Build** | `build.sh`, `build_python.sh`, `build-and-run.sh` |
+| **Build** | `build.sh`, `build_python.sh` |
 | **Development** | `setup_dev.sh`, `install.sh`, `checkpoint.sh` |
 | **Testing** | `run_tests.sh`, `healthcheck.sh` |
 | **Release** | `release.sh`, `ai-tag-release.sh`, `version_manager.sh` |
-| **Maintenance** | `clean.sh`, `backup.sh`, `restore.sh`, `kill_backend.sh` |
+| **Maintenance** | `clean.sh`, `backup.sh`, `restore.sh` |
 
 ### Documentation
 
@@ -175,9 +170,9 @@ Both work on a shared `dev` branch with frequent commits and pulls.
 cd backend && python daemon.py     # Run backend daemon
 cd backend && python -m pytest     # Run backend tests
 
-# Frontend
-./scripts/build-and-run.sh         # Build and launch app
+# Frontend (use Xcode)
 open frontend/SimpleCP-App/SimpleCP.xcodeproj  # Open in Xcode
+# Build and run from Xcode (Cmd+R)
 
 # Development
 make test                          # Run all tests
@@ -200,6 +195,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python daemon.py
 
-# Build frontend (separate terminal)
-./scripts/build-and-run.sh
+# Build frontend
+open frontend/SimpleCP-App/SimpleCP.xcodeproj
+# Press Cmd+R in Xcode to build and run
 ```

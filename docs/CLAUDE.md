@@ -92,9 +92,9 @@ If merge conflicts occur:
 cd backend && python daemon.py          # Run backend daemon
 cd backend && python -m pytest          # Run backend tests
 
-# Frontend
+# Frontend (use Xcode)
 open frontend/SimpleCP-App/SimpleCP.xcodeproj  # Open in Xcode
-./scripts/build-and-run.sh              # Build and launch app
+# Build and run from Xcode (Cmd+R)
 
 # General
 make test                               # Run all tests
