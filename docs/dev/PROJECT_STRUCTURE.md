@@ -18,7 +18,6 @@ SimpleCP/
 │   │   ├── models.py            # Pydantic request/response models
 │   │   ├── endpoints.py         # API route handlers
 │   │   └── server.py            # FastAPI application setup
-│   ├── config/                  # Configuration files
 │   ├── data/                    # Data storage (JSON files)
 │   ├── logs/                    # Application logs (gitignored)
 │   ├── monitoring/              # Monitoring and metrics
@@ -81,16 +80,19 @@ SimpleCP/
 │
 ├── docs/                         # Documentation
 │   ├── API.md                   # REST API reference
-│   ├── CLAUDE.md                # AI development workflow (XC/DC)
-│   ├── DEPLOYMENT.md            # Deployment guide
-│   ├── FEATURE_BACKLOG.md       # Planned features
-│   ├── MONITORING.md            # Monitoring and Sentry setup
-│   ├── PROJECT_STRUCTURE.md     # This file
-│   ├── TESTING.md               # Testing guide
+│   ├── QUICKSTART.md            # Quick start guide
 │   ├── TROUBLESHOOTING.md       # Common issues and solutions
 │   ├── USER_GUIDE.md            # End-user documentation
-│   └── development/             # Development guides
-│       └── ARCHITECTURE.md      # Architecture documentation
+│   ├── dev/                     # Development guides
+│   │   ├── ARCHITECTURE.md      # Architecture documentation
+│   │   ├── CLAUDE.md            # AI workflow (XC/DC)
+│   │   ├── DEPLOYMENT.md        # Deployment guide
+│   │   ├── MONITORING.md        # Monitoring and Sentry setup
+│   │   ├── PROJECT_STRUCTURE.md # This file
+│   │   └── TESTING.md           # Testing guide
+│   └── internal/                # Internal planning docs
+│       ├── FEATURE_BACKLOG.md   # Planned features
+│       └── FOLDER_API_INTEGRATION.md
 │
 ├── deployment/                   # Deployment configurations
 │   └── systemd/                 # Systemd service files
@@ -107,7 +109,6 @@ SimpleCP/
 ├── pyproject.toml                # Python project configuration
 ├── pytest.ini                    # Pytest configuration
 ├── README.md                     # Project overview
-├── QUICKSTART.md                 # Quick start guide
 └── requirements.txt              # Root dependencies
 ```
 
