@@ -102,7 +102,7 @@ python daemon.py 2>&1 | tee startup.log
 
 2. **Check if port is in use**:
 ```bash
-lsof -i :8000
+lsof -i :49917
 # If occupied, kill process or change port
 ```
 
@@ -112,7 +112,7 @@ tail -f logs/simplecp.log
 ```
 
 **Common Causes**:
-- Port 8000 already in use → Change `API_PORT` in `.env`
+- Port 49917 already in use → Change `API_PORT` in `.env`
 - Missing dependencies → Run `pip install -r requirements.txt`
 - Permission issues → Check file permissions
 - Data directory not writable → Check `~/Library/Application Support/SimpleCP/`
@@ -125,9 +125,9 @@ tail -f logs/simplecp.log
 
 **Solution**:
 
-1. **Find process using port 8000**:
+1. **Find process using port 49917**:
 ```bash
-lsof -i :8000
+lsof -i :49917
 ```
 
 2. **Kill the process**:
@@ -190,7 +190,7 @@ cat logs/simplecp.log
 ps aux | grep daemon.py
 
 # Check API health
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 3. **Check interval setting**:
@@ -289,7 +289,7 @@ MAX_HISTORY_ITEMS=25
 
 2. **Clear old data**:
 ```bash
-curl -X DELETE http://localhost:8000/api/history
+curl -X DELETE http://localhost:49917/api/history
 ```
 
 3. **Restart daemon periodically**:
@@ -307,10 +307,10 @@ curl -X DELETE http://localhost:8000/api/history
 **Diagnostic**:
 ```bash
 # Check response time
-time curl http://localhost:8000/api/history
+time curl http://localhost:49917/api/history
 
 # Check if server is under load
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 **Solutions**:
@@ -407,7 +407,7 @@ du -sh logs/
 rm logs/simplecp.log.*
 
 # Reduce history
-curl -X DELETE http://localhost:8000/api/history
+curl -X DELETE http://localhost:49917/api/history
 
 # Remove old backups
 ```
@@ -418,18 +418,18 @@ curl -X DELETE http://localhost:8000/api/history
 
 ### API Not Responding
 
-**Problem**: `curl: (7) Failed to connect to localhost port 8000`
+**Problem**: `curl: (7) Failed to connect to localhost port 49917`
 
 **Check**:
 
 1. **Server is running**:
 ```bash
-lsof -i :8000
+lsof -i :49917
 ```
 
 2. **Health check**:
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 3. **Logs**:
@@ -471,16 +471,16 @@ CORS_ORIGINS=*
 1. **Correct URL**:
 ```bash
 # Wrong
-curl http://localhost:8000/history
+curl http://localhost:49917/history
 
 # Correct
-curl http://localhost:8000/api/history
+curl http://localhost:49917/api/history
 ```
 
 2. **API documentation**:
 ```bash
 # View available endpoints
-curl http://localhost:8000/docs
+curl http://localhost:49917/docs
 ```
 
 ---
@@ -506,7 +506,7 @@ curl http://localhost:8000/docs
 
 **Correct request**:
 ```bash
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Test",
@@ -588,10 +588,10 @@ ENABLE_SENTRY=false
 
 ```bash
 # Basic health check
-curl http://localhost:8000/health | jq
+curl http://localhost:49917/health | jq
 
 # Check specific stats
-curl http://localhost:8000/api/stats | jq
+curl http://localhost:49917/api/stats | jq
 ```
 
 ---
@@ -624,7 +624,7 @@ pip list
 ps aux | grep daemon.py
 
 # Port usage
-lsof -i :8000
+lsof -i :49917
 
 # Disk usage
 du -sh ~/Library/Application\ Support/SimpleCP/
@@ -658,7 +658,7 @@ echo "=== SimpleCP Health Check ==="
 echo ""
 
 # Check if running
-if lsof -i :8000 > /dev/null 2>&1; then
+if lsof -i :49917 > /dev/null 2>&1; then
     echo "✓ Daemon is running"
 else
     echo "✗ Daemon is NOT running"
@@ -666,7 +666,7 @@ else
 fi
 
 # Check API health
-if curl -s http://localhost:8000/health > /dev/null; then
+if curl -s http://localhost:49917/health > /dev/null; then
     echo "✓ API is responding"
 else
     echo "✗ API is NOT responding"
@@ -674,7 +674,7 @@ else
 fi
 
 # Check stats
-STATS=$(curl -s http://localhost:8000/api/stats)
+STATS=$(curl -s http://localhost:49917/api/stats)
 echo ""
 echo "Statistics:"
 echo "$STATS" | jq
@@ -764,7 +764,7 @@ tail -50 logs/simplecp.log
 
 **Config**:
 ```env
-API_PORT=8000
+API_PORT=49917
 MAX_HISTORY_ITEMS=50
 ```
 

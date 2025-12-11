@@ -147,7 +147,7 @@ APP_VERSION=1.0.0
 
 # API Server
 API_HOST=127.0.0.1  # localhost only for security
-API_PORT=8000
+API_PORT=49917
 
 # Clipboard
 MAX_HISTORY_ITEMS=50
@@ -295,13 +295,13 @@ SENTRY_ENVIRONMENT=production
 **Health Check Endpoint**:
 ```bash
 # Monitor with cron
-*/5 * * * * curl -sf http://localhost:8000/health || /path/to/alert.sh
+*/5 * * * * curl -sf http://localhost:49917/health || /path/to/alert.sh
 ```
 
 **Health Check Script** (`/usr/local/bin/simplecp-healthcheck`):
 ```bash
 #!/bin/bash
-HEALTH=$(curl -s http://localhost:8000/health | jq -r '.status')
+HEALTH=$(curl -s http://localhost:49917/health | jq -r '.status')
 if [ "$HEALTH" != "healthy" ]; then
     echo "SimpleCP unhealthy!" | mail -s "SimpleCP Alert" admin@example.com
     # Or send to Slack/Discord/etc
@@ -392,7 +392,7 @@ python3 daemon.py &
 python3 version.py
 
 # Or via API
-curl http://localhost:8000/api/version
+curl http://localhost:49917/api/version
 ```
 
 ### Update Process
@@ -448,10 +448,10 @@ python3 daemon.py &
 **4. Verification**:
 ```bash
 # Check version
-curl http://localhost:8000/ | jq '.version'
+curl http://localhost:49917/ | jq '.version'
 
 # Check health
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 
 # Check logs
 tail -f logs/simplecp.log
@@ -518,10 +518,10 @@ python3 daemon.py &
 **5. Verify**:
 ```bash
 # Check version
-curl http://localhost:8000/ | jq '.version'
+curl http://localhost:49917/ | jq '.version'
 
 # Check data integrity
-curl http://localhost:8000/api/stats
+curl http://localhost:49917/api/stats
 ```
 
 **6. Report Issue**:
@@ -539,7 +539,7 @@ curl http://localhost:8000/api/stats
 **Port Already in Use**:
 ```bash
 # Find process
-lsof -i :8000
+lsof -i :49917
 
 # Kill process
 kill -9 <PID>

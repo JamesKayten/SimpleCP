@@ -47,13 +47,13 @@ SimpleCP provides a RESTful API for programmatic access to clipboard history and
 
 **Default**:
 ```
-http://localhost:8000
+http://localhost:49917
 ```
 
 **Configure** via environment variables:
 ```bash
 export API_HOST=127.0.0.1
-export API_PORT=8000
+export API_PORT=49917
 ```
 
 ---
@@ -160,7 +160,7 @@ Get API information.
 
 **Example**:
 ```bash
-curl http://localhost:8000/
+curl http://localhost:49917/
 ```
 
 ---
@@ -192,7 +192,7 @@ Health check with detailed metrics.
 
 **Example**:
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 ---
@@ -228,10 +228,10 @@ Get all clipboard history items.
 **Examples**:
 ```bash
 # Get all history
-curl http://localhost:8000/api/history
+curl http://localhost:49917/api/history
 
 # Get last 10 items
-curl http://localhost:8000/api/history?limit=10
+curl http://localhost:49917/api/history?limit=10
 ```
 
 ---
@@ -244,7 +244,7 @@ Get recent history items for display.
 
 **Example**:
 ```bash
-curl http://localhost:8000/api/history/recent
+curl http://localhost:49917/api/history/recent
 ```
 
 ---
@@ -275,7 +275,7 @@ Get auto-generated history folders.
 
 **Example**:
 ```bash
-curl http://localhost:8000/api/history/folders
+curl http://localhost:49917/api/history/folders
 ```
 
 ---
@@ -297,7 +297,7 @@ Delete specific history item.
 
 **Example**:
 ```bash
-curl -X DELETE http://localhost:8000/api/history/abc123
+curl -X DELETE http://localhost:49917/api/history/abc123
 ```
 
 ---
@@ -316,7 +316,7 @@ Clear all history.
 
 **Example**:
 ```bash
-curl -X DELETE http://localhost:8000/api/history
+curl -X DELETE http://localhost:49917/api/history
 ```
 
 ---
@@ -348,7 +348,7 @@ Get all snippets organized by folder.
 
 **Example**:
 ```bash
-curl http://localhost:8000/api/snippets
+curl http://localhost:49917/api/snippets
 ```
 
 ---
@@ -364,7 +364,7 @@ Get list of snippet folder names.
 
 **Example**:
 ```bash
-curl http://localhost:8000/api/snippets/folders
+curl http://localhost:49917/api/snippets/folders
 ```
 
 ---
@@ -386,7 +386,7 @@ Get snippets from specific folder.
 
 **Example**:
 ```bash
-curl http://localhost:8000/api/snippets/Work
+curl http://localhost:49917/api/snippets/Work
 ```
 
 ---
@@ -425,7 +425,7 @@ Create new snippet.
 **Examples**:
 ```bash
 # From history
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{
     "clip_id": "abc123",
@@ -434,7 +434,7 @@ curl -X POST http://localhost:8000/api/snippets \
   }'
 
 # Direct creation
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{
     "content": "def hello():\n    print(\"Hello\")",
@@ -471,7 +471,7 @@ Update snippet.
 
 **Example**:
 ```bash
-curl -X PUT http://localhost:8000/api/snippets/Work/snippet123 \
+curl -X PUT http://localhost:49917/api/snippets/Work/snippet123 \
   -H "Content-Type: application/json" \
   -d '{"name": "New Name"}'
 ```
@@ -496,7 +496,7 @@ Delete snippet.
 
 **Example**:
 ```bash
-curl -X DELETE http://localhost:8000/api/snippets/Work/snippet123
+curl -X DELETE http://localhost:49917/api/snippets/Work/snippet123
 ```
 
 ---
@@ -526,7 +526,7 @@ Move snippet to different folder.
 
 **Example**:
 ```bash
-curl -X POST http://localhost:8000/api/snippets/Work/snippet123/move \
+curl -X POST http://localhost:49917/api/snippets/Work/snippet123/move \
   -H "Content-Type: application/json" \
   -d '{"new_folder": "Personal"}'
 ```
@@ -556,7 +556,7 @@ Create new folder.
 
 **Example**:
 ```bash
-curl -X POST http://localhost:8000/api/folders \
+curl -X POST http://localhost:49917/api/folders \
   -H "Content-Type: application/json" \
   -d '{"folder_name": "Projects"}'
 ```
@@ -587,7 +587,7 @@ Rename folder.
 
 **Example**:
 ```bash
-curl -X PUT http://localhost:8000/api/folders/OldName \
+curl -X PUT http://localhost:49917/api/folders/OldName \
   -H "Content-Type: application/json" \
   -d '{"new_name": "NewName"}'
 ```
@@ -611,7 +611,7 @@ Delete folder and all contents.
 
 **Example**:
 ```bash
-curl -X DELETE http://localhost:8000/api/folders/OldFolder
+curl -X DELETE http://localhost:49917/api/folders/OldFolder
 ```
 
 ---
@@ -639,7 +639,7 @@ Copy item to system clipboard.
 
 **Example**:
 ```bash
-curl -X POST http://localhost:8000/api/clipboard/copy \
+curl -X POST http://localhost:49917/api/clipboard/copy \
   -H "Content-Type: application/json" \
   -d '{"clip_id": "abc123"}'
 ```
@@ -665,7 +665,7 @@ Search across history and snippets.
 
 **Example**:
 ```bash
-curl "http://localhost:8000/api/search?q=python"
+curl "http://localhost:49917/api/search?q=python"
 ```
 
 ---
@@ -688,7 +688,7 @@ Get clipboard manager statistics.
 
 **Example**:
 ```bash
-curl http://localhost:8000/api/stats
+curl http://localhost:49917/api/stats
 ```
 
 ---
@@ -743,7 +743,7 @@ curl http://localhost:8000/api/stats
 ```python
 import requests
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:49917"
 
 # Get recent history
 response = requests.get(f"{BASE_URL}/api/history/recent")
@@ -774,7 +774,7 @@ response = requests.post(
 ### JavaScript
 
 ```javascript
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = "http://localhost:49917";
 
 // Get recent history
 fetch(`${BASE_URL}/api/history/recent`)
@@ -804,7 +804,7 @@ fetch(`${BASE_URL}/api/search?q=python`)
 
 ```bash
 #!/bin/bash
-BASE_URL="http://localhost:8000"
+BASE_URL="http://localhost:49917"
 
 # Get stats
 curl "$BASE_URL/api/stats"
@@ -831,7 +831,7 @@ curl -X DELETE "$BASE_URL/api/history/abc123"
 import Foundation
 
 class SimpleCPAPI {
-    let baseURL = "http://localhost:8000"
+    let baseURL = "http://localhost:49917"
 
     func getRecentHistory(completion: @escaping ([ClipboardItem]?) -> Void) {
         guard let url = URL(string: "\(baseURL)/api/history/recent") else {
@@ -896,17 +896,17 @@ Check GitHub for community-contributed libraries.
 
 **Swagger UI** (when running):
 ```
-http://localhost:8000/docs
+http://localhost:49917/docs
 ```
 
 **ReDoc**:
 ```
-http://localhost:8000/redoc
+http://localhost:49917/redoc
 ```
 
 **OpenAPI JSON**:
 ```
-http://localhost:8000/openapi.json
+http://localhost:49917/openapi.json
 ```
 
 ---

@@ -77,7 +77,7 @@ If merge conflicts occur:
 
 ### Backend (Python)
 - Entry point: `backend/daemon.py` or `backend/main.py`
-- API runs on port 8000 by default
+- API runs on port 49917 by default
 - Uses FastAPI with Pydantic models
 
 ### Frontend (Swift)

@@ -20,31 +20,31 @@ python3 daemon.py
 
 # Expected output:
 # 📋 Clipboard monitoring started (checking every 1s)
-# 🌐 API server started at http://127.0.0.1:8000
+# 🌐 API server started at http://127.0.0.1:49917
 ```
 
 **Success criteria:**
 - ✅ No startup errors
 - ✅ Clipboard monitoring thread starts
-- ✅ API server starts on port 8000
-- ✅ Health check responds: `curl http://localhost:8000/health`
+- ✅ API server starts on port 49917
+- ✅ Health check responds: `curl http://localhost:49917/health`
 
 ### Phase 3: API Endpoints Testing
 **Test:** Do all REST endpoints work correctly?
 
 ```bash
 # Test 2: Health check
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 
 # Test 3: API documentation
-# Visit: http://localhost:8000/docs
+# Visit: http://localhost:49917/docs
 # Should show Swagger UI with all endpoints
 
 # Test 4: Get initial history (should be empty)
-curl http://localhost:8000/api/history
+curl http://localhost:49917/api/history
 
 # Test 5: Get snippet folders (should be empty initially)
-curl http://localhost:8000/api/snippets
+curl http://localhost:49917/api/snippets
 ```
 
 ### Phase 4: Clipboard Monitoring
@@ -54,7 +54,7 @@ curl http://localhost:8000/api/snippets
 1. Start daemon: `python3 daemon.py`
 2. Copy some text (Cmd+C anything)
 3. Wait 2 seconds for detection
-4. Check history: `curl http://localhost:8000/api/history`
+4. Check history: `curl http://localhost:49917/api/history`
 5. Verify the copied text appears in response
 
 **Success criteria:**
@@ -68,12 +68,12 @@ curl http://localhost:8000/api/snippets
 
 ```bash
 # Test 6: Create a snippet folder
-curl -X POST http://localhost:8000/api/folders \
+curl -X POST http://localhost:49917/api/folders \
   -H "Content-Type: application/json" \
   -d '{"name": "Test Folder"}'
 
 # Test 7: Add snippet directly
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Hello World Test",
@@ -83,10 +83,10 @@ curl -X POST http://localhost:8000/api/snippets \
   }'
 
 # Test 8: Get snippet folders
-curl http://localhost:8000/api/snippets
+curl http://localhost:49917/api/snippets
 
 # Test 9: Get folder contents
-curl "http://localhost:8000/api/snippets/Test Folder"
+curl "http://localhost:49917/api/snippets/Test Folder"
 ```
 
 ### Phase 6: History Folders
@@ -94,7 +94,7 @@ curl "http://localhost:8000/api/snippets/Test Folder"
 
 **Test sequence:**
 1. Add 15+ items to clipboard history (copy different text 15 times)
-2. Check auto-folders: `curl http://localhost:8000/api/history/folders`
+2. Check auto-folders: `curl http://localhost:49917/api/history/folders`
 3. Verify folders like "11-15" are auto-generated
 4. Check folder contents have correct items
 
@@ -103,7 +103,7 @@ curl "http://localhost:8000/api/snippets/Test Folder"
 
 ```bash
 # Test 10: Search everything
-curl "http://localhost:8000/api/search?q=test"
+curl "http://localhost:49917/api/search?q=test"
 
 # Should return matches from both history and snippets
 ```
@@ -116,19 +116,19 @@ curl "http://localhost:8000/api/search?q=test"
 2. Stop daemon (Ctrl+C)
 3. Check that `data/history.json` and `data/snippets.json` exist
 4. Restart daemon: `python3 daemon.py`
-5. Verify data is restored: `curl http://localhost:8000/api/history`
+5. Verify data is restored: `curl http://localhost:49917/api/history`
 
 ### Phase 9: Error Handling
 **Test:** How does the system handle errors?
 
 ```bash
 # Test 11: Invalid requests
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{"invalid": "data"}'
 
 # Test 12: Non-existent folder
-curl "http://localhost:8000/api/snippets/NonExistent"
+curl "http://localhost:49917/api/snippets/NonExistent"
 
 # Should return proper error responses, not crashes
 ```
@@ -137,7 +137,7 @@ curl "http://localhost:8000/api/snippets/NonExistent"
 
 ### ✅ **Must Work:**
 - [x] Daemon starts without errors
-- [x] API server responds on http://localhost:8000
+- [x] API server responds on http://localhost:49917
 - [x] Clipboard monitoring detects changes
 - [x] History items are stored and retrieved
 - [x] Auto-generated folders work (11-20, 21-30, etc.)

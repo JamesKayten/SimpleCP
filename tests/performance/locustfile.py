@@ -1,7 +1,7 @@
 """
 Load testing for SimpleCP API using Locust.
 
-Run with: locust -f tests/performance/locustfile.py --host=http://localhost:8000
+Run with: locust -f tests/performance/locustfile.py --host=http://localhost:49917
 
 Simulates menu bar app usage patterns:
 - Frequent history checks
@@ -215,19 +215,19 @@ class StressTestUser(HttpUser):
 Load Testing Scenarios:
 
 1. Light load (typical usage):
-   locust -f locustfile.py --users 10 --spawn-rate 2 --host http://localhost:8000
+   locust -f locustfile.py --users 10 --spawn-rate 2 --host http://localhost:49917
 
 2. Normal load (multiple active users):
-   locust -f locustfile.py --users 50 --spawn-rate 5 --host http://localhost:8000
+   locust -f locustfile.py --users 50 --spawn-rate 5 --host http://localhost:49917
 
 3. Heavy load (stress test):
-   locust -f locustfile.py --users 100 --spawn-rate 10 --host http://localhost:8000
+   locust -f locustfile.py --users 100 --spawn-rate 10 --host http://localhost:49917
 
 4. Spike test (rapid increase):
-   locust -f locustfile.py --users 200 --spawn-rate 50 --host http://localhost:8000
+   locust -f locustfile.py --users 200 --spawn-rate 50 --host http://localhost:49917
 
 5. Endurance test (long duration):
-   locust -f locustfile.py --users 30 --spawn-rate 5 --run-time 1h --host http://localhost:8000
+   locust -f locustfile.py --users 30 --spawn-rate 5 --run-time 1h --host http://localhost:49917
 
 Mix users for realistic scenarios:
 - 70% MenuBarUser (typical users)

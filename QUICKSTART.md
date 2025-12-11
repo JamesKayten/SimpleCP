@@ -53,7 +53,7 @@ You should see:
 ║  Version: 1.0.0                          ║
 ║  Environment: development                ║
 ║  📋 Clipboard Monitor: Running           ║
-║  🌐 API Server: http://127.0.0.1:8000    ║
+║  🌐 API Server: http://127.0.0.1:49917    ║
 ║  📊 History: 0 items                     ║
 ║  📁 Snippets: 0 snippets                 ║
 ╚══════════════════════════════════════════╝
@@ -73,7 +73,7 @@ Hello, SimpleCP!
 ### 2. Check History
 
 ```bash
-curl http://localhost:8000/api/history/recent | jq
+curl http://localhost:49917/api/history/recent | jq
 ```
 
 Output:
@@ -91,7 +91,7 @@ Output:
 ### 3. Create a Snippet
 
 ```bash
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{
     "content": "def hello():\n    print(\"Hello, World!\")",
@@ -103,7 +103,7 @@ curl -X POST http://localhost:8000/api/snippets \
 ### 4. Search
 
 ```bash
-curl "http://localhost:8000/api/search?q=hello" | jq
+curl "http://localhost:49917/api/search?q=hello" | jq
 ```
 
 ---
@@ -124,7 +124,7 @@ MAX_HISTORY_ITEMS=50
 CLIPBOARD_CHECK_INTERVAL=1
 
 # API
-API_PORT=8000
+API_PORT=49917
 
 # Logging
 LOG_LEVEL=INFO
@@ -137,29 +137,29 @@ LOG_TO_FILE=true
 
 ### View History
 ```bash
-curl http://localhost:8000/api/history
+curl http://localhost:49917/api/history
 ```
 
 ### Create Snippet
 ```bash
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{"content":"text","folder_name":"Folder","name":"Name"}'
 ```
 
 ### Search
 ```bash
-curl "http://localhost:8000/api/search?q=keyword"
+curl "http://localhost:49917/api/search?q=keyword"
 ```
 
 ### Get Stats
 ```bash
-curl http://localhost:8000/api/stats
+curl http://localhost:49917/api/stats
 ```
 
 ### Health Check
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 ---
@@ -168,7 +168,7 @@ curl http://localhost:8000/health
 
 Open in browser:
 ```
-http://localhost:8000/docs
+http://localhost:49917/docs
 ```
 
 Try out API endpoints interactively!
@@ -198,8 +198,8 @@ pkill -f daemon.py
 
 ### Daemon won't start?
 ```bash
-# Check if port 8000 is in use
-lsof -i :8000
+# Check if port 49917 is in use
+lsof -i :49917
 
 # View logs
 tail -f logs/simplecp.log

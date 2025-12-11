@@ -54,7 +54,7 @@ sudo systemctl status simplecp
 sudo journalctl -u simplecp -f
 
 # Test API
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 ## Management Commands
@@ -132,7 +132,7 @@ Configuration can be done via environment variables in the service file:
 ```ini
 [Service]
 Environment="API_HOST=127.0.0.1"
-Environment="API_PORT=8000"
+Environment="API_PORT=49917"
 Environment="LOG_LEVEL=INFO"
 Environment="CHECK_INTERVAL=1.0"
 ```

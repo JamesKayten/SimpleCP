@@ -17,7 +17,7 @@
 ### Phase 2: Daemon Startup ✅
 - ✅ **Daemon starts without crashes**: Process ID 14906 running
 - ✅ **Clipboard monitoring thread starts**: Background thread initialized
-- ✅ **API server starts on port 8000**: Uvicorn server healthy
+- ✅ **API server starts on port 49917**: Uvicorn server healthy
 - ✅ **Health check responds**: `{"status":"healthy","stats":{...}}`
 - ✅ **No critical startup errors**
 
@@ -27,7 +27,7 @@
 ║     SimpleCP Daemon Started              ║
 ╟──────────────────────────────────────────╢
 ║  📋 Clipboard Monitor: Running           ║
-║  🌐 API Server: http://127.0.0.1:8000    ║
+║  🌐 API Server: http://127.0.0.1:49917    ║
 ║  📊 Stats: 0 history items               ║
 ╚══════════════════════════════════════════╝
 ```
@@ -290,8 +290,8 @@ Response: 409 Conflict
 ### Backend: ✅ COMPLETE AND READY
 
 ### Swift Frontend Development Can Begin:
-1. **API Documentation**: Available at `http://localhost:8000/docs`
-2. **OpenAPI Spec**: Available at `http://localhost:8000/openapi.json`
+1. **API Documentation**: Available at `http://localhost:49917/docs`
+2. **OpenAPI Spec**: Available at `http://localhost:49917/openapi.json`
 3. **All Endpoints Documented**: Request/response models defined
 4. **Backend Stable**: Ready for frontend integration
 

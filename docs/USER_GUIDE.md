@@ -296,7 +296,7 @@ Snippets are saved clipboard items you want to keep permanently:
 #### Method 3: Via API
 
 ```bash
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Your snippet content",
@@ -498,7 +498,7 @@ Edit `.env` file in application directory.
 
 **API Server**:
 - Enable/disable REST API
-- API port (default: 8000)
+- API port (default: 49917)
 - CORS origins
 
 ### Configuration File
@@ -519,7 +519,7 @@ LOG_TO_FILE=true
 
 # API
 API_HOST=127.0.0.1
-API_PORT=8000
+API_PORT=49917
 ```
 
 ---
@@ -615,7 +615,7 @@ While researching:
 ```bash
 # Copy multiple snippets
 for snippet in snippet1 snippet2 snippet3; do
-  curl http://localhost:8000/api/clipboard/copy \
+  curl http://localhost:49917/api/clipboard/copy \
     -d "{\"clip_id\": \"$snippet\"}"
 done
 ```

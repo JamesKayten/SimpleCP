@@ -1,7 +1,7 @@
 #!/bin/bash
 # Health check script for SimpleCP
 
-API_URL="${API_URL:-http://localhost:8000}"
+API_URL="${API_URL:-http://localhost:49917}"
 TIMEOUT=5
 
 echo "=== SimpleCP Health Check ==="

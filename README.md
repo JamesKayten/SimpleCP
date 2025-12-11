@@ -176,7 +176,7 @@ You'll see:
 ║  Version: 1.0.0                          ║
 ║  Environment: development                ║
 ║  📋 Clipboard Monitor: Running           ║
-║  🌐 API Server: http://127.0.0.1:8000    ║
+║  🌐 API Server: http://127.0.0.1:49917    ║
 ║  📊 History: 0 items                     ║
 ║  📁 Snippets: 0 snippets                 ║
 ╚══════════════════════════════════════════╝
@@ -186,22 +186,22 @@ You'll see:
 
 ```bash
 # Copy something (⌘+C), then check history
-curl http://localhost:8000/api/history/recent | jq
+curl http://localhost:49917/api/history/recent | jq
 
 # Create a snippet
-curl -X POST http://localhost:8000/api/snippets \
+curl -X POST http://localhost:49917/api/snippets \
   -H "Content-Type: application/json" \
   -d '{"content":"Hello World","folder_name":"Test","name":"Greeting"}'
 
 # Search
-curl "http://localhost:8000/api/search?q=hello" | jq
+curl "http://localhost:49917/api/search?q=hello" | jq
 ```
 
 ### Interactive API Docs
 
 Open in browser:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost:49917/docs
+- **ReDoc**: http://localhost:49917/redoc
 
 **For detailed setup, see [QUICKSTART.md](QUICKSTART.md)**
 
@@ -274,28 +274,28 @@ GET    /health                 # Health check
 import requests
 
 # Get recent history
-response = requests.get("http://localhost:8000/api/history/recent")
+response = requests.get("http://localhost:49917/api/history/recent")
 history = response.json()
 
 # Create snippet
-requests.post("http://localhost:8000/api/snippets", json={
+requests.post("http://localhost:49917/api/snippets", json={
     "content": "def hello():\n    print('Hello')",
     "folder_name": "Code",
     "name": "Hello Function"
 })
 
 # Search
-results = requests.get("http://localhost:8000/api/search", params={"q": "python"})
+results = requests.get("http://localhost:49917/api/search", params={"q": "python"})
 ```
 
 **JavaScript**
 ```javascript
 // Get recent history
-const history = await fetch('http://localhost:8000/api/history/recent')
+const history = await fetch('http://localhost:49917/api/history/recent')
   .then(res => res.json());
 
 // Create snippet
-await fetch('http://localhost:8000/api/snippets', {
+await fetch('http://localhost:49917/api/snippets', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -311,7 +311,7 @@ await fetch('http://localhost:8000/api/snippets', {
 import Foundation
 
 class SimpleCPAPI {
-    let baseURL = "http://localhost:8000"
+    let baseURL = "http://localhost:49917"
 
     func getRecentHistory(completion: @escaping ([ClipboardItem]?) -> Void) {
         guard let url = URL(string: "\(baseURL)/api/history/recent") else {
@@ -422,7 +422,7 @@ CLIPBOARD_CHECK_INTERVAL=1
 
 # API Server
 API_HOST=127.0.0.1
-API_PORT=8000
+API_PORT=49917
 
 # Monitoring (Optional)
 ENABLE_SENTRY=false

@@ -323,7 +323,7 @@ Locust simulates realistic menu bar app usage patterns.
 ./run_tests.sh load
 
 # Or manually
-locust -f tests/performance/locustfile.py --host=http://localhost:8000
+locust -f tests/performance/locustfile.py --host=http://localhost:49917
 ```
 
 #### Access Web UI
@@ -362,23 +362,23 @@ locust -f tests/performance/locustfile.py --host=http://localhost:8000
 ```bash
 # Light load (10 users)
 locust -f tests/performance/locustfile.py \
-  --users 10 --spawn-rate 2 --host http://localhost:8000
+  --users 10 --spawn-rate 2 --host http://localhost:49917
 
 # Normal load (50 users)
 locust -f tests/performance/locustfile.py \
-  --users 50 --spawn-rate 5 --host http://localhost:8000
+  --users 50 --spawn-rate 5 --host http://localhost:49917
 
 # Heavy load (100 users)
 locust -f tests/performance/locustfile.py \
-  --users 100 --spawn-rate 10 --host http://localhost:8000
+  --users 100 --spawn-rate 10 --host http://localhost:49917
 
 # Spike test (rapid increase)
 locust -f tests/performance/locustfile.py \
-  --users 200 --spawn-rate 50 --host http://localhost:8000
+  --users 200 --spawn-rate 50 --host http://localhost:49917
 
 # Endurance test (1 hour)
 locust -f tests/performance/locustfile.py \
-  --users 30 --spawn-rate 5 --run-time 1h --host http://localhost:8000
+  --users 30 --spawn-rate 5 --run-time 1h --host http://localhost:49917
 ```
 
 #### Monitoring During Load Tests
@@ -393,10 +393,10 @@ python daemon.py
 tail -f logs/simplecp.log
 
 # Terminal 3: Run load test
-locust -f tests/performance/locustfile.py --host http://localhost:8000
+locust -f tests/performance/locustfile.py --host http://localhost:49917
 
 # Terminal 4: Monitor health
-watch -n 1 'curl -s http://localhost:8000/health | jq'
+watch -n 1 'curl -s http://localhost:49917/health | jq'
 ```
 
 ---
@@ -667,13 +667,13 @@ pytest --cov=. --cov-report=html
 
 ```bash
 # Check if server is running
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 
 # Start server
 python daemon.py
 
 # Check port availability
-lsof -i :8000
+lsof -i :49917
 ```
 
 ---

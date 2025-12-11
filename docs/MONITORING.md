@@ -233,7 +233,7 @@ SimpleCP tracks performance metrics for all operations:
 Performance metrics are available via the `/health` endpoint:
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 Response:
@@ -305,7 +305,7 @@ Track usage patterns and user behavior:
 Via the `/health` endpoint:
 
 ```bash
-curl http://localhost:8000/health | jq '.monitoring.usage'
+curl http://localhost:49917/health | jq '.monitoring.usage'
 ```
 
 ### Privacy
@@ -321,7 +321,7 @@ All analytics are **local only** - no data is sent to third parties unless Sentr
 The `/health` endpoint provides comprehensive system status:
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:49917/health
 ```
 
 **Full Response:**
@@ -357,7 +357,7 @@ Example health check script:
 
 ```bash
 #!/bin/bash
-HEALTH=$(curl -s http://localhost:8000/health | jq -r '.status')
+HEALTH=$(curl -s http://localhost:49917/health | jq -r '.status')
 if [ "$HEALTH" != "healthy" ]; then
   echo "SimpleCP is unhealthy!"
   # Send alert
@@ -440,7 +440,7 @@ Set up automated health checks:
 
 ```bash
 # Cron job (every 5 minutes)
-*/5 * * * * curl -sf http://localhost:8000/health || alert.sh
+*/5 * * * * curl -sf http://localhost:49917/health || alert.sh
 ```
 
 ### 6. Log Rotation
@@ -556,7 +556,7 @@ For issues or questions:
 
 1. Check logs: `tail -f ./logs/simplecp.log`
 2. Review Sentry dashboard (if enabled)
-3. Check health endpoint: `curl http://localhost:8000/health`
+3. Check health endpoint: `curl http://localhost:49917/health`
 4. File an issue on GitHub
 
 ---
