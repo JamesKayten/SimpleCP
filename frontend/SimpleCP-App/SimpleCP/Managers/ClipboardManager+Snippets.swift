@@ -48,24 +48,16 @@ extension ClipboardManager {
         logger.debug("✅ No duplicate found, creating snippet...")
         #endif
         
-        // IMPORTANT: Check if this content came from clipboard history BEFORE removing it
-        // We need the clip ID for backend sync, but we'll remove it from history after
-        let clipIdFromHistory: String?
-        let clipToRemove: ClipItem?
-        if let clipItem = clipHistory.first(where: { $0.content == content }) {
-            // Save the clip ID for backend sync
-            clipIdFromHistory = clipItem.id.uuidString.replacingOccurrences(of: "-", with: "").prefix(16).lowercased()
-            clipToRemove = clipItem
-            #if DEBUG
-            logger.debug("📋 Found clip in history with ID: \(clipIdFromHistory!, privacy: .public)")
-            #endif
+        // Check if this content came from clipboard history so we can remove it
+        let clipToRemove: ClipItem? = clipHistory.first(where: { $0.content == content })
+        
+        #if DEBUG
+        if clipToRemove != nil {
+            logger.debug("📋 Found clip in history - will remove after saving snippet")
         } else {
-            clipIdFromHistory = nil
-            clipToRemove = nil
-            #if DEBUG
             logger.debug("📋 Content not from clipboard history")
-            #endif
         }
+        #endif
         
         let snippet = Snippet(
             name: name,
@@ -116,40 +108,25 @@ extension ClipboardManager {
                     #endif
                 }
 
-                // Use the clip ID we saved earlier (if content was from history)
-                if let clipId = clipIdFromHistory {
-                    #if DEBUG
-                    logger.debug("📡 Creating snippet '\(name, privacy: .public)' in folder '\(folderName, privacy: .public)' with clip_id '\(clipId, privacy: .public)' (from history)")
-                    #endif
-                } else {
-                    #if DEBUG
-                    logger.debug("📡 Creating snippet '\(name, privacy: .public)' in folder '\(folderName, privacy: .public)' without clip_id (not from history)")
-                    #endif
-                }
+                #if DEBUG
+                logger.debug("📡 Creating snippet '\(name, privacy: .public)' in folder '\(folderName, privacy: .public)'")
+                #endif
 
+                // Snippets are independent entities - don't link them to transient clipboard history
                 try await APIClient.shared.createSnippet(
                     name: name,
                     content: content,
                     folder: folderName,
                     tags: tags,
-                    clipId: clipIdFromHistory
+                    clipId: nil  // Snippets don't need to reference clipboard history
                 )
                 await MainActor.run {
                     logger.info("💾 Snippet synced with backend: \(name)")
-                }
-            } catch APIError.httpError(let statusCode, let message) where statusCode == 404 {
-                // 404 means backend couldn't find referenced history item
-                // This happens when creating snippets from current clipboard that aren't in backend history
-                // Keep local snippet since it was saved successfully
-                await MainActor.run {
-                    logger.warning("⚠️ Backend couldn't find history item (snippet saved locally only): \(message)")
-                    // Don't show error to user - snippet is saved locally which is what they wanted
                 }
             } catch APIError.httpError(let statusCode, let message) where statusCode >= 500 {
                 // Server error - keep local snippet but warn user
                 await MainActor.run {
                     logger.error("❌ Backend server error (HTTP \(statusCode)): \(message)")
-                    // Optionally show a less intrusive warning
                     // Don't fail the whole operation since the snippet was saved locally
                 }
             } catch APIError.networkError(let error) {
