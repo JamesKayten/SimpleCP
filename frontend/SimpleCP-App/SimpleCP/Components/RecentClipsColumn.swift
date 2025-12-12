@@ -253,9 +253,11 @@ struct RecentClipsColumn: View {
     private func pasteToActiveApp() {
         // Get the previously active application that was captured when SimpleCP opened
         let targetApp = MenuBarManager.shared.previouslyActiveApp
+        // Capture PID now before hidePopover clears it
+        let targetPID = targetApp?.processIdentifier
 
         if let app = targetApp {
-            print("🎯 Target app: \(app.localizedName ?? "unknown")")
+            print("🎯 Target app: \(app.localizedName ?? "unknown") (PID: \(app.processIdentifier))")
         } else {
             print("⚠️ No target app captured - will try to find frontmost app")
         }
@@ -272,7 +274,7 @@ struct RecentClipsColumn: View {
 
                 // Wait for focus to fully shift (configurable)
                 DispatchQueue.main.asyncAfter(deadline: .now() + self.pasteActivateDelay) { [self] in
-                    self.executePaste()
+                    self.executePaste(targetPID: targetPID)
                 }
             } else {
                 // Fallback: try to find any frontmost app
@@ -282,21 +284,100 @@ struct RecentClipsColumn: View {
                     $0.bundleIdentifier != Bundle.main.bundleIdentifier &&
                     !$0.isTerminated
                 }) {
+                    let fallbackPID = frontmost.processIdentifier
                     frontmost.activate(options: [.activateIgnoringOtherApps])
-                    print("✅ Activated (fallback): \(frontmost.localizedName ?? "unknown")")
+                    print("✅ Activated (fallback): \(frontmost.localizedName ?? "unknown") (PID: \(fallbackPID))")
                     DispatchQueue.main.asyncAfter(deadline: .now() + self.pasteActivateDelay) {
-                        self.executePaste()
+                        self.executePaste(targetPID: fallbackPID)
                     }
                 } else {
                     print("❌ No app found to paste to")
-                    self.executePaste() // Try anyway
+                    self.executePaste(targetPID: nil) // Try anyway
                 }
             }
         }
     }
     
-    private func executePaste() {
-        // Use CGEvents for native keyboard simulation (requires accessibility permission)
+    private func executePaste(targetPID: pid_t?) {
+        // Try menu-based paste first (uses Accessibility API)
+        if let pid = targetPID, executePasteViaMenu(pid: pid) {
+            print("⌨️ Executed paste via Menu API")
+            return
+        }
+
+        // Fallback to CGEvents
+        print("⚠️ Menu paste failed, trying CGEvents...")
+        executePasteViaCGEvents(targetPID: targetPID)
+    }
+
+    private func executePasteViaMenu(pid: pid_t) -> Bool {
+        // Use Accessibility API to click Edit > Paste menu
+        let appElement = AXUIElementCreateApplication(pid)
+
+        var menuBar: CFTypeRef?
+        let menuBarResult = AXUIElementCopyAttributeValue(appElement, kAXMenuBarAttribute as CFString, &menuBar)
+
+        guard menuBarResult == .success, let menuBarElement = menuBar else {
+            print("❌ Could not get menu bar (AX error: \(menuBarResult.rawValue))")
+            return false
+        }
+
+        // Get menu bar items
+        var menuBarItems: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(menuBarElement as! AXUIElement, kAXChildrenAttribute as CFString, &menuBarItems) == .success,
+              let items = menuBarItems as? [AXUIElement] else {
+            print("❌ Could not get menu bar items")
+            return false
+        }
+
+        // Find Edit menu (usually index 2 or 3)
+        for item in items {
+            var title: CFTypeRef?
+            if AXUIElementCopyAttributeValue(item, kAXTitleAttribute as CFString, &title) == .success,
+               let menuTitle = title as? String,
+               menuTitle == "Edit" {
+
+                // Get Edit menu items
+                var editMenu: CFTypeRef?
+                guard AXUIElementCopyAttributeValue(item, kAXChildrenAttribute as CFString, &editMenu) == .success,
+                      let editMenuItems = (editMenu as? [AXUIElement])?.first else {
+                    print("❌ Could not get Edit menu")
+                    return false
+                }
+
+                var editChildren: CFTypeRef?
+                guard AXUIElementCopyAttributeValue(editMenuItems, kAXChildrenAttribute as CFString, &editChildren) == .success,
+                      let editItems = editChildren as? [AXUIElement] else {
+                    print("❌ Could not get Edit menu items")
+                    return false
+                }
+
+                // Find Paste item
+                for editItem in editItems {
+                    var itemTitle: CFTypeRef?
+                    if AXUIElementCopyAttributeValue(editItem, kAXTitleAttribute as CFString, &itemTitle) == .success,
+                       let name = itemTitle as? String,
+                       name == "Paste" {
+                        // Click the Paste menu item
+                        let pressResult = AXUIElementPerformAction(editItem, kAXPressAction as CFString)
+                        if pressResult == .success {
+                            print("✅ Clicked Edit > Paste menu")
+                            return true
+                        } else {
+                            print("❌ Failed to click Paste (AX error: \(pressResult.rawValue))")
+                            return false
+                        }
+                    }
+                }
+                print("❌ Paste item not found in Edit menu")
+                return false
+            }
+        }
+        print("❌ Edit menu not found")
+        return false
+    }
+
+    private func executePasteViaCGEvents(targetPID: pid_t?) {
         guard let source = CGEventSource(stateID: .hidSystemState) else {
             print("❌ Failed to create CGEventSource")
             showPermissionDeniedAlert()
@@ -317,9 +398,18 @@ struct RecentClipsColumn: View {
         keyDown.flags = .maskCommand
         keyUp.flags = .maskCommand
 
-        // Post the events
-        keyDown.post(tap: .cghidEventTap)
-        keyUp.post(tap: .cghidEventTap)
+        // Post events - try targeted posting if we have a PID
+        if let pid = targetPID {
+            print("🎯 Posting CGEvents to PID: \(pid)")
+            keyDown.postToPid(pid)
+            usleep(10000)  // 10ms delay between key events
+            keyUp.postToPid(pid)
+        } else {
+            print("📤 Posting CGEvents globally")
+            keyDown.post(tap: .cghidEventTap)
+            usleep(10000)
+            keyUp.post(tap: .cghidEventTap)
+        }
 
         print("⌨️ Executed paste via CGEvents (⌘V)")
     }
