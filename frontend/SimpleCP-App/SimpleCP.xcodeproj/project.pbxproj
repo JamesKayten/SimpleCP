@@ -34,12 +34,8 @@
 		F0000020230001 /* BackendService+Monitoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000020230000 /* BackendService+Monitoring.swift */; };
 		F0000021230001 /* BackendService+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000021230000 /* BackendService+Utilities.swift */; };
 		F0000022230001 /* BackendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000022230000 /* BackendService.swift */; };
-		F0000023230001 /* CreateFolderWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000023230000 /* CreateFolderWindowManager.swift */; };
 		F0000024230001 /* EditSnippetWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000024230000 /* EditSnippetWindowManager.swift */; };
 		F0000025230001 /* RenameFolderWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000025230000 /* RenameFolderWindowManager.swift */; };
-		F0000026230001 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000026230000 /* Constants.swift */; };
-		F0000027230001 /* DateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000027230000 /* DateUtils.swift */; };
-		F0000028230001 /* StringUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000028230000 /* StringUtils.swift */; };
 		F0000029230001 /* ContentView+ConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000029230000 /* ContentView+ConnectionStatus.swift */; };
 		F0000030230001 /* ContentView+ControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000030230000 /* ContentView+ControlBar.swift */; };
 		F0000031230001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000031230000 /* ContentView.swift */; };
@@ -79,12 +75,8 @@
 		F0000020230000 /* BackendService+Monitoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+Monitoring.swift"; sourceTree = "<group>"; };
 		F0000021230000 /* BackendService+Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+Utilities.swift"; sourceTree = "<group>"; };
 		F0000022230000 /* BackendService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendService.swift; sourceTree = "<group>"; };
-		F0000023230000 /* CreateFolderWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderWindowManager.swift; sourceTree = "<group>"; };
 		F0000024230000 /* EditSnippetWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSnippetWindowManager.swift; sourceTree = "<group>"; };
 		F0000025230000 /* RenameFolderWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameFolderWindowManager.swift; sourceTree = "<group>"; };
-		F0000026230000 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		F0000027230000 /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; sourceTree = "<group>"; };
-		F0000028230000 /* StringUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringUtils.swift; sourceTree = "<group>"; };
 		F0000029230000 /* ContentView+ConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+ConnectionStatus.swift"; sourceTree = "<group>"; };
 		F0000030230000 /* ContentView+ControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+ControlBar.swift"; sourceTree = "<group>"; };
 		F0000031230000 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -125,7 +117,6 @@
 				F0000000320000 /* Managers */,
 				F0000000330000 /* Models */,
 				F0000000340000 /* Services */,
-				F0000000350000 /* Utils */,
 				F0000000360000 /* Views */,
 				F0000037230000 /* Info.plist */,
 				F0000038230000 /* SimpleCP.entitlements */,
@@ -183,21 +174,10 @@
 				F0000020230000 /* BackendService+Monitoring.swift */,
 				F0000021230000 /* BackendService+Utilities.swift */,
 				F0000022230000 /* BackendService.swift */,
-				F0000023230000 /* CreateFolderWindowManager.swift */,
 				F0000024230000 /* EditSnippetWindowManager.swift */,
 				F0000025230000 /* RenameFolderWindowManager.swift */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		F0000000350000 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				F0000026230000 /* Constants.swift */,
-				F0000027230000 /* DateUtils.swift */,
-				F0000028230000 /* StringUtils.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		F0000000360000 /* Views */ = {
@@ -336,14 +316,10 @@
 				F0000020230001 /* BackendService+Monitoring.swift in Sources */,
 				F0000021230001 /* BackendService+Utilities.swift in Sources */,
 				F0000022230001 /* BackendService.swift in Sources */,
-				F0000023230001 /* CreateFolderWindowManager.swift in Sources */,
 				F0000024230001 /* EditSnippetWindowManager.swift in Sources */,
 				F0000025230001 /* RenameFolderWindowManager.swift in Sources */,
 				285533622EE87EC100133AA1 /* FirstLaunchManager.swift in Sources */,
 				2885B67E2EE5D44600048E0A /* AccessibilityPermissionManager.swift in Sources */,
-				F0000026230001 /* Constants.swift in Sources */,
-				F0000027230001 /* DateUtils.swift in Sources */,
-				F0000028230001 /* StringUtils.swift in Sources */,
 				F0000029230001 /* ContentView+ConnectionStatus.swift in Sources */,
 				F0000030230001 /* ContentView+ControlBar.swift in Sources */,
 				F0000031230001 /* ContentView.swift in Sources */,

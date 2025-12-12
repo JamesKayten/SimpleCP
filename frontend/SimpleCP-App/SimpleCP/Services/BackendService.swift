@@ -97,10 +97,11 @@ class BackendService: ObservableObject {
         if !isRunning {
             startBackend()
 
-            // Wait briefly to verify startup
-            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+            // Wait longer for initial startup - backend needs time to bind to port
+            // The backend itself sleeps 1.5s before health check, so we need to wait at least that long
+            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2.0 seconds
 
-            if isRunning || connectionState == .connecting {
+            if isRunning || connectionState == .connecting || connectionState == .connected {
                 // Either started or handlePortOccupied is handling it
                 logger.info("✅ Backend startup initiated on first attempt")
                 await MainActor.run {
@@ -118,15 +119,16 @@ class BackendService: ObservableObject {
 
         // If first attempt failed completely (not port conflict), try a couple more times
         for attempt in 1..<3 {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1.0 seconds between attempts
 
             if !isRunning && connectionState != .connecting {
                 logger.info("Retry attempt \(attempt + 1)...")
                 startBackend()
 
-                try? await Task.sleep(nanoseconds: 300_000_000)
+                // Wait for startup to complete
+                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2.0 seconds
 
-                if isRunning || connectionState == .connecting {
+                if isRunning || connectionState == .connecting || connectionState == .connected {
                     logger.info("✅ Backend started on attempt \(attempt + 1)")
                     await MainActor.run {
                         self.dependenciesVerified = true
@@ -226,8 +228,11 @@ class BackendService: ObservableObject {
         // Try to connect to the existing backend - use explicit IPv4 to avoid IPv6 issues
         Task {
             let url = URL(string: "http://127.0.0.1:\(self.port)/health")!
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 3.0 // Give it a bit more time
+            
             do {
-                let (_, response) = try await URLSession.shared.data(from: url)
+                let (_, response) = try await URLSession.shared.data(for: request)
                 if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                     await MainActor.run {
                         self.logger.info("✅ Existing backend on port \(self.port) is healthy, using it")
@@ -240,10 +245,31 @@ class BackendService: ObservableObject {
                     return
                 }
             } catch {
-                self.logger.warning("❌ Port occupied but backend not responding, killing and retrying")
+                self.logger.warning("❌ Port occupied but backend not responding: \(error.localizedDescription)")
+                
+                // Wait a moment - the backend might still be starting up
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                
+                // Try ONE more time before killing
+                do {
+                    let (_, response) = try await URLSession.shared.data(for: request)
+                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                        await MainActor.run {
+                            self.logger.info("✅ Backend responded on second try - it was still starting up")
+                            self.isRunning = true
+                            self.isReady = true
+                            self.connectionState = .connected
+                            self.backendError = nil
+                            self.startHealthChecks()
+                        }
+                        return
+                    }
+                } catch {
+                    self.logger.warning("❌ Still not responding after retry, will kill and restart")
+                }
             }
 
-            // Port is occupied but not responding - kill it and start fresh
+            // Port is occupied but not responding after retries - kill it and start fresh
             await MainActor.run {
                 self.forceKillAndRestart()
             }
@@ -354,9 +380,8 @@ class BackendService: ObservableObject {
             let pid = process.processIdentifier
             try? "\(pid)".write(toFile: pidFilePath, atomically: true, encoding: .utf8)
 
-            // Give backend a bit more time to fully initialize before health check
-            // This reduces "connection refused" messages in logs
-            Thread.sleep(forTimeInterval: 1.5)
+            // Reduced initial sleep - exponential backoff handles proper waiting
+            Thread.sleep(forTimeInterval: 0.5)
 
             Task {
                 await verifyBackendHealth()

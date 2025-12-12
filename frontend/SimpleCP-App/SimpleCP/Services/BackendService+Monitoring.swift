@@ -12,7 +12,7 @@ extension BackendService {
 
     func verifyBackendHealth() async {
         #if DEBUG
-        print("🏥 Health check starting on http://localhost:\(port)/health")
+        print("🏥 Health check starting on http://127.0.0.1:\(port)/health")
         #endif
         
         // First check if process is even running
@@ -35,7 +35,8 @@ extension BackendService {
             #endif
             
             do {
-                let url = URL(string: "http://localhost:\(port)/health")!
+                // Use 127.0.0.1 consistently to avoid IPv6 resolution issues
+                let url = URL(string: "http://127.0.0.1:\(port)/health")!
                 var request = URLRequest(url: url)
                 request.timeoutInterval = 5.0
                 
@@ -130,7 +131,8 @@ extension BackendService {
 
     func quickHealthCheck() async {
         do {
-            let url = URL(string: "http://localhost:\(port)/health")!
+            // Use 127.0.0.1 consistently to avoid IPv6 resolution issues
+            let url = URL(string: "http://127.0.0.1:\(port)/health")!
             var request = URLRequest(url: url)
             request.timeoutInterval = 5.0
 
