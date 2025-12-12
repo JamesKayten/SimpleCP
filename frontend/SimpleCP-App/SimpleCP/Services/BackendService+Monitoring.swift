@@ -128,56 +128,6 @@ extension BackendService {
 
     // MARK: - Process Monitoring
 
-    func checkBackendStatus() {
-        guard let process = backendProcess else {
-            if isRunning {
-                logger.warning("Backend marked as running but process is nil")
-                
-                // Check if a backend is actually running on the port before restarting
-                if isPortInUse(port) {
-                    logger.info("Port \(self.port) is in use, checking if backend is healthy...")
-                    Task {
-                        await verifyBackendHealth()
-                        await MainActor.run {
-                            if self.isReady {
-                                logger.info("Backend is healthy despite missing process reference, continuing...")
-                                return
-                            } else {
-                                logger.warning("Backend on port \(self.port) is unhealthy, marking as not running")
-                                self.isRunning = false
-                                if self.autoRestartEnabled {
-                                    self.triggerAutoRestart(reason: "Process lost")
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    isRunning = false
-                    if autoRestartEnabled {
-                        triggerAutoRestart(reason: "Process lost")
-                    }
-                }
-            }
-            return
-        }
-
-        if !process.isRunning {
-            logger.error("Backend process died unexpectedly (exit code: \(process.terminationStatus))")
-            isRunning = false
-            backendProcess = nil
-
-            if autoRestartEnabled {
-                let reason = "Process died (exit code: \(process.terminationStatus))"
-                triggerAutoRestart(reason: reason)
-            }
-            return
-        }
-
-        Task {
-            await quickHealthCheck()
-        }
-    }
-
     func quickHealthCheck() async {
         do {
             let url = URL(string: "http://localhost:\(port)/health")!

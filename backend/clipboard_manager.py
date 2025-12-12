@@ -1,5 +1,8 @@
 """ClipboardManager - Core backend service for clipboard management."""
-import pyperclip, json, os
+import json
+import os
+
+import pyperclip
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from stores.clipboard_item import ClipboardItem

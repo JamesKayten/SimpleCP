@@ -56,8 +56,6 @@ extension APIClient {
                 }
 
                 self.logger.info("✅ Snippet created successfully")
-            } catch let error as APIError {
-                throw error
             } catch {
                 self.logger.error("❌ Network error: \(error.localizedDescription)")
                 throw APIError.networkError(error)
@@ -104,8 +102,6 @@ extension APIClient {
                 }
 
                 self.logger.info("✅ Snippet updated successfully")
-            } catch let error as APIError {
-                throw error
             } catch {
                 self.logger.error("❌ Network error: \(error.localizedDescription)")
                 throw APIError.networkError(error)
@@ -141,8 +137,6 @@ extension APIClient {
                 }
 
                 self.logger.info("✅ Snippet deleted successfully")
-            } catch let error as APIError {
-                throw error
             } catch {
                 self.logger.error("❌ Network error: \(error.localizedDescription)")
                 throw APIError.networkError(error)

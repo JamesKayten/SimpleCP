@@ -4,7 +4,7 @@
 import requests
 import time
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:49917"
 
 
 def add_test_clips():

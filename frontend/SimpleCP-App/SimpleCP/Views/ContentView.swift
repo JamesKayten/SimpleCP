@@ -10,9 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
     @EnvironmentObject var backendService: BackendService
-    @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
-    @State private var isSearching = false
     @State private var selectedClipForSave: ClipItem?
     @State private var selectedFolderId: UUID?
     @FocusState private var isSearchFieldFocused: Bool

@@ -5,7 +5,7 @@ import requests
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:49917"
 
 
 def test_health():
