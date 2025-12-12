@@ -2,44 +2,40 @@
 
 ## Overview
 
-SimpleCP uses a **dual-AI development workflow** with two Claude instances collaborating on a shared development branch:
+SimpleCP uses a **dual-AI development workflow** with two Claude instances working on the same local files:
 
 | Instance | Name | Environment | Role |
 |----------|------|-------------|------|
 | **XC** | Xcode Claude | Xcode AI assistant | Swift/frontend development |
 | **DC** | Desktop Claude | Claude Code CLI | Python/backend, scripts, infrastructure |
 
-## Workflow
+## Development Flow
 
-### Shared Development Branch
+### Key Principle: Same Local Files
 
-Both AIs work on the same `dev` branch (or feature branches as needed). The branch is always accessible to both:
+Both XC and DC edit the **same files on disk**. No commit/push needed to see each other's changes - edits are visible instantly.
 
-- **XC** sees changes via Xcode's source control
-- **DC** sees changes via git in the terminal
-
-### Coordination
-
-1. **Pull before working** - Always fetch latest changes before starting work
-2. **Commit frequently** - Small, focused commits with clear messages
-3. **Push when done** - Make changes available to the other AI immediately
-4. **Communicate via commits** - Commit messages should explain intent
-
-### Typical Flow
+### Standard Development Cycle
 
 ```
-DC: git pull origin dev
-DC: [makes backend changes]
-DC: git commit -m "Add new API endpoint for X"
-DC: git push origin dev
-
-XC: [pulls latest]
-XC: [updates Swift code to use new endpoint]
-XC: [commits and pushes]
-
-DC: git pull origin dev
-DC: [continues work...]
+1. DC edits code on `dev` branch
+2. User tests in Xcode (Cmd+B to build, Cmd+R to run)
+3. If it works → commit and merge to main
+4. If not → DC fixes, user rebuilds
 ```
+
+### When to Commit
+
+- **Don't commit** until changes are tested and working
+- **Do commit** when a feature/fix is complete and verified
+- After commit → merge `dev` to `main` → push
+
+### Git is for Checkpoints, Not Coordination
+
+Git commits are snapshots for history/backup. The actual files exist independently of git. Use commits to:
+- Save working states
+- Sync to GitHub (backup)
+- Merge tested code to main
 
 ## Responsibilities
 
@@ -95,8 +91,4 @@ cd backend && python -m pytest          # Run backend tests
 # Frontend (use Xcode)
 open frontend/SimpleCP-App/SimpleCP.xcodeproj  # Open in Xcode
 # Build and run from Xcode (Cmd+R)
-
-# General
-make test                               # Run all tests
-make lint                               # Check code quality
 ```
