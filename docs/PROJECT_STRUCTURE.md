@@ -1,54 +1,46 @@
 # SimpleCP Project Structure
 
-Comprehensive overview of the professional project structure.
+Comprehensive overview of the project structure.
 
 ## Directory Layout
 
 ```
 SimpleCP/
-├── .github/                      # GitHub-specific files
+├── .github/                      # GitHub configuration
 │   ├── workflows/                # GitHub Actions CI/CD
 │   │   ├── ci.yml               # Main CI pipeline
-│   │   ├── release.yml          # Release automation
-│   │   └── dependency-update.yml # Automated dependency updates
+│   │   └── release.yml          # Release automation
 │   └── ISSUE_TEMPLATE/          # Issue templates
 │
 ├── backend/                      # Python Backend
 │   ├── api/                     # REST API implementation
 │   │   ├── __init__.py
-│   │   ├── models.py            # Pydantic data models
+│   │   ├── models.py            # Pydantic request/response models
 │   │   ├── endpoints.py         # API route handlers
-│   │   └── server.py            # FastAPI application
+│   │   └── server.py            # FastAPI application setup
 │   ├── config/                  # Configuration files
-│   │   └── config.json          # Runtime configuration
-│   ├── data/                    # Data storage
-│   │   ├── snippets.json        # Saved snippets
-│   │   └── example_*.json       # Example files (committed)
+│   ├── data/                    # Data storage (JSON files)
 │   ├── logs/                    # Application logs (gitignored)
 │   ├── monitoring/              # Monitoring and metrics
 │   │   ├── __init__.py
 │   │   ├── metrics.py           # Metrics collection
-│   │   └── health.py            # Health checks
+│   │   └── health.py            # Health check endpoints
 │   ├── stores/                  # Data stores
 │   │   ├── __init__.py
-│   │   ├── clipboard_item.py    # Data model
-│   │   ├── history_store.py     # History management
-│   │   └── snippet_store.py     # Snippet management
+│   │   ├── clipboard_item.py    # ClipboardItem data model
+│   │   ├── history_store.py     # Clipboard history management
+│   │   └── snippet_store.py     # Snippet/folder management
 │   ├── tests/                   # Backend-specific tests
-│   ├── ui/                      # UI components (minimal)
+│   ├── ui/                      # UI utilities
 │   │   └── menu_builder.py
-│   ├── clipboard_manager.py     # Core clipboard logic
-│   ├── config.py                # Configuration module
-│   ├── daemon.py                # Background daemon service
-│   ├── keyboard_shortcuts.py    # Keyboard handling
-│   ├── logging_config.py        # Logging configuration
-│   ├── logger.py                # Logger setup
-│   ├── main.py                  # Main entry point
-│   ├── monitoring.py            # Monitoring module
-│   ├── settings.py              # Settings module
-│   ├── version.py               # Version info
-│   ├── requirements.txt         # Backend dependencies
-│   └── requirements-dev.txt     # Dev dependencies
+│   ├── clipboard_manager.py     # Core clipboard orchestration
+│   ├── daemon.py                # Background daemon (main entry)
+│   ├── main.py                  # API-only entry point
+│   ├── settings.py              # Pydantic settings management
+│   ├── logger.py                # Structured logging setup
+│   ├── monitoring_core.py       # Sentry and analytics
+│   ├── requirements.txt         # Production dependencies
+│   └── requirements-dev.txt     # Development dependencies
 │
 ├── frontend/                     # Swift macOS Frontend
 │   └── SimpleCP-App/            # Xcode project
@@ -56,97 +48,72 @@ SimpleCP/
 │       └── SimpleCP/            # Swift source code
 │           ├── SimpleCPApp.swift      # App entry point
 │           ├── AppDelegate.swift      # App delegate
-│           ├── Components/            # UI components
-│           │   ├── FolderView.swift
-│           │   ├── RecentClipsColumn.swift
-│           │   ├── SavedSnippetsColumn.swift
-│           │   └── ...
+│           ├── Components/            # Reusable UI components
 │           ├── Managers/              # State managers
-│           │   ├── ClipboardManager.swift
-│           │   └── ...
 │           ├── Models/                # Data models
-│           │   ├── ClipItem.swift
-│           │   ├── Snippet.swift
-│           │   └── ...
 │           ├── Services/              # Backend communication
-│           │   ├── APIClient.swift
-│           │   ├── BackendService.swift
-│           │   └── ...
 │           ├── Views/                 # SwiftUI views
-│           │   ├── ContentView.swift
-│           │   ├── SettingsWindow.swift
-│           │   └── ...
 │           ├── Utils/                 # Utilities
-│           ├── Info.plist             # App configuration
-│           └── SimpleCP.entitlements  # App permissions
+│           └── Info.plist             # App configuration
 │
 ├── scripts/                      # Utility scripts
+│   ├── build-and-run.sh         # Build and launch app
+│   ├── build.sh                 # General build script
+│   ├── build_python.sh          # Python package build
 │   ├── install.sh               # Installation script
-│   ├── setup_dev.sh             # Development setup
-│   ├── build.sh                 # Build script
-│   ├── build_python.sh          # Python build
-│   ├── build_swift.sh           # Swift build
-│   ├── backup.sh                # Backup utility
-│   ├── restore.sh               # Restore utility
-│   ├── healthcheck.sh           # Health check
-│   ├── clean.sh                 # Cleanup script
+│   ├── setup_dev.sh             # Development environment setup
 │   ├── run_tests.sh             # Test runner
+│   ├── healthcheck.sh           # Health check utility
+│   ├── clean.sh                 # Cleanup build artifacts
+│   ├── backup.sh                # Data backup utility
+│   ├── restore.sh               # Data restore utility
 │   ├── release.sh               # Release script
-│   ├── ai-tag-release.sh        # AI-assisted releases
-│   ├── watch-build.sh           # Build watcher
-│   ├── watch-branches.sh        # Git branch watcher
-│   ├── watch-board.sh           # BOARD.md watcher
-│   ├── watch-all.sh             # Combined watcher
-│   ├── aim-launcher.sh          # AIM launcher
-│   ├── tcc-file-compliance.sh   # TCC compliance
-│   ├── tcc-validate-branch.sh   # Branch validation
-│   ├── utilities/               # Helper scripts
+│   ├── ai-tag-release.sh        # AI-assisted release tagging
+│   ├── checkpoint.sh            # Create development checkpoint
+│   ├── kill_backend.sh          # Stop backend process
+│   ├── watch-build.sh           # File watcher for builds
+│   ├── version_manager.sh       # Version management
 │   ├── validation/              # Validation scripts
+│   │   ├── common.sh            # Shared test utilities
+│   │   └── run_all_tests.sh     # Run all validation tests
 │   └── README.md                # Scripts documentation
 │
 ├── tests/                        # Test suite
 │   ├── unit/                    # Unit tests
 │   ├── integration/             # Integration tests
-│   └── performance/             # Performance tests
+│   ├── performance/             # Performance tests
+│   └── conftest.py              # Pytest fixtures
 │
 ├── docs/                         # Documentation
-│   ├── API.md                   # API reference
-│   ├── BOARD.md                 # AIM task board
-│   ├── AI_COLLABORATION_GUIDE.md # AI workflow guide
-│   ├── MONITORING.md            # Monitoring docs
-│   ├── TESTING.md               # Testing guide
-│   ├── TROUBLESHOOTING.md       # Troubleshooting
-│   ├── USER_GUIDE.md            # User documentation
+│   ├── API.md                   # REST API reference
+│   ├── CLAUDE.md                # AI development workflow (XC/DC)
+│   ├── DEPLOYMENT.md            # Deployment guide
+│   ├── FEATURE_BACKLOG.md       # Planned features
+│   ├── MONITORING.md            # Monitoring and Sentry setup
 │   ├── PROJECT_STRUCTURE.md     # This file
-│   ├── archive/                 # Archived docs
-│   ├── development/             # Development guides
-│   └── occ_communication/       # OCC docs
+│   ├── TESTING.md               # Testing guide
+│   ├── TROUBLESHOOTING.md       # Common issues and solutions
+│   ├── USER_GUIDE.md            # End-user documentation
+│   └── development/             # Development guides
+│       └── ARCHITECTURE.md      # Architecture documentation
 │
 ├── deployment/                   # Deployment configurations
-│   └── systemd/                 # Systemd service
-│       ├── simplecp.service
-│       └── README.md
+│   └── systemd/                 # Systemd service files
 │
 ├── design/                       # Design assets
 │
-├── .claude/                      # Claude Code configuration
-│   ├── commands/                # Custom slash commands
-│   └── hooks/                   # Workflow hooks
-│
 ├── .env.example                  # Environment variables template
 ├── .gitignore                    # Git ignore patterns
-├── .pre-commit-config.yaml       # Pre-commit hooks
+├── .pre-commit-config.yaml       # Pre-commit hooks config
 ├── CHANGELOG.md                  # Version history
-├── CLAUDE.md                     # AI workflow instructions
 ├── CONTRIBUTING.md               # Contribution guidelines
 ├── LICENSE                       # MIT License
-├── MANIFEST.in                   # Package manifest
 ├── Makefile                      # Development commands
-├── pyproject.toml                # Python project config
+├── pyproject.toml                # Python project configuration
 ├── pytest.ini                    # Pytest configuration
-├── README.md                     # Project README
-├── requirements.txt              # Root dependencies
-└── setup.py                      # Package setup
+├── README.md                     # Project overview
+├── QUICKSTART.md                 # Quick start guide
+└── requirements.txt              # Root dependencies
 ```
 
 ## Component Overview
@@ -155,19 +122,20 @@ SimpleCP/
 
 | Component | Purpose |
 |-----------|---------|
-| `api/` | FastAPI REST API implementation |
-| `stores/` | Data persistence and models |
-| `monitoring/` | Health checks and metrics |
-| `clipboard_manager.py` | Core clipboard monitoring logic |
-| `daemon.py` | Background service with API server |
+| `api/` | FastAPI REST API with 30+ endpoints |
+| `stores/` | Data persistence (history, snippets) |
+| `monitoring/` | Health checks and metrics collection |
+| `clipboard_manager.py` | Core clipboard monitoring and orchestration |
+| `daemon.py` | Background service combining monitor + API |
+| `settings.py` | Environment-based configuration |
 
 ### Frontend (Swift/macOS)
 
 | Component | Purpose |
 |-----------|---------|
-| `SimpleCPApp.swift` | SwiftUI app entry point (MenuBarExtra) |
+| `SimpleCPApp.swift` | SwiftUI app entry (MenuBarExtra) |
 | `Components/` | Reusable UI components |
-| `Services/` | Backend communication layer |
+| `Services/` | Backend API communication |
 | `Managers/` | State management |
 | `Views/` | Main application views |
 
@@ -175,63 +143,50 @@ SimpleCP/
 
 | Category | Scripts |
 |----------|---------|
-| **Build** | `build.sh`, `build_python.sh`, `build_swift.sh` |
-| **Development** | `setup_dev.sh`, `install.sh` |
+| **Build** | `build.sh`, `build_python.sh`, `build-and-run.sh` |
+| **Development** | `setup_dev.sh`, `install.sh`, `checkpoint.sh` |
 | **Testing** | `run_tests.sh`, `healthcheck.sh` |
-| **AIM Workflow** | `aim-launcher.sh`, `watch-*.sh`, `tcc-*.sh` |
-| **Release** | `release.sh`, `ai-tag-release.sh` |
+| **Release** | `release.sh`, `ai-tag-release.sh`, `version_manager.sh` |
+| **Maintenance** | `clean.sh`, `backup.sh`, `restore.sh`, `kill_backend.sh` |
 
 ### Documentation
 
 | Document | Purpose |
 |----------|---------|
 | `README.md` | Project overview and quick start |
-| `QUICKSTART.md` | Fast setup guide |
-| `docs/API.md` | Complete API reference |
+| `QUICKSTART.md` | 5-minute setup guide |
+| `docs/API.md` | Complete REST API reference |
 | `docs/USER_GUIDE.md` | End-user documentation |
+| `docs/CLAUDE.md` | XC/DC AI development workflow |
 | `CONTRIBUTING.md` | Contribution guidelines |
-| `CLAUDE.md` | AI collaboration workflow |
 
-## Key Features
+## Development Workflow
 
-### 1. Monorepo Structure
-- Backend and frontend in single repository
-- Shared scripts and configuration
-- Unified versioning and releases
+SimpleCP uses a **dual-AI workflow** (see `docs/CLAUDE.md`):
+- **XC** (Xcode Claude) - Swift/frontend development
+- **DC** (Desktop Claude) - Python/backend, scripts, docs
 
-### 2. Professional Python Backend
-- FastAPI with async support
-- Pydantic models for validation
-- Comprehensive test suite
-- Metrics and monitoring
+Both work on a shared `dev` branch with frequent commits and pulls.
 
-### 3. Native macOS Frontend
-- SwiftUI menu bar application
-- Clean architecture (MVVM-ish)
-- Backend service integration
-- System permissions handling
+## Key Commands
 
-### 4. Development Tooling
-- Pre-commit hooks for quality
-- Makefile for common tasks
-- Comprehensive .gitignore
-- pytest configuration
+```bash
+# Backend
+cd backend && python daemon.py     # Run backend daemon
+cd backend && python -m pytest     # Run backend tests
 
-### 5. AI Collaboration (AIM)
-- TCC/OCC workflow support
-- Custom Claude commands
-- Branch validation scripts
-- Task board integration
+# Frontend
+./scripts/build-and-run.sh         # Build and launch app
+open frontend/SimpleCP-App/SimpleCP.xcodeproj  # Open in Xcode
 
-### 6. CI/CD Ready
-- GitHub Actions workflows
-- Automated testing
-- Release automation
-- Dependency management
+# Development
+make test                          # Run all tests
+make lint                          # Check code quality
+make format                        # Auto-format code
+./scripts/setup_dev.sh             # Set up dev environment
+```
 
 ## Getting Started
-
-### Quick Start
 
 ```bash
 # Clone repository
@@ -246,41 +201,5 @@ pip install -r requirements.txt
 python daemon.py
 
 # Build frontend (separate terminal)
-cd frontend/SimpleCP-App
-open SimpleCP.xcodeproj
-# Build and run in Xcode
+./scripts/build-and-run.sh
 ```
-
-### Development Setup
-
-```bash
-# Full development setup
-./scripts/setup_dev.sh
-
-# Run tests
-make test
-
-# Format code
-make format
-
-# Run linters
-make lint
-```
-
-## Maintenance
-
-### Regular Tasks
-
-1. **Update dependencies**: Check `requirements.txt` and Swift packages
-2. **Run tests**: `./scripts/run_tests.sh`
-3. **Backup data**: `./scripts/backup.sh`
-4. **Check health**: `./scripts/healthcheck.sh`
-5. **Clean artifacts**: `./scripts/clean.sh`
-
-### Code Quality
-
-All changes should:
-- Pass all tests (Python and Swift)
-- Pass linting checks
-- Follow style guidelines
-- Include documentation updates
