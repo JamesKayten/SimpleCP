@@ -689,29 +689,6 @@ struct HistoryGroupDisclosure: View {
     }
 }
 
-// MARK: - History Group Row (Deprecated - keeping for compatibility)
-
-struct HistoryGroupRow: View {
-    let range: String
-    let count: Int
-
-    var body: some View {
-        HStack {
-            Image(systemName: "folder")
-                .foregroundColor(.secondary)
-            Text(range)
-                .font(.system(size: 12))
-            Text("(\(count) clips)")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-            Spacer()
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-    }
-}
-
 // MARK: - Array Extension
 
 extension Array {
