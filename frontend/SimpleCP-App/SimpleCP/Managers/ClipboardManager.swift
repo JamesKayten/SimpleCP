@@ -18,6 +18,9 @@ class ClipboardManager: ObservableObject {
     @Published var lastError: AppError? = nil
     @Published var showError: Bool = false
 
+    /// Tracks folder names that were deleted locally to prevent re-sync from backend
+    var locallyDeletedFolderNames: Set<String> = []
+
     var timer: Timer?
     var lastChangeCount: Int = 0
     let maxHistorySize: Int = 50

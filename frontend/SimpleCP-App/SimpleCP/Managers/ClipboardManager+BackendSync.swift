@@ -68,6 +68,11 @@ extension ClipboardManager {
                 }
 
                 for (index, folderName) in backendFolders.enumerated() {
+                    // Skip folders that were locally deleted
+                    if self.locallyDeletedFolderNames.contains(folderName) {
+                        self.logger.debug("🚫 SYNC: Skipping locally deleted folder: '\(folderName)'")
+                        continue
+                    }
                     if !updatedFolders.contains(where: { $0.name == folderName }) {
                         #if DEBUG
                         logger.debug("📥 SYNC: Adding folder from backend: '\(folderName, privacy: .public)'")

@@ -77,6 +77,8 @@ struct SavedSnippetsColumn: View {
                 }
             }
             .padding(.vertical, 4)
+            // Force view refresh when folder/snippet counts change
+            .id(clipboardManager.folders.count + clipboardManager.snippets.count)
         }
     }
 

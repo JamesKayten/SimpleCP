@@ -97,6 +97,10 @@ extension ClipboardManager {
 
     func deleteFolder(_ folder: SnippetFolder) {
         let snippetCount = snippets.filter { $0.folderId == folder.id }.count
+
+        // Track this folder as locally deleted to prevent re-sync from backend
+        locallyDeletedFolderNames.insert(folder.name)
+
         // Remove snippets in this folder
         snippets.removeAll { $0.folderId == folder.id }
         folders.removeAll { $0.id == folder.id }
@@ -104,21 +108,25 @@ extension ClipboardManager {
         saveSnippets()
 
         // Sync with backend
+        let folderName = folder.name
         Task {
             do {
-                try await APIClient.shared.deleteFolder(name: folder.name)
+                try await APIClient.shared.deleteFolder(name: folderName)
                 await MainActor.run {
-                    logger.info("🗑️ Deleted folder '\(folder.name)' and \(snippetCount) snippets (synced with backend)")
+                    // Successfully deleted from backend - can remove from deleted tracking
+                    self.locallyDeletedFolderNames.remove(folderName)
+                    logger.info("🗑️ Deleted folder '\(folderName)' and \(snippetCount) snippets (synced with backend)")
                 }
             } catch APIError.httpError(let statusCode, _) where statusCode == 404 {
                 // 404 means folder wasn't on backend - that's fine, it's deleted locally
                 await MainActor.run {
-                    logger.info("ℹ️ Folder '\(folder.name)' was not on backend (local deletion successful)")
+                    self.locallyDeletedFolderNames.remove(folderName)
+                    logger.info("ℹ️ Folder '\(folderName)' was not on backend (local deletion successful)")
                 }
             } catch {
                 await MainActor.run {
+                    // Keep in locallyDeletedFolderNames to prevent re-sync
                     logger.warning("⚠️ Failed to sync folder deletion with backend: \(error.localizedDescription)")
-                    // Don't show error to user - folder is already deleted locally which is what matters
                 }
             }
         }
