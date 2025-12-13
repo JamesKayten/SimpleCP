@@ -9,7 +9,6 @@ class AppState: ObservableObject {
     @Published var errorMessage: String?
     @Published var selectedHistoryItem: ClipItem?
     @Published var selectedSnippetItem: Snippet?
-    @Published var showSaveSnippetDialog: Bool = false
 
     var isSearching: Bool {
         !searchQuery.isEmpty
