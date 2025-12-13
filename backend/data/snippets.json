@@ -1,7 +1,109 @@
 {
-  "Folder 1": [],
+  "Folder 1": [
+    {
+      "content": "\ud83d\uddb1\ufe0f Clip tapped: The fix: Make the backend proc...\r\n\ud83d\udd35 onCopy triggered for clip: The fix: Make the backend proc...\r\n\ud83d\udd35 COPY REQUESTED: 124 chars\r\n\ud83d\udd35 Pasteboard changeCount: 125 -> 126\r\n\u2705 COPIED TO CLIPBOARD (124 chars): The fix: Make the backend process automatically te...\r\n\u2705 Clipboard content verified after 0.1s\r\n\ud83c\udfaf Target app: Pages\r\n\ud83d\udd04 Cleared captured app\r\n\u2705 Activated: Pages\r\n\u2328\ufe0f Executed paste via CGEvents (\u2318V)\r\n\ud83d\udccb Ignoring programmatic clipboard change (from copyToClipboard)",
+      "timestamp": "2025-12-13T08:02:16.524671",
+      "clip_id": "9d0725702a422c01",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "\ud83d\uddb1\ufe0f Clip tapped: The fix: Make the backend proc....",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "\ud83d\uddb1\ufe0f Clip tapped: The fix: Make the backend proc...",
+      "folder_path": "Folder 1",
+      "tags": []
+    },
+    {
+      "content": "\ud83d\udd10 AXIsProcessTrusted at paste time: in the logs - if it shows false, that's the issue.",
+      "timestamp": "2025-12-13T08:26:24.129021",
+      "clip_id": "0d5294fa423ddf6a",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "\ud83d\udd10 AXIsProcessTrusted at paste time: in the logs...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "\ud83d\udd10 AXIsProcessTrusted at paste time: in the logs - ",
+      "folder_path": "Folder 1",
+      "tags": []
+    },
+    {
+      "content": "AXIsProcessTrusted() which caches at launch, but during Xcode development, each build has a different code signature, so macOS revokes permission.\n",
+      "timestamp": "2025-12-13T08:26:42.253399",
+      "clip_id": "fc24dea0af619e54",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "AXIsProcessTrusted() which caches at launch, bu...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "AXIsProcessTrusted() which caches at launch, but d",
+      "folder_path": "Folder 1",
+      "tags": []
+    },
+    {
+      "content": "there's no way to bypass macOS's Accessibility permission requirement for keyboard simulation.",
+      "timestamp": "2025-12-13T08:38:00.893855",
+      "clip_id": "caa7b1d0578a9567",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "there's no way to bypass macOS's Accessibility ...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "there's no way to bypass macOS's Accessibility per",
+      "folder_path": "Folder 1",
+      "tags": []
+    },
+    {
+      "content": "ign the app with a Developer ID certificate",
+      "timestamp": "2025-12-13T08:45:24.232552",
+      "clip_id": "482a74e4bfef8716",
+      "content_type": "text",
+      "display_length": 50,
+      "display_string": "ign the app with a Developer ID certificate",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "ign the app with a Developer ID certificate",
+      "folder_path": "Folder 1",
+      "tags": []
+    },
+    {
+      "content": "/Volumes/User_Smallfavor/Users/Smallfavor/Library/Developer/Xcode/DerivedData/SimpleCP-fcxajfvbeyzevpcqukxqhpcmgkjx/Build/Products/Debug/SimpleCP.app",
+      "timestamp": "2025-12-13T08:46:38.106061",
+      "clip_id": "bc3e2d3e04361c0e",
+      "content_type": "path",
+      "display_length": 50,
+      "display_string": "/Volumes/User_Smallfavor/Users/Smallfavor/Libra...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "/Volumes/User_Smallfavor/Users/Smallfavor/Library/",
+      "folder_path": "Folder 1",
+      "tags": []
+    }
+  ],
   "Folder 2": [],
   "Folder 3": [],
   "Folder 4": [],
-  "mmm": []
+  "mmm": [],
+  "SSS": [],
+  "QQQ": [
+    {
+      "content": "The fix: Make the backend process automatically terminate when its parent (the app) dies. Let me update the backend startup:",
+      "timestamp": "2025-12-13T08:51:21.655947",
+      "clip_id": "a7e3ca9bf92df833",
+      "content_type": "sql",
+      "display_length": 50,
+      "display_string": "The fix: Make the backend process automatically...",
+      "source_app": null,
+      "item_type": "snippet",
+      "has_name": true,
+      "snippet_name": "The fix: Make the backend process automatically te",
+      "folder_path": "QQQ",
+      "tags": []
+    }
+  ]
 }

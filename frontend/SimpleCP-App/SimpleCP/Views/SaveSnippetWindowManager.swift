@@ -306,30 +306,57 @@ struct SaveSnippetDialogContent: View {
     
     private func createFolder() {
         guard !newFolderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            clipboardManager.logger.debug("⚠️ Dialog: Empty folder name, skipping creation")
             return
         }
         
         let trimmedName = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Create folder synchronously
-        let newFolder = clipboardManager.createFolder(name: trimmedName)
+        clipboardManager.logger.info("📁 Dialog: Creating new folder '\(trimmedName, privacy: .public)'")
         
-        // Force immediate UI update on main thread
-        DispatchQueue.main.async {
-            // Force folder list to refresh by changing its ID
-            self.folderListRefreshID = UUID()
-            
-            // Small delay to ensure the list has refreshed before selecting
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                // Update UI state with animation
+        // Check if folder already exists
+        if clipboardManager.folders.contains(where: { $0.name == trimmedName }) {
+            // Folder already exists - just select it
+            clipboardManager.logger.debug("ℹ️ Dialog: Folder '\(trimmedName, privacy: .public)' already exists, selecting it")
+            if let existingFolder = clipboardManager.folders.first(where: { $0.name == trimmedName }) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    self.selectedFolderId = existingFolder.id
+                }
+                self.createNewFolder = false
+                self.newFolderName = ""
+            }
+            return
+        }
+        
+        // Create folder - this updates @Published property which should trigger view update
+        let newFolder = clipboardManager.createFolder(name: trimmedName)
+        clipboardManager.logger.debug("✅ Dialog: Folder created with ID \(newFolder.id)")
+        
+        // The @Published property should handle the update, but we need to ensure
+        // the view has time to re-render before selecting the new folder
+        // Use a very short delay to let SwiftUI complete its update cycle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // Verify the folder exists in the list
+            if self.clipboardManager.folders.contains(where: { $0.id == newFolder.id }) {
+                self.clipboardManager.logger.debug("✅ Dialog: Folder verified in list, selecting")
                 withAnimation(.easeInOut(duration: 0.2)) {
                     self.selectedFolderId = newFolder.id
-                }
-                
-                // Clear input after showing the result
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     self.createNewFolder = false
                     self.newFolderName = ""
+                }
+            } else {
+                // If folder somehow didn't appear, force a refresh
+                self.clipboardManager.logger.warning("⚠️ Dialog: Folder not found in list, forcing refresh")
+                self.folderListRefreshID = UUID()
+                
+                // Try again after refresh
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    self.clipboardManager.logger.debug("🔄 Dialog: Retrying folder selection after refresh")
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        self.selectedFolderId = newFolder.id
+                        self.createNewFolder = false
+                        self.newFolderName = ""
+                    }
                 }
             }
         }

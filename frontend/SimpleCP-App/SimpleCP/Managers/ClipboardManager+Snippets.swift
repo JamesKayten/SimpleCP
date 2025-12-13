@@ -242,6 +242,24 @@ extension ClipboardManager {
             return "Untitled Snippet"
         }
 
+        // If it's a file path, extract just the filename
+        if firstLine.hasPrefix("/") || firstLine.hasPrefix("~") {
+            let url = URL(fileURLWithPath: firstLine)
+            let filename = url.lastPathComponent
+            if !filename.isEmpty && filename != "/" {
+                return filename
+            }
+        }
+        
+        // If it's a URL, use the domain or last path component
+        if firstLine.hasPrefix("http://") || firstLine.hasPrefix("https://") {
+            if let url = URL(string: firstLine) {
+                if let host = url.host {
+                    return host
+                }
+            }
+        }
+
         // Take first 50 characters or first line
         let preview = String(firstLine.prefix(50))
         return preview
