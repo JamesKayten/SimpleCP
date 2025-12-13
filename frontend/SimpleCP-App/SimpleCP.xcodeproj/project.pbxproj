@@ -17,9 +17,7 @@
 		F0000002230001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000002230000 /* AppDelegate.swift */; };
 		F0000003230001 /* FolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000003230000 /* FolderView.swift */; };
 		F0000004230001 /* RecentClipsColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000004230000 /* RecentClipsColumn.swift */; };
-		F0000005230001 /* SaveSnippetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000005230000 /* SaveSnippetDialog.swift */; };
 		F0000006230001 /* SavedSnippetsColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000006230000 /* SavedSnippetsColumn.swift */; };
-		F0000007230001 /* SnippetDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000007230000 /* SnippetDialogs.swift */; };
 		F0000009230001 /* ClipboardManager+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000009230000 /* ClipboardManager+Persistence.swift */; };
 		F0000010230001 /* ClipboardManager+Snippets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000010230000 /* ClipboardManager+Snippets.swift */; };
 		F0000011230001 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000011230000 /* ClipboardManager.swift */; };
@@ -58,9 +56,7 @@
 		F0000002230000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F0000003230000 /* FolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderView.swift; sourceTree = "<group>"; };
 		F0000004230000 /* RecentClipsColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentClipsColumn.swift; sourceTree = "<group>"; };
-		F0000005230000 /* SaveSnippetDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSnippetDialog.swift; sourceTree = "<group>"; };
 		F0000006230000 /* SavedSnippetsColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSnippetsColumn.swift; sourceTree = "<group>"; };
-		F0000007230000 /* SnippetDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetDialogs.swift; sourceTree = "<group>"; };
 		F0000009230000 /* ClipboardManager+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Persistence.swift"; sourceTree = "<group>"; };
 		F0000010230000 /* ClipboardManager+Snippets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Snippets.swift"; sourceTree = "<group>"; };
 		F0000011230000 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
@@ -131,9 +127,7 @@
 			children = (
 				F0000003230000 /* FolderView.swift */,
 				F0000004230000 /* RecentClipsColumn.swift */,
-				F0000005230000 /* SaveSnippetDialog.swift */,
 				F0000006230000 /* SavedSnippetsColumn.swift */,
-				F0000007230000 /* SnippetDialogs.swift */,
 				287667712EE505B100871224 /* MenuBarManager.swift */,
 				2885B67D2EE5D44600048E0A /* AccessibilityPermissionManager.swift */,
 				2855335D2EE87E5500133AA1 /* AccessibilityStatusBanner.swift */,
@@ -298,9 +292,7 @@
 				F0000002230001 /* AppDelegate.swift in Sources */,
 				F0000003230001 /* FolderView.swift in Sources */,
 				F0000004230001 /* RecentClipsColumn.swift in Sources */,
-				F0000005230001 /* SaveSnippetDialog.swift in Sources */,
 				F0000006230001 /* SavedSnippetsColumn.swift in Sources */,
-				F0000007230001 /* SnippetDialogs.swift in Sources */,
 				F0000009230001 /* ClipboardManager+Persistence.swift in Sources */,
 				F0000010230001 /* ClipboardManager+Snippets.swift in Sources */,
 				F0000011230001 /* ClipboardManager.swift in Sources */,
