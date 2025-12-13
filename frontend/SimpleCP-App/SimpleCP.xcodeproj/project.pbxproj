@@ -13,6 +13,20 @@
 		285533622EE87EC100133AA1 /* FirstLaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285533612EE87EC100133AA1 /* FirstLaunchManager.swift */; };
 		287667722EE505B100871224 /* MenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287667712EE505B100871224 /* MenuBarManager.swift */; };
 		2885B67E2EE5D44600048E0A /* AccessibilityPermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2885B67D2EE5D44600048E0A /* AccessibilityPermissionManager.swift */; };
+		F0000040230001 /* RecentClipsColumn+ClipItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000040230000 /* RecentClipsColumn+ClipItemRow.swift */; };
+		F0000041230001 /* RecentClipsColumn+HistoryGroups.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000041230000 /* RecentClipsColumn+HistoryGroups.swift */; };
+		F0000042230001 /* RecentClipsColumn+PasteActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000042230000 /* RecentClipsColumn+PasteActions.swift */; };
+		F0000043230001 /* RecentClipsColumn+Flyout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000043230000 /* RecentClipsColumn+Flyout.swift */; };
+		F0000044230001 /* SavedSnippetsColumn+SnippetRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000044230000 /* SavedSnippetsColumn+SnippetRow.swift */; };
+		F0000045230001 /* FolderView+Flyout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000045230000 /* FolderView+Flyout.swift */; };
+		F0000046230001 /* MenuBarManager+WindowSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000046230000 /* MenuBarManager+WindowSize.swift */; };
+		F0000047230001 /* ClipboardManager+BackendSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000047230000 /* ClipboardManager+BackendSync.swift */; };
+		F0000048230001 /* ClipboardManager+Folders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000048230000 /* ClipboardManager+Folders.swift */; };
+		F0000049230001 /* BackendService+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000049230000 /* BackendService+Lifecycle.swift */; };
+		F0000050230001 /* BackendService+PathDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000050230000 /* BackendService+PathDiscovery.swift */; };
+		F0000051230001 /* BackendService+PortManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000051230000 /* BackendService+PortManagement.swift */; };
+		F0000052230001 /* AppKitTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000052230000 /* AppKitTextField.swift */; };
+		F0000053230001 /* SettingsViews+Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000053230000 /* SettingsViews+Appearance.swift */; };
 		F0000001230001 /* SimpleCPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000001230000 /* SimpleCPApp.swift */; };
 		F0000002230001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000002230000 /* AppDelegate.swift */; };
 		F0000003230001 /* FolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000003230000 /* FolderView.swift */; };
@@ -83,6 +97,20 @@
 		F0000036230000 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		F0000037230000 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F0000038230000 /* SimpleCP.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SimpleCP.entitlements; sourceTree = "<group>"; };
+		F0000040230000 /* RecentClipsColumn+ClipItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecentClipsColumn+ClipItemRow.swift"; sourceTree = "<group>"; };
+		F0000041230000 /* RecentClipsColumn+HistoryGroups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecentClipsColumn+HistoryGroups.swift"; sourceTree = "<group>"; };
+		F0000042230000 /* RecentClipsColumn+PasteActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecentClipsColumn+PasteActions.swift"; sourceTree = "<group>"; };
+		F0000043230000 /* RecentClipsColumn+Flyout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RecentClipsColumn+Flyout.swift"; sourceTree = "<group>"; };
+		F0000044230000 /* SavedSnippetsColumn+SnippetRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SavedSnippetsColumn+SnippetRow.swift"; sourceTree = "<group>"; };
+		F0000045230000 /* FolderView+Flyout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FolderView+Flyout.swift"; sourceTree = "<group>"; };
+		F0000046230000 /* MenuBarManager+WindowSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MenuBarManager+WindowSize.swift"; sourceTree = "<group>"; };
+		F0000047230000 /* ClipboardManager+BackendSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+BackendSync.swift"; sourceTree = "<group>"; };
+		F0000048230000 /* ClipboardManager+Folders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClipboardManager+Folders.swift"; sourceTree = "<group>"; };
+		F0000049230000 /* BackendService+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+Lifecycle.swift"; sourceTree = "<group>"; };
+		F0000050230000 /* BackendService+PathDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+PathDiscovery.swift"; sourceTree = "<group>"; };
+		F0000051230000 /* BackendService+PortManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackendService+PortManagement.swift"; sourceTree = "<group>"; };
+		F0000052230000 /* AppKitTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitTextField.swift; sourceTree = "<group>"; };
+		F0000053230000 /* SettingsViews+Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsViews+Appearance.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,9 +154,16 @@
 			isa = PBXGroup;
 			children = (
 				F0000003230000 /* FolderView.swift */,
+				F0000045230000 /* FolderView+Flyout.swift */,
 				F0000004230000 /* RecentClipsColumn.swift */,
+				F0000040230000 /* RecentClipsColumn+ClipItemRow.swift */,
+				F0000041230000 /* RecentClipsColumn+HistoryGroups.swift */,
+				F0000042230000 /* RecentClipsColumn+PasteActions.swift */,
+				F0000043230000 /* RecentClipsColumn+Flyout.swift */,
 				F0000006230000 /* SavedSnippetsColumn.swift */,
+				F0000044230000 /* SavedSnippetsColumn+SnippetRow.swift */,
 				287667712EE505B100871224 /* MenuBarManager.swift */,
+				F0000046230000 /* MenuBarManager+WindowSize.swift */,
 				2885B67D2EE5D44600048E0A /* AccessibilityPermissionManager.swift */,
 				2855335D2EE87E5500133AA1 /* AccessibilityStatusBanner.swift */,
 				2855335F2EE87E8300133AA1 /* PermissionsSettingsView.swift */,
@@ -140,9 +175,11 @@
 		F0000000320000 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				F0000011230000 /* ClipboardManager.swift */,
+				F0000047230000 /* ClipboardManager+BackendSync.swift */,
+				F0000048230000 /* ClipboardManager+Folders.swift */,
 				F0000009230000 /* ClipboardManager+Persistence.swift */,
 				F0000010230000 /* ClipboardManager+Snippets.swift */,
-				F0000011230000 /* ClipboardManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -162,12 +199,15 @@
 		F0000000340000 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				F0000019230000 /* APIClient.swift */,
 				F0000017230000 /* APIClient+Folders.swift */,
 				F0000018230000 /* APIClient+Snippets.swift */,
-				F0000019230000 /* APIClient.swift */,
-				F0000020230000 /* BackendService+Monitoring.swift */,
-				F0000021230000 /* BackendService+Utilities.swift */,
 				F0000022230000 /* BackendService.swift */,
+				F0000049230000 /* BackendService+Lifecycle.swift */,
+				F0000020230000 /* BackendService+Monitoring.swift */,
+				F0000050230000 /* BackendService+PathDiscovery.swift */,
+				F0000051230000 /* BackendService+PortManagement.swift */,
+				F0000021230000 /* BackendService+Utilities.swift */,
 				F0000024230000 /* EditSnippetWindowManager.swift */,
 				F0000025230000 /* RenameFolderWindowManager.swift */,
 			);
@@ -177,13 +217,15 @@
 		F0000000360000 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F0000052230000 /* AppKitTextField.swift */,
+				F0000031230000 /* ContentView.swift */,
 				F0000029230000 /* ContentView+ConnectionStatus.swift */,
 				F0000030230000 /* ContentView+ControlBar.swift */,
-				F0000031230000 /* ContentView.swift */,
 				F0000032230000 /* ContentViewSheets.swift */,
 				F0000033230000 /* FontPreferences.swift */,
 				F0000034230000 /* SaveSnippetWindowManager.swift */,
 				F0000035230000 /* SettingsViews.swift */,
+				F0000053230000 /* SettingsViews+Appearance.swift */,
 				F0000036230000 /* SettingsWindow.swift */,
 			);
 			path = Views;
@@ -323,6 +365,20 @@
 				287667722EE505B100871224 /* MenuBarManager.swift in Sources */,
 				F0000035230001 /* SettingsViews.swift in Sources */,
 				F0000036230001 /* SettingsWindow.swift in Sources */,
+				F0000040230001 /* RecentClipsColumn+ClipItemRow.swift in Sources */,
+				F0000041230001 /* RecentClipsColumn+HistoryGroups.swift in Sources */,
+				F0000042230001 /* RecentClipsColumn+PasteActions.swift in Sources */,
+				F0000043230001 /* RecentClipsColumn+Flyout.swift in Sources */,
+				F0000044230001 /* SavedSnippetsColumn+SnippetRow.swift in Sources */,
+				F0000045230001 /* FolderView+Flyout.swift in Sources */,
+				F0000046230001 /* MenuBarManager+WindowSize.swift in Sources */,
+				F0000047230001 /* ClipboardManager+BackendSync.swift in Sources */,
+				F0000048230001 /* ClipboardManager+Folders.swift in Sources */,
+				F0000049230001 /* BackendService+Lifecycle.swift in Sources */,
+				F0000050230001 /* BackendService+PathDiscovery.swift in Sources */,
+				F0000051230001 /* BackendService+PortManagement.swift in Sources */,
+				F0000052230001 /* AppKitTextField.swift in Sources */,
+				F0000053230001 /* SettingsViews+Appearance.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

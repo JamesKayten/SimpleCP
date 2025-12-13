@@ -198,12 +198,12 @@ struct SaveSnippetDialogContent: View {
     private func createFolder() {
         guard !newFolderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         let trimmedName = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let newFolder = clipboardManager.createFolder(name: trimmedName)
+        let newFolderId = clipboardManager.createFolder(name: trimmedName)
 
         DispatchQueue.main.async {
             self.folderListRefreshID = UUID()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                withAnimation(.easeInOut(duration: 0.2)) { self.selectedFolderId = newFolder.id }
+                withAnimation(.easeInOut(duration: 0.2)) { self.selectedFolderId = newFolderId }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     self.createNewFolder = false
                     self.newFolderName = ""

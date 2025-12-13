@@ -107,41 +107,6 @@ extension ClipboardManager {
         return firstLine.isEmpty ? "Untitled Snippet" : String(firstLine.prefix(50))
     }
 
-    // MARK: - Export/Import
-
-    func exportFolder(_ folder: SnippetFolder) {
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "SimpleCP-\(folder.name)-\(Date().formatted(date: .abbreviated, time: .omitted)).json"
-        panel.message = "Export folder '\(folder.name)' to a JSON file"
-
-        if panel.runModal() == .OK, let url = panel.url {
-            let folderSnippets = snippets.filter { $0.folderId == folder.id }
-            let data = ExportData(snippets: folderSnippets, folders: [folder])
-
-            do {
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = .prettyPrinted
-                try encoder.encode(data).write(to: url)
-                logger.info("✅ Exported folder '\(folder.name)' with \(folderSnippets.count) snippets")
-            } catch {
-                logger.error("❌ Export failed: \(error.localizedDescription)")
-                showExportError(error)
-            }
-        }
-    }
-
-    private func showExportError(_ error: Error) {
-        DispatchQueue.main.async {
-            let alert = NSAlert()
-            alert.messageText = "Export Failed"
-            alert.informativeText = "Could not export folder: \(error.localizedDescription)"
-            alert.alertStyle = .warning
-            alert.addButton(withTitle: "OK")
-            alert.runModal()
-        }
-    }
-
     // MARK: - Duplicate Alert
 
     private func showDuplicateAlert(existing: Snippet, newName: String, folderId: UUID?) {
