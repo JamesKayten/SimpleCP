@@ -120,7 +120,7 @@ case "$COMMAND" in
         fi
 
         # Check if daemon is running
-        if ! curl -s http://localhost:8000/health > /dev/null; then
+        if ! curl -s http://localhost:49917/health > /dev/null; then
             echo -e "${YELLOW}Warning: API server not running${NC}"
             echo "Start with: python daemon.py"
             echo ""
@@ -139,7 +139,7 @@ case "$COMMAND" in
         echo -e "${BLUE}Starting Locust web UI...${NC}"
         echo -e "Visit: ${GREEN}http://localhost:8089${NC}"
         echo ""
-        locust -f tests/performance/locustfile.py --host=http://localhost:8000
+        locust -f tests/performance/locustfile.py --host=http://localhost:49917
 
         # Cleanup
         if [ ! -z "$SERVER_PID" ]; then

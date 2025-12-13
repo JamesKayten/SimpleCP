@@ -79,7 +79,7 @@ cp -r \
     clipboard_manager.py \
     daemon.py \
     logger.py \
-    monitoring.py \
+    monitoring/ \
     settings.py \
     version.py \
     requirements.txt \
