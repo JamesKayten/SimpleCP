@@ -1,8 +1,8 @@
 #!/bin/bash
 # kill_backend.sh
-# Helper script to kill any process using port 8000
+# Helper script to kill any process using port 49917
 
-echo "🔍 Checking for processes on port 8000..."
+echo "🔍 Checking for processes on port 49917..."
 
 # Check if lsof is available
 if ! command -v lsof &> /dev/null; then
@@ -11,16 +11,16 @@ if ! command -v lsof &> /dev/null; then
     exit 1
 fi
 
-# Find processes using port 8000
-PIDS=$(lsof -t -i:8000 2>/dev/null)
+# Find processes using port 49917
+PIDS=$(lsof -t -i:49917 2>/dev/null)
 
 if [ -z "$PIDS" ]; then
-    echo "✅ No processes found on port 8000"
+    echo "✅ No processes found on port 49917"
     exit 0
 fi
 
-echo "🛑 Found process(es) on port 8000:"
-lsof -i:8000
+echo "🛑 Found process(es) on port 49917:"
+lsof -i:49917
 
 # Kill the processes
 echo ""
@@ -33,7 +33,7 @@ done
 sleep 0.5
 
 # Check if any are still running
-REMAINING=$(lsof -t -i:8000 2>/dev/null)
+REMAINING=$(lsof -t -i:49917 2>/dev/null)
 if [ -n "$REMAINING" ]; then
     echo ""
     echo "⚠️  Some processes didn't terminate. Force killing..."
@@ -44,13 +44,13 @@ fi
 
 # Final check
 sleep 0.3
-FINAL_CHECK=$(lsof -t -i:8000 2>/dev/null)
+FINAL_CHECK=$(lsof -t -i:49917 2>/dev/null)
 if [ -z "$FINAL_CHECK" ]; then
     echo ""
-    echo "✅ Port 8000 is now free!"
+    echo "✅ Port 49917 is now free!"
     exit 0
 else
     echo ""
-    echo "❌ Failed to free port 8000. Manual intervention required."
+    echo "❌ Failed to free port 49917. Manual intervention required."
     exit 1
 fi
