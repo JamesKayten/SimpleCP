@@ -34,7 +34,7 @@ fi
 
 # Detect project type
 detect_project_type() {
-    if [ -f "backend/main.py" ] && [ -d "frontend" ]; then
+    if [ -f "backend/daemon.py" ] && [ -d "frontend" ]; then
         echo "macOS clipboard manager|📋"
     elif [ -f "Package.swift" ]; then
         echo "Swift package|🔶"
