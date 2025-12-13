@@ -1,17 +1,11 @@
-"""
-Integration tests for complete workflows.
-"""
+"""Integration tests for complete workflows."""
 import pytest
 from fastapi.testclient import TestClient
 
 
 @pytest.mark.integration
 class TestClipboardWorkflows:
-    """Test complete clipboard workflows."""
-
     def test_full_clipboard_lifecycle(self, api_client, clipboard_manager):
-        """Test complete clipboard item lifecycle."""
-        # 1. Add item to history
         item = clipboard_manager.add_clip("Important code snippet")
         assert item is not None
 
@@ -37,8 +31,6 @@ class TestClipboardWorkflows:
         assert item.clip_id not in [h["clip_id"] for h in history]
 
     def test_snippet_workflow(self, api_client, clipboard_manager):
-        """Test complete snippet workflow."""
-        # 1. Create snippet
         payload = {
             "content": "def hello():\n    print('Hello')",
             "folder_name": "PythonCode",
@@ -78,8 +70,6 @@ class TestClipboardWorkflows:
         assert response.status_code == 200
 
     def test_history_to_snippet_workflow(self, api_client, clipboard_manager):
-        """Test converting history item to snippet."""
-        # 1. Add to history
         item = clipboard_manager.add_clip("Useful command: docker ps -a")
 
         # 2. Save as snippet
@@ -104,8 +94,6 @@ class TestClipboardWorkflows:
         assert any(h["clip_id"] == item.clip_id for h in history)
 
     def test_search_workflow(self, api_client, clipboard_manager):
-        """Test search across history and snippets."""
-        # 1. Add various items
         clipboard_manager.add_clip("Python programming tutorial")
         clipboard_manager.add_clip("JavaScript basics")
         clipboard_manager.create_snippet("Python code example", "Code", "PyExample")
@@ -128,13 +116,8 @@ class TestClipboardWorkflows:
 
 @pytest.mark.integration
 class TestPersistenceWorkflows:
-    """Test data persistence workflows."""
-
     def test_save_and_reload_workflow(self, test_data_dir):
-        """Test complete save and reload workflow."""
         from clipboard_manager import ClipboardManager
-
-        # 1. Create manager and add data
         manager1 = ClipboardManager(data_dir=test_data_dir)
         manager1.add_clip("History item 1")
         manager1.add_clip("History item 2")
@@ -152,8 +135,6 @@ class TestPersistenceWorkflows:
         assert len(manager2.snippet_store.get_all_snippets()) == 1
 
     def test_concurrent_modifications(self, clipboard_manager):
-        """Test handling concurrent modifications."""
-        # Add items rapidly
         items = []
         for i in range(20):
             item = clipboard_manager.add_clip(f"Concurrent test {i}")
@@ -168,11 +149,7 @@ class TestPersistenceWorkflows:
 @pytest.mark.integration
 @pytest.mark.slow
 class TestScalabilityWorkflows:
-    """Test workflows with large amounts of data."""
-
     def test_large_history_workflow(self, api_client, clipboard_manager):
-        """Test handling large history."""
-        # Add many items
         for i in range(100):
             clipboard_manager.add_clip(f"Test item {i}")
 
@@ -189,8 +166,6 @@ class TestScalabilityWorkflows:
         assert len(recent) <= 10  # display_count
 
     def test_many_snippets_workflow(self, api_client, clipboard_manager):
-        """Test handling many snippets."""
-        # Create multiple folders with snippets
         for folder_num in range(5):
             folder = f"Folder{folder_num}"
             for snippet_num in range(10):
@@ -212,8 +187,6 @@ class TestScalabilityWorkflows:
         assert stats["folder_count"] >= 5
 
     def test_search_performance(self, api_client, clipboard_manager):
-        """Test search with large dataset."""
-        # Add many items with searchable content
         for i in range(100):
             if i % 3 == 0:
                 clipboard_manager.add_clip(f"Python code example {i}")
@@ -233,11 +206,7 @@ class TestScalabilityWorkflows:
 
 @pytest.mark.integration
 class TestErrorRecoveryWorkflows:
-    """Test error recovery scenarios."""
-
     def test_invalid_data_recovery(self, api_client, clipboard_manager):
-        """Test recovery from invalid data."""
-        # Try to create snippet with empty content
         payload = {"content": "", "folder_name": "Test", "name": "Empty"}
         response = api_client.post("/api/snippets", json=payload)
         # Should either reject or handle gracefully
@@ -248,8 +217,6 @@ class TestErrorRecoveryWorkflows:
         assert response.status_code == 200
 
     def test_folder_deletion_with_snippets(self, api_client, clipboard_manager):
-        """Test deleting folder containing snippets."""
-        # Create folder with snippets
         clipboard_manager.create_snippet("Snippet 1", "TestFolder", "Note 1")
         clipboard_manager.create_snippet("Snippet 2", "TestFolder", "Note 2")
 

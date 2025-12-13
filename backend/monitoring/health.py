@@ -1,7 +1,4 @@
-"""
-Health checking and system monitoring for SimpleCP.
-"""
-
+"""Health checking and system monitoring."""
 import os
 import psutil
 import platform
@@ -11,83 +8,42 @@ from enum import Enum
 
 
 class HealthStatus(Enum):
-    """Health check status enum."""
-
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
 
 
 class HealthCheck:
-    """Represents a single health check result."""
-
-    def __init__(
-        self,
-        name: str,
-        status: HealthStatus,
-        message: str = "",
-        details: Optional[Dict] = None,
-    ):
-        """Initialize health check."""
-        self.name = name
-        self.status = status
-        self.message = message
+    def __init__(self, name: str, status: HealthStatus, message: str = "", details: Optional[Dict] = None):
+        self.name, self.status, self.message = name, status, message
         self.details = details or {}
         self.timestamp = datetime.now()
 
     def to_dict(self) -> Dict:
-        """Convert to dictionary."""
-        return {
-            "name": self.name,
-            "status": self.status.value,
-            "message": self.message,
-            "details": self.details,
-            "timestamp": self.timestamp.isoformat(),
-        }
+        return {"name": self.name, "status": self.status.value, "message": self.message,
+                "details": self.details, "timestamp": self.timestamp.isoformat()}
 
 
 class HealthChecker:
-    """
-    Performs health checks on various system components.
-
-    Usage:
-        checker = HealthChecker()
-        result = checker.check_all()
-    """
-
     def __init__(self):
-        """Initialize health checker."""
         self.checks: List[HealthCheck] = []
 
     def check_all(self) -> Dict:
-        """
-        Run all health checks.
-
-        Returns:
-            Dictionary with overall health status and individual check results
-        """
         self.checks = []
-
-        # Run individual checks
         self.check_disk_space()
         self.check_memory()
         self.check_cpu()
         self.check_data_directory()
 
-        # Determine overall status
         if any(c.status == HealthStatus.UNHEALTHY for c in self.checks):
-            overall_status = HealthStatus.UNHEALTHY
+            overall = HealthStatus.UNHEALTHY
         elif any(c.status == HealthStatus.DEGRADED for c in self.checks):
-            overall_status = HealthStatus.DEGRADED
+            overall = HealthStatus.DEGRADED
         else:
-            overall_status = HealthStatus.HEALTHY
+            overall = HealthStatus.HEALTHY
 
-        return {
-            "status": overall_status.value,
-            "timestamp": datetime.now().isoformat(),
-            "checks": [c.to_dict() for c in self.checks],
-            "system_info": self.get_system_info(),
-        }
+        return {"status": overall.value, "timestamp": datetime.now().isoformat(),
+                "checks": [c.to_dict() for c in self.checks], "system_info": self.get_system_info()}
 
     def check_disk_space(self, threshold_percent: float = 90.0):
         """

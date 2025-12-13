@@ -70,17 +70,13 @@ class ClipboardManager:
                 return snippet
         return None
 
-    # History operations
     def get_recent_history(self) -> List[ClipboardItem]:
-        """Get recent history items."""
         return self.history_store.get_recent_items()
 
     def get_all_history(self, limit: Optional[int] = None) -> List[ClipboardItem]:
-        """Get all history items."""
         return self.history_store.get_items(limit)
 
     def get_history_folders(self) -> List[Dict[str, Any]]:
-        """Get auto-generated history folder ranges."""
         return self.history_store.get_auto_folders()
 
     def clear_history(self):
