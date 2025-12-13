@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script for SimpleCP monitoring and crash reporting.
-
-Tests:
-1. Logging functionality
-2. Performance tracking
-3. Error capturing
-4. Analytics tracking
-5. Settings loading
-"""
-
+"""Tests for SimpleCP monitoring and crash reporting."""
 import sys
 import time
 from settings import settings
@@ -27,10 +17,7 @@ from monitoring import (
 
 
 def test_settings():
-    """Test settings configuration."""
-    print("\n" + "=" * 60)
-    print("TEST 1: Settings Configuration")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 1: Settings Configuration\n" + "=" * 60)
 
     print(f"✓ App Name: {settings.app_name}")
     print(f"✓ App Version: {settings.app_version}")
@@ -46,10 +33,7 @@ def test_settings():
 
 
 def test_logging():
-    """Test logging functionality."""
-    print("\n" + "=" * 60)
-    print("TEST 2: Logging Functionality")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 2: Logging Functionality\n" + "=" * 60)
 
     logger.debug("Debug message - testing DEBUG level")
     print("✓ DEBUG level logged")
@@ -77,10 +61,7 @@ def test_logging():
 
 
 def test_performance_tracking():
-    """Test performance tracking."""
-    print("\n" + "=" * 60)
-    print("TEST 3: Performance Tracking")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 3: Performance Tracking\n" + "=" * 60)
 
     # Test context manager
     with track_performance("test_operation_1"):
@@ -112,10 +93,7 @@ def test_performance_tracking():
 
 
 def test_usage_analytics():
-    """Test usage analytics tracking."""
-    print("\n" + "=" * 60)
-    print("TEST 4: Usage Analytics")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 4: Usage Analytics\n" + "=" * 60)
 
     # Track various events
     track_clipboard_event("new_item", item_id="test-1")
@@ -137,10 +115,7 @@ def test_usage_analytics():
 
 
 def test_error_capturing():
-    """Test error capturing and exception handling."""
-    print("\n" + "=" * 60)
-    print("TEST 5: Error Capturing")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 5: Error Capturing\n" + "=" * 60)
 
     # Test message capture
     capture_message("Test info message", level="info")
@@ -174,10 +149,7 @@ def test_error_capturing():
 
 
 def test_monitoring_stats():
-    """Test monitoring statistics retrieval."""
-    print("\n" + "=" * 60)
-    print("TEST 6: Monitoring Statistics")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 6: Monitoring Statistics\n" + "=" * 60)
 
     stats = get_monitoring_stats()
 
@@ -191,10 +163,7 @@ def test_monitoring_stats():
 
 
 def test_integration():
-    """Test integrated monitoring scenario."""
-    print("\n" + "=" * 60)
-    print("TEST 7: Integration Test")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nTEST 7: Integration Test\n" + "=" * 60)
 
     print("Simulating realistic application workflow...")
 
@@ -218,10 +187,7 @@ def test_integration():
 
 
 def main():
-    """Run all monitoring tests."""
-    print("\n" + "=" * 60)
-    print("SimpleCP Monitoring & Crash Reporting Test Suite")
-    print("=" * 60)
+    print("\n" + "=" * 60 + "\nSimpleCP Monitoring Test Suite\n" + "=" * 60)
 
     try:
         test_settings()
