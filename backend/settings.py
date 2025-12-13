@@ -24,8 +24,9 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", env="ENVIRONMENT")
 
     # Server Configuration
+    # Port 49917 derived from "SimpleCP" hash - in private port range (49152-65535)
     api_host: str = Field(default="127.0.0.1", env="API_HOST")
-    api_port: int = Field(default=8000, env="API_PORT")
+    api_port: int = Field(default=49917, env="API_PORT")
     api_reload: bool = Field(default=False, env="API_RELOAD")
     api_workers: int = Field(default=1, env="API_WORKERS")
 
@@ -54,7 +55,7 @@ class Settings(BaseSettings):
 
     # Security Configuration
     cors_origins: list = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        default=["http://localhost:49917", "http://127.0.0.1:49917"],
         env="CORS_ORIGINS"
     )
     api_key: Optional[str] = Field(default=None, env="API_KEY")

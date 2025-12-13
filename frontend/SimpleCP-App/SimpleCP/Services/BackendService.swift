@@ -12,7 +12,7 @@ import SwiftUI
 struct BackendStartupConfig {
     let projectRoot: URL
     let backendPath: URL
-    let mainPyPath: URL
+    let daemonPyPath: URL
     let python3Path: String
 }
 
@@ -315,11 +315,11 @@ class BackendService: ObservableObject {
         }
 
         let backendPath = projectRoot.appendingPathComponent("backend")
-        let mainPyPath = backendPath.appendingPathComponent("main.py")
+        let daemonPyPath = backendPath.appendingPathComponent("daemon.py")
 
-        guard FileManager.default.fileExists(atPath: mainPyPath.path) else {
-            backendError = "Backend not found at: \(mainPyPath.path)"
-            logger.error("Backend main.py not found")
+        guard FileManager.default.fileExists(atPath: daemonPyPath.path) else {
+            backendError = "Backend not found at: \(daemonPyPath.path)"
+            logger.error("Backend daemon.py not found")
             return nil
         }
 
@@ -332,7 +332,7 @@ class BackendService: ObservableObject {
         return BackendStartupConfig(
             projectRoot: projectRoot,
             backendPath: backendPath,
-            mainPyPath: mainPyPath,
+            daemonPyPath: daemonPyPath,
             python3Path: python3Path
         )
     }
@@ -340,11 +340,11 @@ class BackendService: ObservableObject {
     func startBackendProcess(config: BackendStartupConfig) {
         logger.info("Starting backend...")
         logger.info("   Python: \(config.python3Path)")
-        logger.info("   Backend: \(config.mainPyPath.path)")
+        logger.info("   Backend: \(config.daemonPyPath.path)")
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: config.python3Path)
-        process.arguments = [config.mainPyPath.path, "--port", "\(port)"]  // Pass port as argument
+        process.arguments = [config.daemonPyPath.path, "--api-only", "--port", "\(port)"]
         process.currentDirectoryURL = config.backendPath
 
         var environment = ProcessInfo.processInfo.environment
@@ -617,40 +617,40 @@ class BackendService: ObservableObject {
     
     func findProjectRoot() -> URL? {
         // Try multiple strategies to find project root
-        
+
         // Strategy 1: Check bundle's resource path (for development)
         if let resourcePath = Bundle.main.resourcePath {
             let resourceURL = URL(fileURLWithPath: resourcePath)
             let projectRoot = resourceURL.deletingLastPathComponent()
-            let backendPath = projectRoot.appendingPathComponent("backend/main.py")
-            
+            let backendPath = projectRoot.appendingPathComponent("backend/daemon.py")
+
             if FileManager.default.fileExists(atPath: backendPath.path) {
                 logger.info("Found project root via bundle resources: \(projectRoot.path)")
                 return projectRoot
             }
         }
-        
+
         // Strategy 2: Check current working directory
         let currentDir = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let backendInCurrent = currentDir.appendingPathComponent("backend/main.py")
-        
+        let backendInCurrent = currentDir.appendingPathComponent("backend/daemon.py")
+
         if FileManager.default.fileExists(atPath: backendInCurrent.path) {
             logger.info("Found project root in current directory: \(currentDir.path)")
             return currentDir
         }
-        
+
         // Strategy 3: Check parent directories
         var searchURL = currentDir
         for _ in 0..<5 {
             searchURL = searchURL.deletingLastPathComponent()
-            let backendPath = searchURL.appendingPathComponent("backend/main.py")
-            
+            let backendPath = searchURL.appendingPathComponent("backend/daemon.py")
+
             if FileManager.default.fileExists(atPath: backendPath.path) {
                 logger.info("Found project root in parent directory: \(searchURL.path)")
                 return searchURL
             }
         }
-        
+
         // Strategy 4: Check common development paths
         let homeDir = FileManager.default.homeDirectoryForCurrentUser
         let commonPaths = [
@@ -659,18 +659,18 @@ class BackendService: ObservableObject {
             "Developer/SimpleCP",
             "SimpleCP"
         ]
-        
+
         for path in commonPaths {
             let testURL = homeDir.appendingPathComponent(path)
-            let backendPath = testURL.appendingPathComponent("backend/main.py")
-            
+            let backendPath = testURL.appendingPathComponent("backend/daemon.py")
+
             if FileManager.default.fileExists(atPath: backendPath.path) {
                 logger.info("Found project root in common path: \(testURL.path)")
                 return testURL
             }
         }
-        
-        logger.error("❌ Could not find project root - backend/main.py not found in any location")
+
+        logger.error("Could not find project root - backend/daemon.py not found in any location")
         return nil
     }
     

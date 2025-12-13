@@ -2,12 +2,18 @@
 Pytest configuration and fixtures for SimpleCP tests.
 """
 import os
+import sys
 import tempfile
 import shutil
 from pathlib import Path
 from typing import Generator
 import pytest
 from fastapi.testclient import TestClient
+
+# Add backend directory to path for imports
+backend_dir = Path(__file__).parent.parent / "backend"
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
 
 # Set test environment before importing app modules
 os.environ["ENVIRONMENT"] = "test"

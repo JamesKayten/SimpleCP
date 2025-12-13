@@ -77,12 +77,11 @@ SimpleCP follows a layered architecture with clear separation of concerns:
 - CRUD operations
 - Snippet metadata management
 
-### 4. Configuration (`config/`)
+### 4. Configuration
 
 **Responsibility**: Application configuration
 
-- `settings.py` - Centralized settings
-- `logging_config.py` - Logging setup
+- `settings.py` - Centralized Pydantic-based settings with environment variable support
 
 ### 5. Monitoring (`monitoring/`)
 

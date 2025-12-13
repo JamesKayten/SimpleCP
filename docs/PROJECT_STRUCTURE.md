@@ -30,15 +30,10 @@ SimpleCP/
 │   │   ├── clipboard_item.py    # ClipboardItem data model
 │   │   ├── history_store.py     # Clipboard history management
 │   │   └── snippet_store.py     # Snippet/folder management
-│   ├── tests/                   # Backend-specific tests
-│   ├── ui/                      # UI utilities
-│   │   └── menu_builder.py
 │   ├── clipboard_manager.py     # Core clipboard orchestration
-│   ├── daemon.py                # Background daemon (main entry)
-│   ├── main.py                  # API-only entry point
+│   ├── daemon.py                # Main entry point (daemon + API)
 │   ├── settings.py              # Pydantic settings management
 │   ├── logger.py                # Structured logging setup
-│   ├── monitoring_core.py       # Sentry and analytics
 │   ├── requirements.txt         # Production dependencies
 │   └── requirements-dev.txt     # Development dependencies
 │

@@ -12,8 +12,8 @@ help:
 	@echo "  make install-dev    Install development dependencies"
 	@echo ""
 	@echo "Development:"
-	@echo "  make run           Run the application"
-	@echo "  make daemon        Run the daemon service"
+	@echo "  make run           Run the daemon (clipboard monitor + API)"
+	@echo "  make run-api       Run API server only (no clipboard monitoring)"
 	@echo "  make claude        Launch Claude AI assistant"
 	@echo "  make test          Run tests with coverage"
 	@echo "  make lint          Run linters"
@@ -36,10 +36,10 @@ install-dev:
 
 # Development
 run:
-	python main.py
+	cd backend && python daemon.py
 
-daemon:
-	python daemon.py
+run-api:
+	cd backend && python daemon.py --api-only
 
 claude:
 	./claude

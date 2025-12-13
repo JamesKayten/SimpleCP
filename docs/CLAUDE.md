@@ -76,9 +76,10 @@ If merge conflicts occur:
 ## Project Context
 
 ### Backend (Python)
-- Entry point: `backend/daemon.py` or `backend/main.py`
-- API runs on port 8000 by default
+- Entry point: `backend/daemon.py`
+- API runs on port 8000 by default (configurable via `--port`)
 - Uses FastAPI with Pydantic models
+- Run with `--api-only` flag for API server without clipboard monitoring
 
 ### Frontend (Swift)
 - Xcode project: `frontend/SimpleCP-App/SimpleCP.xcodeproj`
